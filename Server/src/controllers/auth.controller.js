@@ -122,4 +122,4 @@ const getMe = (req, res) => {
 }
 
 
-module.exports = { registerUser, loginUser, getMe};
+module.exports = { registerUser, loginUser, getMe };

@@ -1,20 +1,18 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import AuthLayout from '../../components/layout/AuthLayout';
 import InputField from '../../components/common/InputField';
+import PasswordField from '../../components/common/PasswordField';
 import { validateEmail, validatePassword } from '../../utils/validators';
 import { login, saveSession, isDemoMode } from '../../services/authService';
-import './Login.css';
-
-const STEPS = [
-  { title: 'Draft', text: 'Journalists write the story', color: '#9aa8cf' },
-  { title: 'In review', text: 'Editors check every claim', color: '#f2b544' },
-  { title: 'Published', text: 'Readers get verified news', color: '#3cc78b' },
-];
 
 export default function Login({ onLoginSuccess }) {
+  const location = useLocation();
+  const notice = location.state?.message;
+
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -46,92 +44,63 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="login">
-      <aside className="login__panel">
-        <div className="login__brand">News Platform</div>
-        <div className="login__story">
-          <h2 className="login__headline">Every story is checked before it is published.</h2>
-          <ol className="flow">
-            {STEPS.map((step) => (
-              <li key={step.title} style={{ '--dot': step.color }}>
-                <strong>{step.title}</strong>
-                <span>{step.text}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </aside>
+    <AuthLayout
+      title="Log in"
+      subtitle="Welcome back. Enter your details to continue."
+      footer={
+        <>
+          New here? <Link className="link" to="/register">Create an account</Link>
+        </>
+      }
+    >
+      {notice && <div className="notice" role="status">{notice}</div>}
+      {formError && <div className="alert" role="alert">{formError}</div>}
 
-      <main className="login__main">
-        <div className="card">
-          <h1>Log in</h1>
-          <p className="card__sub">Welcome back. Enter your details to continue.</p>
+      <form onSubmit={handleSubmit} noValidate>
+        <InputField
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="name@example.com"
+          value={form.email}
+          onChange={handleChange}
+          error={errors.email}
+        />
 
-          {formError && <div className="alert" role="alert">{formError}</div>}
+        <PasswordField
+          id="password"
+          label="Password"
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          value={form.password}
+          onChange={handleChange}
+          error={errors.password}
+        />
 
-          <form onSubmit={handleSubmit} noValidate>
-            <InputField
-              id="email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              placeholder="name@example.com"
-              value={form.email}
+        <div className="row">
+          <label className="check">
+            <input
+              type="checkbox"
+              name="remember"
+              checked={form.remember}
               onChange={handleChange}
-              error={errors.email}
             />
-
-            <InputField
-              id="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={handleChange}
-              error={errors.password}
-              rightSlot={
-                <button
-                  type="button"
-                  className="toggle"
-                  onClick={() => setShowPassword((s) => !s)}
-                  aria-pressed={showPassword}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
-              }
-            />
-
-            <div className="row">
-              <label className="check">
-                <input
-                  type="checkbox"
-                  name="remember"
-                  checked={form.remember}
-                  onChange={handleChange}
-                />
-                Keep me logged in
-              </label>
-              <a className="link" href="#forgot">Forgot password?</a>
-            </div>
-
-            <button className="btn" type="submit" disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
-            </button>
-          </form>
-
-          <p className="card__foot">
-            New here? <a className="link" href="#register">Create an account</a>
-          </p>
-
-          {isDemoMode && (
-            <p className="demo">
-              Demo mode: use editor@news.com (or reader, journalist, admin) with password123.
-            </p>
-          )}
+            Keep me logged in
+          </label>
+          <Link className="link" to="/forgot-password">Forgot password?</Link>
         </div>
-      </main>
-    </div>
+
+        <button className="btn" type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Log in'}
+        </button>
+      </form>
+
+      {isDemoMode && (
+        <p className="demo">
+          Demo mode: use editor@news.com (or reader, journalist, admin) with password123.
+        </p>
+      )}
+    </AuthLayout>
   );
 }
