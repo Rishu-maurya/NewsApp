@@ -7,7 +7,7 @@ const createCategory = async (req, res) => {
     try {
         const { name, description } = req.body;
 
-        if (!name || typeof name !== "string" || !name.trimEnd()) {
+        if (!name || typeof name !== "string" || !name.trim()) {
             return res.status(400).json({
                 success: false,
                 message: "Category name is required",
