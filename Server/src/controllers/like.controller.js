@@ -1,52 +1,112 @@
+const Like = require("../models/Like.js");
+const Article = require("../models/Article.js");
 
-const Like = require("../models/Like");
-const Article = require("../models/Article");
-
-const toggleLike = async (req, res) => {
-  try {
-    const article = await Article.findOne({
-      _id: req.params.articleId,
-      status: "published",
-    });
-
-    if (!article) {
-      return res.status(404).json({ message: "Published article not found." });
-    }
-
-    const existing = await Like.findOne({
-      article: article._id,
-      user: req.user._id,
-    });
-
-    if (existing) {
-      await existing.deleteOne();
-      return res.json({ liked: false, message: "Like removed." });
-    }
-
-    await Like.create({
-      article: article._id,
-      user: req.user._id,
-    });
-
-    res.status(201).json({ liked: true, message: "Article liked." });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.json({ liked: true, message: "Article already liked." });
-    }
-    res.status(400).json({ message: error.message });
-  }
+// ---------- helpers ----------
+const isOwnerOrAdmin = (article, user) => {
+    if (!user) return false;
+    return user.role === "admin" || article.author.toString() === user._id.toString();
 };
 
-const getLikeCount = async (req, res) => {
-  try {
-    const count = await Like.countDocuments({
-      article: req.params.articleId,
-    });
+// ---------- 1) TOGGLE LIKE ----------
+// POST /api/articles/:articleId/like
+const toggleLike = async (req, res) => {
+    try {
+        const { articleId } = req.params;
+        const userId = req.user._id;
 
-    res.json({ articleId: req.params.articleId, likes: count });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+        // Try to remove an existing like first, so a user can always unlike,
+        // even if the article was unpublished or removed afterwards
+        const removed = await Like.findOneAndDelete({ article: articleId, user: userId });
+
+        if (removed) {
+            const likeCount = await Like.countDocuments({ article: articleId });
+            return res.status(200).json({
+                success: true,
+                message: "Article unliked",
+                data: { liked: false, likeCount },
+            });
+        }
+
+        // No existing like, so this is a new like: the article must be published
+        const article = await Article.findById(articleId);
+        if (!article || article.status !== "published") {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+
+        try {
+            await Like.create({ article: article._id, user: userId });
+        } catch (error) {
+            // Two simultaneous requests: the unique index blocks the second one.
+            // The article is already liked, so treat it as success.
+            if (error.code !== 11000) throw error;
+        }
+
+        const likeCount = await Like.countDocuments({ article: article._id });
+
+        res.status(201).json({
+            success: true,
+            message: "Article liked",
+            data: { liked: true, likeCount },
+        });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid article ID",
+            });
+        }
+        if (error.name === "ValidationError") {
+            const message = Object.values(error.errors)[0].message;
+            return res.status(400).json({ success: false, message });
+        }
+        console.error("Toggle Like Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// ---------- 2) GET LIKE COUNT ----------
+// GET /api/articles/:articleId/likes
+const getLikeCount = async (req, res) => {
+    try {
+        const { articleId } = req.params;
+
+        const article = await Article.findById(articleId);
+
+        // Drafts are visible only to their author and admins
+        if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+
+        const likeCount = await Like.countDocuments({ article: article._id });
+
+        const data = { likeCount };
+
+        // If the caller is logged in, also say whether they liked this article
+        if (req.user) {
+            const myLike = await Like.exists({ article: article._id, user: req.user._id });
+            data.liked = !!myLike;
+        }
+
+        res.status(200).json({
+            success: true,
+            data,
+        });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid article ID",
+            });
+        }
+        console.error("Get Like Count Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
 };
 
 module.exports = { toggleLike, getLikeCount };

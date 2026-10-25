@@ -1,200 +1,285 @@
 const Article = require("../models/Article");
-const Category = require("../models/Category");
 
-const getArticles = async (req, res) => {
-  try {
-    const { category, search, page = 1, limit = 10 } = req.query;
-    const filter = { status: "published" };
-
-    if (category) {
-      const categoryDoc = await Category.findOne({
-        slug: category,
-        isActive: true,
-      });
-      if (!categoryDoc) return res.json([]);
-      filter.category = categoryDoc._id;
-    }
-
-    if (search) filter.$text = { $search: search };
-
-    const articles = await Article.find(filter)
-      .populate("author", "name profileImage")
-      .populate("category", "name slug")
-      .sort({ publishedAt: -1 })
-      .skip((Math.max(1, Number(page)) - 1) * Math.min(50, Math.max(1, Number(limit))))
-      .limit(Math.min(50, Math.max(1, Number(limit))));
-
-    res.json(articles);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+// ---------- helpers ----------
+const isOwnerOrAdmin = (article, user) => {
+    if (!user) return false;
+    const authorId = article.author?._id || article.author;
+    return user.role === "admin" || authorId.toString() === user._id.toString();
 };
 
-const getArticleById = async (req, res) => {
-  try {
-    const article = await Article.findById(req.params.id)
-      .populate("author", "name profileImage")
-      .populate("category", "name slug");
-
-    if (!article) {
-      return res.status(404).json({ message: "Article not found." });
-    }
-
-    const isOwner =
-      article.author._id.toString() === req.user?._id?.toString();
-    const isStaff = ["editor", "admin"].includes(req.user?.role);
-
-    if (article.status !== "published" && !isOwner && !isStaff) {
-      return res.status(404).json({ message: "Article not found." });
-    }
-
-    if (article.status === "published") {
-      await Article.updateOne(
-        { _id: article._id },
-        { $inc: { viewCount: 1 } }
-      );
-    }
-
-    res.json(article);
-  } catch (error) {
-    res.status(400).json({ message: "Invalid article ID." });
-  }
-};
-
+// 1) CREATE 
 const createArticle = async (req, res) => {
-  try {
-    const { title, slug, summary, body, featuredImage, category, tags } =
-      req.body;
+    try {
+        const { title, content, summary, category, tags, coverImage, status } = req.body;
 
-    if (!title || !slug || !summary || !body || !category) {
-      return res.status(400).json({
-        message: "Title, slug, summary, body and category are required.",
-      });
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and content are required",
+            });
+        }
+        if (title.trim().length < 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Title must be at least 5 characters",
+            });
+        }
+        if (status && !["draft", "published"].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be either draft or published",
+            });
+        }
+
+        const newArticle = await Article.create({
+            title: title.trim(),
+            content,
+            summary,
+            category,
+            tags,
+            coverImage,
+            status: status || "draft",
+            author: req.user._id, // from the token, never from req.body
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Article created successfully",
+            data: newArticle,
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: "An article with this title already exists",
+            });
+        }
+        if (error.name === "ValidationError") {
+            const message = Object.values(error.errors)[0].message;
+            return res.status(400).json({ success: false, message });
+        }
+        console.error("Create Article Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
-
-    const validCategory = await Category.findOne({
-      _id: category,
-      isActive: true,
-    });
-
-    if (!validCategory) {
-      return res.status(400).json({ message: "Invalid or inactive category." });
-    }
-
-    const article = await Article.create({
-      title,
-      slug,
-      summary,
-      body,
-      featuredImage,
-      category,
-      tags,
-      author: req.user._id,
-      status: "draft",
-    });
-
-    res.status(201).json(article);
-  } catch (error) {
-    res.status(error.code === 11000 ? 409 : 400).json({
-      message: error.code === 11000 ? "Article slug already exists." : error.message,
-    });
-  }
 };
 
+// 2) GET ALL
+const getArticles = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+        const { category, tag, search, author, status } = req.query;
+
+        const filter = {};
+
+        // Guests/readers: published only. Authors: published, or own drafts.
+        // Admins: anything, optionally filtered by status.
+        const role = req.user?.role;
+        if (role === "admin") {
+            if (status) filter.status = status;
+        } else if (role === "author") {
+            if (status === "draft") {
+                filter.status = "draft";
+                filter.author = req.user._id;
+            } else {
+                filter.status = "published";
+            }
+        } else {
+            filter.status = "published";
+        }
+
+        if (category) filter.category = category;
+        if (tag) filter.tags = tag;
+        if (author && !filter.author) filter.author = author;
+        if (search) {
+            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            filter.title = { $regex: escaped, $options: "i" };
+        }
+
+        const [articles, total] = await Promise.all([
+            Article.find(filter)
+                .select("-content")
+                .populate("author", "fullName")
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            Article.countDocuments(filter),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            count: articles.length,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+            data: articles,
+        });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid filter value",
+            });
+        }
+        console.error("Get Articles Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// 3) GET ONE
+const getArticleById = async (req, res) => {
+    try {
+        const article = await Article.findById(req.params.id).populate("author", "fullName");
+
+        // Drafts return the same 404 to non-owners so their existence isn't leaked
+        if (!article || (article.status === "draft" && !isOwnerOrAdmin(article, req.user))) {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: article,
+        });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid article ID",
+            });
+        }
+        console.error("Get Article Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// 4) UPDATE
 const updateArticle = async (req, res) => {
-  try {
-    const article = await Article.findById(req.params.id);
+    try {
+        const article = await Article.findById(req.params.id);
 
-    if (!article) {
-      return res.status(404).json({ message: "Article not found." });
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+        if (!isOwnerOrAdmin(article, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to update this article",
+            });
+        }
+
+        const { title, content, summary, category, tags, coverImage, status } = req.body;
+
+        if (title !== undefined) {
+            if (title.trim().length < 5) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Title must be at least 5 characters",
+                });
+            }
+            article.title = title.trim();
+        }
+        if (content !== undefined) {
+            if (!content) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Content cannot be empty",
+                });
+            }
+            article.content = content;
+        }
+        if (status !== undefined) {
+            if (!["draft", "published"].includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Status must be either draft or published",
+                });
+            }
+            article.status = status;
+        }
+        if (summary !== undefined) article.summary = summary;
+        if (category !== undefined) article.category = category;
+        if (tags !== undefined) article.tags = tags;
+        if (coverImage !== undefined) article.coverImage = coverImage;
+        // author is never updatable
+
+        const updatedArticle = await article.save(); // runs schema validators
+
+        res.status(200).json({
+            success: true,
+            message: "Article updated successfully",
+            data: updatedArticle,
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: "An article with this title already exists",
+            });
+        }
+        if (error.name === "ValidationError") {
+            const message = Object.values(error.errors)[0].message;
+            return res.status(400).json({ success: false, message });
+        }
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid article ID",
+            });
+        }
+        console.error("Update Article Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
-
-    if (
-      article.author.toString() !== req.user._id.toString() &&
-      !["admin", "editor"].includes(req.user.role)
-    ) {
-      return res.status(403).json({ message: "Access denied." });
-    }
-
-    if (article.status === "published" && req.user.role !== "admin") {
-      return res.status(400).json({
-        message: "Published articles must be returned to an editable workflow before editing.",
-      });
-    }
-
-    const allowed = [
-      "title", "slug", "summary", "body", "featuredImage", "category", "tags",
-    ];
-
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) article[key] = req.body[key];
-    }
-
-    await article.save();
-    res.json({ message: "Article updated.", article });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 };
 
-const submitArticle = async (req, res) => {
-  try {
-    const article = await Article.findById(req.params.id);
-
-    if (!article) {
-      return res.status(404).json({ message: "Article not found." });
-    }
-
-    if (article.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Only the author can submit this article." });
-    }
-
-    if (!["draft", "changes_requested"].includes(article.status)) {
-      return res.status(400).json({ message: "Article cannot be submitted in its current state." });
-    }
-
-    article.status = "submitted";
-    await article.save();
-
-    res.json({ message: "Article submitted for review.", article });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
+// 5) DELETE 
 const deleteArticle = async (req, res) => {
-  try {
-    const article = await Article.findById(req.params.id);
+    try {
+        const article = await Article.findById(req.params.id);
 
-    if (!article) {
-      return res.status(404).json({ message: "Article not found." });
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+        if (!isOwnerOrAdmin(article, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to delete this article",
+            });
+        }
+
+        await article.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            message: "Article deleted successfully",
+        });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid article ID",
+            });
+        }
+        console.error("Delete Article Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
-
-    if (
-      article.author.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({ message: "Access denied." });
-    }
-
-    if (article.status === "published" && req.user.role !== "admin") {
-      return res.status(400).json({
-        message: "Only an admin can remove a published article.",
-      });
-    }
-
-    await article.deleteOne();
-    res.json({ message: "Article deleted." });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 };
 
 module.exports = {
-  getArticles,
-  getArticleById,
-  createArticle,
-  updateArticle,
-  submitArticle,
-  deleteArticle,
+    createArticle,
+    getArticles,
+    getArticleById,
+    updateArticle,
+    deleteArticle,
 };
