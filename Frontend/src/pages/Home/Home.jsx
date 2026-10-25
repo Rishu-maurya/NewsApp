@@ -1,32 +1,34 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import { useArticles } from '../../context/ArticlesContext';
-import { useActivity } from '../../context/ActivityContext';
 import { CATEGORIES } from '../../data/dummyData';
-import { LIVE_STREAMS } from '../../data/liveData';
+import { LIVE_STREAMS, startLabel } from '../../data/liveData';
+import { isLive, matchesDate } from '../../utils/dateUtils';
 
 export default function Home({ session, onLogout }) {
     const { articles } = useArticles();
-    const { likes, comments } = useActivity();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
+    const [params, setParams] = useSearchParams();
 
-    const published = useMemo(() => articles.filter((a) => a.status === 'published'), [articles]);
+    const date = params.get('date') || '';
+    const day = params.get('day') || 'any';
+
+    const published = useMemo(() => articles.filter((a) => isLive(a)), [articles]);
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
+        const when = { range: date ? 'date' : 'all', date, weekday: day };
         return published.filter((a) => {
             if (category !== 'All' && a.category !== category) return false;
+            if (!matchesDate(a.date, when)) return false;
             if (!q) return true;
             return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
         });
-    }, [published, query, category]);
-
-    const likeCount = (id) => (likes[String(id)] || []).length;
-    const commentCount = (id) => comments.filter((c) => c.targetId === String(id)).length;
+    }, [published, query, category, date, day]);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
@@ -43,13 +45,13 @@ export default function Home({ session, onLogout }) {
                             <Link key={s.id} to="/live" className="s-live-card">
                                 <span className="s-live-badge">LIVE</span>
                                 <h3>{s.title}</h3>
-                                <p className="s-muted">{s.channel} · {s.viewers} watching</p>
+                                <p className="s-muted">{s.channel} · {startLabel(s)}</p>
                             </Link>
                         ))}
                     </div>
                 </section>
             ) : (
-                <LoginPrompt message="Log in to watch live videos, like and save stories, comment and share feedback." />
+                <LoginPrompt message="Log in to watch live videos, save stories, like, comment and share feedback." />
             )}
 
             <input
@@ -77,13 +79,14 @@ export default function Home({ session, onLogout }) {
 
             {results.length === 0 ? (
                 <div className="s-empty">
-                    <p>No stories match your search. Try another word or category.</p>
+                    <p>No stories match your search. Try another word, category or date.</p>
                     <button
                         type="button"
                         className="s-btn"
                         onClick={() => {
                             setQuery('');
                             setCategory('All');
+                            setParams(new URLSearchParams());
                         }}
                     >
                         Clear filters
@@ -95,9 +98,8 @@ export default function Home({ session, onLogout }) {
                         <ArticleCard
                             key={a.id}
                             article={a}
+                            session={session}
                             lead={i === 0 && results.length > 2}
-                            likeCount={likeCount(a.id)}
-                            commentCount={commentCount(a.id)}
                         />
                     ))}
                 </div>

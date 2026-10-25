@@ -1,4 +1,8 @@
 import { Link, NavLink } from 'react-router-dom';
+import { useArticles } from '../../context/ArticlesContext';
+import { useActivity } from '../../context/ActivityContext';
+import { isLive } from '../../utils/dateUtils';
+import NavDateFilter from './NavDateFilter';
 import '../../style/site.css';
 
 const STAFF = ['journalist', 'editor', 'admin'];
@@ -6,6 +10,14 @@ const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
 export default function SiteLayout({ session, onLogout, children }) {
     const user = session?.user;
+    const { articles } = useArticles();
+    const { saved } = useActivity();
+
+    const bookmarkCount = user
+        ? articles.filter(
+            (a) => isLive(a) && (saved[String(a.id)] || []).includes(user.email)
+        ).length
+        : 0;
 
     return (
         <div className="site">
@@ -16,6 +28,12 @@ export default function SiteLayout({ session, onLogout, children }) {
                     <nav className="s-links" aria-label="Main">
                         <NavLink to="/" end className={linkClass}>News</NavLink>
                         <NavLink to="/live" className={linkClass}>Live</NavLink>
+                        {user && (
+                            <NavLink to="/bookmarks" className={linkClass}>
+                                Bookmarks
+                                {bookmarkCount > 0 && <span className="s-count">{bookmarkCount}</span>}
+                            </NavLink>
+                        )}
                         {user && <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>}
                         {user && STAFF.includes(user.role) && (
                             <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
@@ -29,12 +47,13 @@ export default function SiteLayout({ session, onLogout, children }) {
                                 <button type="button" className="s-btn" onClick={onLogout}>Log out</button>
                             </>
                         ) : (
-                            <>
-                                <Link to="/login" className="s-link">Log in</Link>
-                                <Link to="/register" className="s-btn s-btn--solid">Create account</Link>
-                            </>
+                            <Link to="/login" className="s-btn s-btn--solid">Sign in</Link>
                         )}
                     </div>
+                </div>
+
+                <div className="s-nav__row">
+                    <NavDateFilter />
                 </div>
             </header>
 
