@@ -114,6 +114,7 @@ export const INITIAL_USERS = [
     { id: 1, name: 'Riya', email: 'reader@news.com', role: 'reader', active: true },
     { id: 2, name: 'Jay', email: 'journalist@news.com', role: 'journalist', active: true },
     { id: 3, name: 'Esha', email: 'editor@news.com', role: 'editor', active: true },
+
     { id: 4, name: 'Arun', email: 'admin@news.com', role: 'admin', active: true },
     { id: 5, name: 'Neha Kulkarni', email: 'neha@news.com', role: 'journalist', active: true },
     { id: 6, name: 'Sameer Deshmukh', email: 'sameer@news.com', role: 'reader', active: false },

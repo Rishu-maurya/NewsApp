@@ -3,12 +3,12 @@ import SiteLayout from '../../components/layout/SiteLayout';
 import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
 import { useArticles } from '../../context/ArticlesContext';
+import { isLive } from '../../utils/dateUtils';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
     const { articles } = useArticles();
-    const article = articles.find((a) => String(a.id) === id && a.status === 'published');
-
+    const article = articles.find((a) => String(a.id) === id && isLive(a));
     return (
         <SiteLayout session={session} onLogout={onLogout}>
             <div className="s-article">

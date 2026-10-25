@@ -22,18 +22,30 @@ export function ArticlesProvider({ children }) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
     }, [articles]);
 
-    const saveArticle = ({ id, title, category, body, status, author, authorEmail }) => {
+    const saveArticle = ({
+        id, title, category, body, status, author, authorEmail,
+        publishDate = '', publishTime = '',
+    }) => {
         setArticles((prev) => {
             if (id) {
                 return prev.map((a) =>
                     a.id === id
-                        ? { ...a, title, category, body, status, feedback: status === 'submitted' ? '' : a.feedback, date: today() }
+                        ? {
+                            ...a,
+                            title, category, body, status,
+                            publishDate, publishTime,
+                            feedback: status === 'submitted' ? '' : a.feedback,
+                            date: today(),
+                        }
                         : a
                 );
             }
             const nextId = Math.max(0, ...prev.map((a) => a.id)) + 1;
             return [
-                { id: nextId, title, category, body, status, author, authorEmail, feedback: '', date: today() },
+                {
+                    id: nextId, title, category, body, status, author, authorEmail,
+                    publishDate, publishTime, feedback: '', date: today(),
+                },
                 ...prev,
             ];
         });
@@ -48,7 +60,16 @@ export function ArticlesProvider({ children }) {
 
     const reviewArticle = (id, decision, feedback = '') =>
         setArticles((prev) =>
-            prev.map((a) => (a.id === id ? { ...a, status: decision, feedback, date: today() } : a))
+            prev.map((a) =>
+                a.id === id
+                    ? {
+                        ...a,
+                        status: decision,
+                        feedback,
+                        date: decision === 'published' && a.publishDate ? a.publishDate : today(),
+                    }
+                    : a
+            )
         );
 
     const resetDemoData = () => setArticles(INITIAL_ARTICLES);

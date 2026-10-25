@@ -3,9 +3,9 @@ import { useArticles } from '../../context/ArticlesContext';
 import { CATEGORIES } from '../../data/dummyData';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
+import { todayStr } from '../../utils/dateUtils';
 
-const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '' };
-
+const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '', publishDate: '', publishTime: '' };
 export default function JournalistView({ session }) {
     const { articles, saveArticle, submitArticle, deleteArticle } = useArticles();
     const { name, email } = session.user;
@@ -25,6 +25,12 @@ export default function JournalistView({ session }) {
 
     const save = (status) => {
         if (!form.title.trim()) return setError('Enter a title for the story.');
+        if (form.publishTime && !form.publishDate) {
+            return setError('Choose a publish date along with the time.');
+        }
+        if (form.publishDate && form.publishDate < todayStr()) {
+            return setError('Publish date cannot be in the past.');
+        }
         if (status === 'submitted' && form.body.trim().length < 30) {
             return setError('Write at least 30 characters before sending for review.');
         }
@@ -40,7 +46,14 @@ export default function JournalistView({ session }) {
     };
 
     const startEdit = (a) => {
-        setForm({ id: a.id, title: a.title, category: a.category, body: a.body });
+        setForm({
+            id: a.id,
+            title: a.title,
+            category: a.category,
+            body: a.body,
+            publishDate: a.publishDate,
+            publishTime: a.publishTime
+        });
         setError('');
         setMessage('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -91,6 +104,29 @@ export default function JournalistView({ session }) {
                     />
                 </div>
 
+                <div className="dfield">
+                    <label htmlFor="publishDate">Publish date (optional)</label>
+                    <input
+                        id="publishDate"
+                        name="publishDate"
+                        type="date"
+                        min={todayStr()}
+                        value={form.publishDate}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="dfield">
+                    <label htmlFor="publishTime">Publish time (optional)</label>
+                    <input
+                        id="publishTime"
+                        name="publishTime"
+                        type="time"
+                        value={form.publishTime}
+                        onChange={handleChange}
+                    />
+                </div>
+
                 <div className="btn-row">
                     <button type="button" className="dbtn dbtn--primary" onClick={() => save('submitted')}>
                         Send for review
@@ -126,8 +162,9 @@ export default function JournalistView({ session }) {
                                 </div>
 
                                 <p className="item__meta">
-                                    <span>Updated {a.date}</span>
-                                </p>
+                                    {a.publishDate && (
+                                        <span>Scheduled for {a.publishDate}{a.publishTime ? ` at ${a.publishTime}` : ''}</span>
+                                    )}                                </p>
 
                                 {a.feedback && (
                                     <p className="feedback">Editor feedback: {a.feedback}</p>

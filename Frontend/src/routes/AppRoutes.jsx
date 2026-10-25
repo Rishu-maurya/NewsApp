@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/Home/Home';
 import ArticleDetail from '../pages/Article/ArticleDetail';
+import Bookmarks from '../pages/Bookmarks/Bookmarks';
 import Live from '../pages/Live/Live';
 import Feedback from '../pages/Feedback/Feedback';
 import Dashboard from '../pages/Dashboard/Dashboard';
@@ -20,6 +21,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
         <Routes>
             <Route path="/" element={<Home {...shared} />} />
             <Route path="/article/:id" element={<ArticleDetail {...shared} />} />
+            <Route path="/bookmarks" element={<Bookmarks {...shared} />} />
             <Route path="/live" element={<Live {...shared} />} />
             <Route path="/feedback" element={<Feedback {...shared} />} />
             <Route
