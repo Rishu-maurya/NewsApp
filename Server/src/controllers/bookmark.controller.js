@@ -1,5 +1,9 @@
 const Bookmark = require("../models/Bookmark.js");
 const Article = require("../models/Article.js");
+const mongoose = require("mongoose");
+
+const invalidId = (res) =>
+    res.status(400).json({ success: false, message: "Invalid article ID" });
 
 // ---------- 1) ADD BOOKMARK ----------
 // POST /api/bookmarks/:articleId
@@ -7,7 +11,9 @@ const addBookmark = async (req, res) => {
     try {
         const { articleId } = req.params;
 
-        const article = await Article.findById(articleId);
+        if (!mongoose.isValidObjectId(articleId)) return invalidId(res);
+
+        const article = await Article.findById(articleId).select("status");
 
         // Only published articles can be bookmarked; drafts look like "not found"
         if (!article || article.status !== "published") {
@@ -30,15 +36,9 @@ const addBookmark = async (req, res) => {
     } catch (error) {
         if (error.code === 11000) {
             // unique index on { article, user }
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
                 message: "Article already bookmarked",
-            });
-        }
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid article ID",
             });
         }
         if (error.name === "ValidationError") {
@@ -54,27 +54,42 @@ const addBookmark = async (req, res) => {
 // GET /api/bookmarks?page=1&limit=10
 const getBookmarks = async (req, res) => {
     try {
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
 
-        const filter = { user: req.user._id };
-
-        const [bookmarks, total] = await Promise.all([
-            Bookmark.find(filter)
-                .sort({ createdAt: -1 }) // uses the { user, createdAt } index
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .populate({
-                    path: "article",
-                    match: { status: "published" }, // hides unpublished articles
-                    select: "-content",
-                    populate: { path: "author", select: "fullName" },
-                }),
-            Bookmark.countDocuments(filter),
+        // Filtering published articles BEFORE skip/limit keeps pages full
+        // and makes total/totalPages accurate.
+        const [result] = await Bookmark.aggregate([
+            { $match: { user: req.user._id } },
+            { $sort: { createdAt: -1 } }, // uses the { user, createdAt } index
+            {
+                $lookup: {
+                    from: Article.collection.name,
+                    localField: "article",
+                    foreignField: "_id",
+                    as: "article",
+                },
+            },
+            { $unwind: "$article" }, // drops bookmarks whose article was deleted
+            { $match: { "article.status": "published" } },
+            {
+                $facet: {
+                    data: [
+                        { $skip: (page - 1) * limit },
+                        { $limit: limit },
+                        { $project: { "article.content": 0 } },
+                    ],
+                    total: [{ $count: "count" }],
+                },
+            },
         ]);
 
-        // populate returns null for articles that were deleted or unpublished
-        const data = bookmarks.filter((b) => b.article);
+        const data = await Bookmark.populate(result.data, {
+            path: "article.author",
+            select: "fullName",
+            model: "User",
+        });
+        const total = result.total[0]?.count || 0;
 
         res.status(200).json({
             success: true,
@@ -99,6 +114,8 @@ const removeBookmark = async (req, res) => {
     try {
         const { articleId } = req.params;
 
+        if (!mongoose.isValidObjectId(articleId)) return invalidId(res);
+
         // Filtering by user means you can only remove your own bookmarks
         const bookmark = await Bookmark.findOneAndDelete({
             article: articleId,
@@ -117,12 +134,6 @@ const removeBookmark = async (req, res) => {
             message: "Bookmark removed successfully",
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid article ID",
-            });
-        }
         console.error("Remove Bookmark Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
