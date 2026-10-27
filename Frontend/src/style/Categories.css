@@ -1,0 +1,29 @@
+.s-category-card {
+    display: flex;
+    min-height: 160px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: inherit;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.s-category-card:hover {
+    transform: translateY(-2px);
+    border-color: #aeb9aa;
+}
+
+.s-category-card .s-h2 {
+    margin: 8px 0 14px;
+}
+
+.s-category-card__link {
+    color: var(--accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+}

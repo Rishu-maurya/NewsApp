@@ -1,0 +1,7 @@
+.feedback-panel {
+    margin-bottom: 24px;
+}
+
+.feedback-panel > .dash__h2 {
+    margin-top: 0;
+}

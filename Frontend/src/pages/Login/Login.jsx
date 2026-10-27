@@ -5,6 +5,7 @@ import InputField from '../../components/common/InputField';
 import PasswordField from '../../components/common/PasswordField';
 import { validateEmail, validatePassword } from '../../utils/validators';
 import { login, saveSession, isDemoMode } from '../../services/authService';
+import '../../style/Login.css';
 
 export default function Login({ onLoginSuccess }) {
   const location = useLocation();
@@ -45,6 +46,7 @@ export default function Login({ onLoginSuccess }) {
 
   return (
     <AuthLayout
+      variant="login"
       title="Log in"
       subtitle="Welcome back. Enter your details to continue."
       footer={

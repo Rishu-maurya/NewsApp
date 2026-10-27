@@ -1,0 +1,56 @@
+.field {
+    margin-bottom: 17px;
+}
+
+.field__control {
+    position: relative;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--forest);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.field input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #d8d5cb;
+    border-radius: 4px;
+    color: var(--ink);
+    background: var(--surface);
+    font-size: 14px;
+}
+
+.field input:hover {
+    border-color: #aeb7ad;
+}
+
+.field input:focus-visible {
+    border-color: var(--forest);
+    outline: 2px solid rgba(25, 53, 45, 0.12);
+}
+
+.field--with-slot input {
+    padding-right: 76px;
+}
+
+.field--error input {
+    border-color: var(--danger);
+}
+
+.field__error {
+    margin: 6px 0 0;
+    color: var(--danger);
+    font-size: 12px;
+}
+
+.field__slot {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+}

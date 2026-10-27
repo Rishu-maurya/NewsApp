@@ -10,6 +10,7 @@ import {
     validateConfirmPassword,
 } from '../../utils/validators';
 import { register } from '../../services/authService';
+import '../../style/Register.css';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -49,6 +50,7 @@ export default function Register() {
 
     return (
         <AuthLayout
+            variant="register"
             title="Create account"
             subtitle="Join to read, save and comment on news."
             footer={

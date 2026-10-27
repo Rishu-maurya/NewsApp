@@ -1,3 +1,5 @@
+import '../../style/StatCard.css';
+
 export default function StatCard({ label, value }) {
     return (
         <div className="stat">

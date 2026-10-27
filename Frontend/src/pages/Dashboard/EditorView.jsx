@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useArticles } from '../../context/ArticlesContext';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
+import '../../style/EditorView.css';
 
 export default function EditorView() {
     const { articles, reviewArticle } = useArticles();

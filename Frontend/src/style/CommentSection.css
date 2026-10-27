@@ -1,0 +1,55 @@
+.s-comments {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.s-comment {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+}
+
+.s-comment__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.s-comment__head strong {
+    color: var(--forest);
+}
+
+.s-comment__text {
+    margin: 0 0 6px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.s-link-btn {
+    padding: 4px 0;
+    border: 0;
+    color: var(--accent-dark);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.s-link-btn--report {
+    margin-left: 14px;
+    color: var(--muted);
+}
+
+.s-link-btn--report:hover {
+    color: var(--danger);
+    text-decoration: underline;
+}

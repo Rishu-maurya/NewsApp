@@ -1,0 +1,32 @@
+.s-article {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.s-article > .s-h1 {
+    max-width: 22ch;
+    font-size: clamp(40px, 6vw, 66px);
+    line-height: 1.02;
+}
+
+.s-article__body {
+    margin: 28px 0 34px;
+    color: #39433e;
+    font-family: var(--font-display);
+    font-size: 22px;
+    line-height: 1.65;
+    white-space: pre-line;
+}
+
+.s-back {
+    display: inline-block;
+    margin-bottom: 22px;
+    color: var(--accent-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.s-back:hover {
+    text-decoration: underline;
+}

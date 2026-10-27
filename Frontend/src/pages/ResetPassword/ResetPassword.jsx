@@ -4,6 +4,7 @@ import AuthLayout from '../../components/layout/AuthLayout';
 import PasswordField from '../../components/common/PasswordField';
 import { validatePassword, validateConfirmPassword } from '../../utils/validators';
 import { resetPassword } from '../../services/authService';
+import '../../style/ResetPassword.css';
 
 export default function ResetPassword() {
     const { token } = useParams();
@@ -45,6 +46,7 @@ export default function ResetPassword() {
 
     return (
         <AuthLayout
+            variant="reset-password"
             title="Set a new password"
             subtitle="Choose a password you have not used before."
             footer={

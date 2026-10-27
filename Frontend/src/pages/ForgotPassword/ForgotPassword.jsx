@@ -4,6 +4,7 @@ import AuthLayout from '../../components/layout/AuthLayout';
 import InputField from '../../components/common/InputField';
 import { validateEmail } from '../../utils/validators';
 import { forgotPassword, isDemoMode } from '../../services/authService';
+import '../../style/ForgotPassword.css';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -37,6 +38,7 @@ export default function ForgotPassword() {
 
     return (
         <AuthLayout
+            variant="forgot-password"
             title="Reset your password"
             subtitle="Enter your email and we will send you a reset link."
             footer={<Link className="link" to="/login">Back to log in</Link>}

@@ -4,6 +4,7 @@ import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
 import { useArticles } from '../../context/ArticlesContext';
 import { isLive } from '../../utils/dateUtils';
+import '../../style/ArticleDetail.css';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
@@ -25,6 +26,13 @@ export default function ArticleDetail({ session, onLogout }) {
 
                         <p className="s-article__body">{article.body}</p>
 
+                        <Link
+                            to="/report"
+                            state={{ articleId: article.id }}
+                            className="s-link-btn"
+                        >
+                            Report this story
+                        </Link>
                         <ReactionBar articleId={article.id} session={session} />
                         <CommentSection targetId={article.id} session={session} />
                     </>

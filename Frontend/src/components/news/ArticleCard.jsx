@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useActivity } from '../../context/ActivityContext';
 import { dayName } from '../../utils/dateUtils';
+import '../../style/ArticleCard.css';
 
 export default function ArticleCard({ article, session, lead, removable }) {
     const navigate = useNavigate();

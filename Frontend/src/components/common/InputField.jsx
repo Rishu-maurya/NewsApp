@@ -1,3 +1,5 @@
+import '../../style/InputField.css';
+
 export default function InputField({ id, label, error, rightSlot, ...inputProps }) {
   const errorId = `${id}-error`;
 

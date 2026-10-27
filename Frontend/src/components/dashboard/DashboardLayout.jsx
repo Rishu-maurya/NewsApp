@@ -1,4 +1,4 @@
-import './dashboard.css';
+import '../../style/DashboardLayout.css';
 import { Link } from 'react-router-dom';
 
 export default function DashboardLayout({ session, onLogout, title, subtitle, children }) {

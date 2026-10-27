@@ -1,0 +1,35 @@
+.badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.badge--draft,
+.badge--suspended {
+    color: #5c625d;
+    background: #ecebe6;
+}
+
+.badge--submitted {
+    color: #795412;
+    background: #fff0cc;
+}
+
+.badge--changes_requested {
+    color: #91491c;
+    background: #f9e4d7;
+}
+
+.badge--rejected {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.badge--published,
+.badge--active {
+    color: #215e41;
+    background: #e3f1e7;
+}

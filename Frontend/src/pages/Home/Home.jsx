@@ -7,6 +7,7 @@ import { useArticles } from '../../context/ArticlesContext';
 import { CATEGORIES } from '../../data/dummyData';
 import { LIVE_STREAMS, startLabel } from '../../data/liveData';
 import { isLive, matchesDate } from '../../utils/dateUtils';
+import '../../style/Home.css';
 
 export default function Home({ session, onLogout }) {
     const { articles } = useArticles();
@@ -32,10 +33,13 @@ export default function Home({ session, onLogout }) {
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
-            <h1 className="s-h1">
-                {session ? `Welcome back, ${session.user.name}` : 'Latest news'}
-            </h1>
-            <p className="s-sub">Every story here has been reviewed by an editor.</p>
+            <section className="s-home-hero">
+                <p className="s-eyebrow">Independent voices. Informed communities.</p>
+                <h1 className="s-h1">
+                    {session ? `Welcome back, ${session.user.name}.` : 'The stories shaping your day.'}
+                </h1>
+                <p className="s-sub">Thoughtful local reporting, reviewed by editors and made for curious readers.</p>
+            </section>
 
             {session ? (
                 <section className="s-block">

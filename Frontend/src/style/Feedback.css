@@ -1,0 +1,7 @@
+.s-feedback > form {
+    max-width: 560px;
+}
+
+.s-feedback > form .s-btn {
+    margin-top: 4px;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { WEEKDAYS, dayName, todayStr } from '../../utils/dateUtils';
+import '../../style/NavDateFilter.css';
 
 export default function NavDateFilter() {
     const { pathname, search } = useLocation();

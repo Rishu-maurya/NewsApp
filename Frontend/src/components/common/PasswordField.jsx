@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import InputField from './InputField';
+import '../../style/PasswordField.css';
 
 export default function PasswordField({ id = 'password', label = 'Password', ...props }) {
     const [show, setShow] = useState(false);

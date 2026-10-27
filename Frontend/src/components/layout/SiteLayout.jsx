@@ -3,7 +3,7 @@ import { useArticles } from '../../context/ArticlesContext';
 import { useActivity } from '../../context/ActivityContext';
 import { isLive } from '../../utils/dateUtils';
 import NavDateFilter from './NavDateFilter';
-import '../../style/site.css';
+import '../../style/SiteLayout.css';
 
 const STAFF = ['journalist', 'editor', 'admin'];
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
@@ -28,6 +28,7 @@ export default function SiteLayout({ session, onLogout, children }) {
                     <nav className="s-links" aria-label="Main">
                         <NavLink to="/" end className={linkClass}>News</NavLink>
                         <NavLink to="/live" className={linkClass}>Live</NavLink>
+                        <NavLink to="/categories" className={linkClass}>Categories</NavLink>
                         {user && (
                             <NavLink to="/bookmarks" className={linkClass}>
                                 Bookmarks
@@ -35,6 +36,9 @@ export default function SiteLayout({ session, onLogout, children }) {
                             </NavLink>
                         )}
                         {user && <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>}
+                        <NavLink to="/about" className={linkClass}>About</NavLink>
+                        <NavLink to="/contact" className={linkClass}>Contact</NavLink>
+                        {user && <NavLink to="/profile" className={linkClass}>Profile</NavLink>}
                         {user && STAFF.includes(user.role) && (
                             <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
                         )}

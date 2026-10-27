@@ -1,4 +1,5 @@
 import { useActivity } from '../../context/ActivityContext';
+import '../../style/FeedbackPanel.css';
 
 export default function FeedbackPanel() {
     const { feedback } = useActivity();
@@ -7,7 +8,7 @@ export default function FeedbackPanel() {
         : '-';
 
     return (
-        <>
+        <section className="feedback-panel">
             <h2 className="dash__h2">User feedback</h2>
             <p className="muted">
                 {feedback.length} responses, average rating {average} out of 5
@@ -29,6 +30,6 @@ export default function FeedbackPanel() {
                     ))}
                 </div>
             )}
-        </>
+        </section>
     );
 }

@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&display=swap');
+
+:root {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    color: #202b28;
+    background: #f5f2eb;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --ink: #202b28;
+    --muted: #68716c;
+    --forest: #19352d;
+    --forest-deep: #10251f;
+    --accent: #c64f37;
+    --accent-dark: #a53d2a;
+    --paper: #f5f2eb;
+    --surface: #fffefa;
+    --line: #e2ded4;
+    --danger: #b13d39;
+    --danger-bg: #fcecea;
+    --success: #256d4d;
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+    --shadow-card: 0 10px 30px rgba(32, 43, 40, 0.045);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    min-width: 320px;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    color: inherit;
+}
+
+a {
+    color: var(--accent-dark);
+}
+
+::selection {
+    color: #fff;
+    background: var(--accent);
+}
+
+:focus-visible {
+    outline: 3px solid rgba(198, 79, 55, 0.42);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

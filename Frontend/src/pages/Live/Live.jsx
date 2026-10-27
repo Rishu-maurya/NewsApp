@@ -3,6 +3,7 @@ import SiteLayout from '../../components/layout/SiteLayout';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import CommentSection from '../../components/news/CommentSection';
 import { LIVE_STREAMS, getStatus, startLabel } from '../../data/liveData';
+import '../../style/Live.css';
 
 const BADGE = { live: 'LIVE', upcoming: 'UPCOMING', ended: 'ENDED' };
 

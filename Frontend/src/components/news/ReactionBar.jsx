@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useActivity } from '../../context/ActivityContext';
+import '../../style/ReactionBar.css';
 
 export default function ReactionBar({ articleId, session }) {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function ReactionBar({ articleId, session }) {
         navigate('/login', { state: { message: 'Log in to like and save stories.' } });
 
     return (
-        <div className="s-row">
+        <div className="s-row s-reaction-bar">
             <button
                 type="button"
                 className="s-btn"

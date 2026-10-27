@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useActivity } from '../../context/ActivityContext';
 import LoginPrompt from './LoginPrompt';
+import '../../style/CommentSection.css';
 
 export default function CommentSection({ targetId, session, heading = 'Comments' }) {
     const { comments, addComment, deleteComment } = useActivity();
@@ -67,6 +69,15 @@ export default function CommentSection({ targetId, session, heading = 'Comments'
                                 <button type="button" className="s-link-btn" onClick={() => deleteComment(c.id)}>
                                     Delete
                                 </button>
+                            )}
+                            {c.email !== user.email && (
+                                <Link
+                                    className="s-link-btn s-link-btn--report"
+                                    to="/report"
+                                    state={{ articleId: targetId, commentId: c.id }}
+                                >
+                                    Report
+                                </Link>
                             )}
                         </li>
                     ))}

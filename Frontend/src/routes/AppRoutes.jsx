@@ -9,6 +9,13 @@ import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword/ResetPassword';
+import About from '../pages/About/About';
+import Contact from '../pages/Contact/Contact';
+import Categories from '../pages/Categories/Categories';
+import CategoryDetail from '../pages/Categories/CategoryDetail';
+import Profile from '../pages/Profile/Profile';
+import Report from '../pages/Report/Report';
+import NotFound from '../pages/NotFound/NotFound';
 
 const STAFF = ['journalist', 'editor', 'admin'];
 
@@ -24,6 +31,12 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
             <Route path="/bookmarks" element={<Bookmarks {...shared} />} />
             <Route path="/live" element={<Live {...shared} />} />
             <Route path="/feedback" element={<Feedback {...shared} />} />
+            <Route path="/about" element={<About {...shared} />} />
+            <Route path="/contact" element={<Contact {...shared} />} />
+            <Route path="/categories" element={<Categories {...shared} />} />
+            <Route path="/category/:category" element={<CategoryDetail {...shared} />} />
+            <Route path="/profile" element={<Profile {...shared} />} />
+            <Route path="/report" element={<Report {...shared} />} />
             <Route
                 path="/dashboard"
                 element={
@@ -38,7 +51,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
             <Route path="/register" element={session ? home : <Register />} />
             <Route path="/forgot-password" element={session ? home : <ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="*" element={home} />
+            <Route path="*" element={<NotFound {...shared} />} />
         </Routes>
     );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useArticles } from '../../context/ArticlesContext';
 import StatCard from '../../components/dashboard/StatCard';
+import '../../style/ReaderView.css';
 
 export default function ReaderView() {
     const { articles } = useArticles();

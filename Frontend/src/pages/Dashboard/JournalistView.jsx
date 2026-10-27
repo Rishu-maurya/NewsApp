@@ -4,6 +4,7 @@ import { CATEGORIES } from '../../data/dummyData';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
 import { todayStr } from '../../utils/dateUtils';
+import '../../style/JournalistView.css';
 
 const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '', publishDate: '', publishTime: '' };
 export default function JournalistView({ session }) {

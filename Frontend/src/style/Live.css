@@ -1,0 +1,118 @@
+.s-live-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.s-live-card {
+    display: block;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+
+a.s-live-card:hover {
+    transform: translateY(-2px);
+    border-color: #b9c5b9;
+}
+
+.s-live-card h3 {
+    margin: 10px 0 7px;
+    color: var(--forest);
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+}
+
+.s-live-card p {
+    margin: 0;
+    font-size: 12px;
+}
+
+button.s-live-pick {
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.s-live-pick[aria-pressed='true'] {
+    border-color: var(--forest);
+    background: #f0f3ed;
+}
+
+.s-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    color: #fff;
+    background: var(--accent);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.s-live-badge::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    content: '';
+}
+
+.s-locked {
+    opacity: 0.68;
+}
+
+.s-player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 0 0 20px;
+    border: 0;
+    border-radius: 5px;
+    background: var(--forest-deep);
+}
+
+.s-player--demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    color: #fff;
+    text-align: center;
+}
+
+.s-player__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: -0.035em;
+}
+
+.s-player__note {
+    max-width: 46ch;
+    margin: 0;
+    color: #c5d0c8;
+}
+
+@media (max-width: 900px) {
+    .s-live-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .s-live-grid {
+        grid-template-columns: 1fr;
+    }
+}

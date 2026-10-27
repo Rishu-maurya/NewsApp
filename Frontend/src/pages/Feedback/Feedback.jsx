@@ -2,6 +2,8 @@ import { useState } from 'react';
 import SiteLayout from '../../components/layout/SiteLayout';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import { useActivity } from '../../context/ActivityContext';
+import '../../style/Feedback.css';
+import '../../style/ArticleDetail.css';
 
 export default function Feedback({ session, onLogout }) {
     const { feedback, addFeedback } = useActivity();
@@ -35,7 +37,7 @@ export default function Feedback({ session, onLogout }) {
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
-            <div className="s-article">
+            <div className="s-article s-feedback">
                 <h1 className="s-h1">Feedback</h1>
                 <p className="s-sub">Tell us what we can do better.</p>
 

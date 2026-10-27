@@ -1,0 +1,141 @@
+.panel,
+.item,
+.table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+}
+
+.panel {
+    padding: clamp(18px, 3vw, 28px);
+}
+
+.dfield {
+    margin-bottom: 17px;
+}
+
+.dfield label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--forest);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dfield input,
+.dfield select,
+.dfield textarea,
+.feedback-input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid #d8d5cb;
+    border-radius: 4px;
+    color: var(--ink);
+    background: #fffefa;
+    font-size: 14px;
+}
+
+.dfield textarea {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.dfield input:focus-visible,
+.dfield select:focus-visible,
+.dfield textarea:focus-visible,
+.feedback-input:focus-visible,
+.dtable select:focus-visible {
+    border-color: var(--forest);
+    outline: 2px solid rgba(25, 53, 45, 0.12);
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.dbtn {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 13px;
+    border: 1px solid #d8d5cb;
+    border-radius: 4px;
+    color: var(--forest);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease;
+}
+
+.dbtn:hover {
+    border-color: var(--forest);
+    background: #f2f1e9;
+}
+
+.dbtn--primary,
+.dbtn--good {
+    border-color: var(--forest);
+    color: #fff;
+    background: var(--forest);
+}
+
+.dbtn--primary:hover,
+.dbtn--good:hover {
+    border-color: var(--forest-deep);
+    color: #fff;
+    background: var(--forest-deep);
+}
+
+.dbtn--danger {
+    border-color: #e7c2ba;
+    color: var(--danger);
+}
+
+.dbtn--danger:hover {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.dnote,
+.derr {
+    margin: 0 0 16px;
+    padding: 11px 13px;
+    border: 1px solid;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.dnote {
+    border-color: #bbd5c3;
+    color: #215e41;
+    background: #eef6ef;
+}
+
+.derr {
+    border-color: #edc0b9;
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.feedback {
+    margin: 0 0 12px;
+    padding: 11px 13px;
+    border: 1px solid #e8d4a9;
+    border-radius: 4px;
+    color: #76521b;
+    background: #fff8e9;
+    font-size: 12px;
+}
+
+.feedback-input {
+    min-height: 82px;
+    margin: 8px 0 12px;
+    resize: vertical;
+}

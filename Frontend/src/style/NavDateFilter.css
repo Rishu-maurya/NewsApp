@@ -1,0 +1,42 @@
+.s-navdate {
+    width: min(100% - 48px, 1180px);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-inline: auto;
+    padding-block: 5px;
+}
+
+.s-clock {
+    margin-right: auto;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.s-input--nav,
+.s-select--inline {
+    width: auto;
+    height: 31px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.s-select--inline {
+    min-width: 120px;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .s-navdate {
+        width: min(100% - 32px, 1180px);
+        flex-wrap: wrap;
+        gap: 6px;
+        padding-block: 7px;
+    }
+
+    .s-clock {
+        flex-basis: 100%;
+    }
+}

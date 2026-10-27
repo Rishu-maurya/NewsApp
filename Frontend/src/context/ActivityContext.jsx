@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { INITIAL_REPORTS } from '../data/dummyData';
 
 const KEY = 'news_dummy_activity';
 const Ctx = createContext(null);
@@ -19,6 +20,7 @@ const SEED = {
     feedback: [
         { id: 1, name: 'Riya', email: 'reader@news.com', rating: 5, message: 'Clean layout and easy to read on my phone.', date: '2026-10-21' },
     ],
+    reports: INITIAL_REPORTS,
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -26,7 +28,12 @@ const today = () => new Date().toISOString().slice(0, 10);
 function load() {
     try {
         const saved = JSON.parse(localStorage.getItem(KEY));
-        return saved && saved.likes ? saved : SEED;
+        if (!saved || typeof saved !== 'object' || !saved.likes) return SEED;
+        return {
+            ...SEED,
+            ...saved,
+            reports: Array.isArray(saved.reports) ? saved.reports : SEED.reports,
+        };
     } catch {
         return SEED;
     }
@@ -82,6 +89,28 @@ export function ActivityProvider({ children }) {
             ],
         }));
 
+    const addReport = (report) =>
+        setData((prev) => ({
+            ...prev,
+            reports: [
+                {
+                    ...report,
+                    id: Math.max(0, ...prev.reports.map((item) => item.id)) + 1,
+                    status: 'open',
+                    date: today(),
+                },
+                ...prev.reports,
+            ],
+        }));
+
+    const updateReport = (id, status) =>
+        setData((prev) => ({
+            ...prev,
+            reports: prev.reports.map((report) =>
+                report.id === id ? { ...report, status } : report
+            ),
+        }));
+
     const resetActivity = () => setData(SEED);
 
     const value = {
@@ -89,11 +118,14 @@ export function ActivityProvider({ children }) {
         saved: data.saved,
         comments: data.comments,
         feedback: data.feedback,
+        reports: data.reports,
         toggleLike: (id, email) => toggleIn('likes', id, email),
         toggleSave: (id, email) => toggleIn('saved', id, email),
         addComment,
         deleteComment,
         addFeedback,
+        addReport,
+        updateReport,
         resetActivity,
     };
 

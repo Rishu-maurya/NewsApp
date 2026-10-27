@@ -1,0 +1,137 @@
+.dash {
+    min-height: 100vh;
+    background: var(--paper);
+}
+
+.dash__bar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f7f4eb;
+    background: var(--forest);
+}
+
+.dash__bar-inner {
+    width: min(100% - 48px, 1180px);
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-inline: auto;
+}
+
+.dash__brand {
+    font-family: var(--font-display);
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.dash__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dash__role {
+    padding: 5px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 99px;
+    color: #e1e9de;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.dash__bar .dbtn {
+    min-height: 34px;
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    background: transparent;
+    font-size: 11px;
+}
+
+.dash__bar .dbtn:hover {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dash__main {
+    width: min(100% - 48px, 1180px);
+    margin-inline: auto;
+    padding-block: 42px 72px;
+}
+
+.dash__main > h1 {
+    margin: 0 0 8px;
+    color: var(--forest);
+    font-family: var(--font-display);
+    font-size: clamp(38px, 5vw, 52px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+}
+
+.dash__sub {
+    margin: 0 0 30px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.dash__h2 {
+    margin: 38px 0 16px;
+    color: var(--forest);
+    font-family: var(--font-display);
+    font-size: 29px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+}
+
+@media (max-width: 640px) {
+    .dash__bar-inner,
+    .dash__main {
+        width: min(100% - 32px, 1180px);
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__bar-inner {
+        min-height: 62px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__brand {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__user {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__user > span:first-child,
+    .dash__role {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__bar .dbtn {
+        min-height: 32px;
+        padding: 6px 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash__main {
+        padding-block: 32px 52px;
+    }
+}

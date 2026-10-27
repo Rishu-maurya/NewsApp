@@ -1,4 +1,7 @@
-const Article = require("../models/Article");
+const Article = require("../models/article");
+const mogoose = require("mogoose")
+const Category = require("../models/category")
+const generateUniqueSlug = require("../utils/gernerateUniqueSlug")
 
 // ---------- helpers ----------
 const isOwnerOrAdmin = (article, user) => {

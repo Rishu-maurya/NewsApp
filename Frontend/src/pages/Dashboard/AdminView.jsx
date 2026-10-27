@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useArticles } from '../../context/ArticlesContext';
-import { INITIAL_USERS, INITIAL_REPORTS } from '../../data/dummyData';
+import { INITIAL_USERS } from '../../data/dummyData';
 import StatCard from '../../components/dashboard/StatCard';
 import { useActivity } from '../../context/ActivityContext';
 import FeedbackPanel from '../../components/dashboard/FeedbackPanel';
+import '../../style/AdminView.css';
 
 const ROLES = ['reader', 'journalist', 'editor', 'admin'];
 
 export default function AdminView({ session }) {
     const { articles, resetDemoData } = useArticles();
-    const { resetActivity } = useActivity();
+    const { reports, updateReport, resetActivity } = useActivity();
     const [users, setUsers] = useState(INITIAL_USERS);
-    const [reports, setReports] = useState(INITIAL_REPORTS);
     const [message, setMessage] = useState('');
 
     const openReports = reports.filter((r) => r.status === 'open');
@@ -23,14 +23,10 @@ export default function AdminView({ session }) {
     const toggleActive = (id) =>
         setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u)));
 
-    const closeReport = (id, status) =>
-        setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-
     const handleReset = () => {
         resetDemoData();
         resetActivity();
         setUsers(INITIAL_USERS);
-        setReports(INITIAL_REPORTS);
         setMessage('Demo data has been reset.');
     };
 
@@ -43,9 +39,9 @@ export default function AdminView({ session }) {
                 <StatCard label="Open reports" value={openReports.length} />
             </div>
         <FeedbackPanel />
-            <h2 className="dash__h2">Reported comments</h2>
+            <h2 className="dash__h2">Content reports</h2>
             {openReports.length === 0 ? (
-                <p className="empty-note">No open reports. Everything has been handled.</p>
+                <p className="empty-note">No open content reports. Everything has been handled.</p>
             ) : (
                 <div className="list">
                     {openReports.map((r) => (
@@ -57,10 +53,10 @@ export default function AdminView({ session }) {
                                 <span>Reported by {r.reportedBy}</span>
                             </p>
                             <div className="btn-row">
-                                <button type="button" className="dbtn dbtn--danger" onClick={() => closeReport(r.id, 'removed')}>
-                                    Remove comment
+                                <button type="button" className="dbtn dbtn--danger" onClick={() => updateReport(r.id, 'removed')}>
+                                    Mark as removed
                                 </button>
-                                <button type="button" className="dbtn" onClick={() => closeReport(r.id, 'dismissed')}>
+                                <button type="button" className="dbtn" onClick={() => updateReport(r.id, 'dismissed')}>
                                     Dismiss report
                                 </button>
                             </div>
@@ -70,7 +66,7 @@ export default function AdminView({ session }) {
             )}
 
             {closedReports.length > 0 && (
-                <p className="muted" style={{ marginTop: 14 }}>
+                <p className="muted muted--report-summary">
                     Handled: {closedReports.map((r) => `"${r.comment.slice(0, 28)}..." (${r.status})`).join(', ')}
                 </p>
             )}
@@ -128,7 +124,7 @@ export default function AdminView({ session }) {
             <h2 className="dash__h2">Demo data</h2>
             <section className="panel">
                 {message && <p className="dnote" role="status">{message}</p>}
-                <p className="muted" style={{ marginTop: 0 }}>
+                <p className="muted muted--reset-summary">
                     Put all stories, users and reports back to how they were at the start.
                 </p>
                 <button type="button" className="dbtn dbtn--danger" onClick={handleReset}>
