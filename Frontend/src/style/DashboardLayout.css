@@ -1,8 +1,3 @@
-.dash {
-    min-height: 100vh;
-    background: var(--paper);
-}
-
 .dash__bar {
     position: sticky;
     top: 0;
