@@ -1,7 +1,11 @@
 const express = require('express');
 const authRoutes = require("./routes/auth.routes")
 const categoryRoutes = require("./routes/category.routes");
+ Rishab/article-controller
+const articalRoutes = require("./routes/article.routes")
+=======
 const bookmarkRoutes = require("./routes/bookmark.routes");
+ main
 
 const app = express();
 
@@ -16,7 +20,11 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes)
 app.use("/api/categories", categoryRoutes);
+Rishab/article-controller
+app.use("/api/create-article", articalRoutes)
+=======
 app.use("/api/bookmarks", bookmarkRoutes);
+main
 
 
 module.exports = app;

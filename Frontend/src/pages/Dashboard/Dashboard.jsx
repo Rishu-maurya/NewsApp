@@ -3,6 +3,7 @@ import ReaderView from './ReaderView';
 import JournalistView from './JournalistView';
 import EditorView from './EditorView';
 import AdminView from './AdminView';
+import '../../style/Dashboard.css';
 
 const VIEWS = {
     reader: {

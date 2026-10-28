@@ -1,0 +1,4 @@
+.dash {
+    min-height: 100vh;
+    background: var(--paper);
+}

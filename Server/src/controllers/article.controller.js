@@ -1,7 +1,8 @@
 const Article = require("../models/article");
-const mogoose = require("mogoose")
+const mongoose = require("mongoose")
 const Category = require("../models/category")
-const generateUniqueSlug = require("../utils/gernerateUniqueSlug")
+const generateUniqueSlug = require("../utils/gernerateUniqueSlug");
+
 
 // ---------- helpers ----------
 const isOwnerOrAdmin = (article, user) => {
@@ -13,54 +14,79 @@ const isOwnerOrAdmin = (article, user) => {
 // 1) CREATE 
 const createArticle = async (req, res) => {
     try {
-        const { title, content, summary, category, tags, coverImage, status } = req.body;
+        const { title, body, summary, category, tags, featuredImage } = req.body;
 
-        if (!title || !content) {
+        if (typeof title !== "string" || !title.trim() ||
+            typeof body !== "string" || !body.trim() ||
+            typeof summary !== "string" || !summary.trim()
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Title and content are required",
-            });
-        }
-        if (title.trim().length < 5) {
-            return res.status(400).json({
-                success: false,
-                message: "Title must be at least 5 characters",
-            });
-        }
-        if (status && !["draft", "published"].includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message: "Status must be either draft or published",
+                message: "Title, summary and body are required",
             });
         }
 
-        const newArticle = await Article.create({
-            title: title.trim(),
-            content,
-            summary,
-            category,
-            tags,
-            coverImage,
-            status: status || "draft",
-            author: req.user._id, // from the token, never from req.body
+
+        if (typeof category !== "string" || !mongoose.isValidObjectId(category)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid category id"
+            })
+        }
+
+        const validCategory = await Category.findOne({ _id: category, isActive: true })
+
+        if (!validCategory) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or inactive category",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Validation passed",
         });
 
-        res.status(201).json({
+        const slug = await generateUniqueSlug(title.trim());
+        if (!slug) {
+            return res.status(400).json({
+                success: false,
+                message: "Title must contain letters or number"
+            })
+        }
+
+        const article = await Article.create({
+            title: title.trim(),
+            slug,
+            body: body.trim(),
+            summary: summary.trim(),
+            category: validCategory._id,
+            tags: Array.isArray(tags) ? tags : [],
+            featuredImage: featuredImage || "",
+            author: req.user._id,
+            status: "draft",
+        });
+
+        return res.status(201).json({
             success: true,
             message: "Article created successfully",
-            data: newArticle,
+            data: article,
         });
+
     } catch (error) {
         if (error.code === 11000) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
-                message: "An article with this title already exists",
-            });
+                message: "Could not create article, please try again"
+            })
         }
+
         if (error.name === "ValidationError") {
-            const message = Object.values(error.errors)[0].message;
+            const message = Object.value (error.errors)[0].message
             return res.status(400).json({ success: false, message });
         }
+        
         console.error("Create Article Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
