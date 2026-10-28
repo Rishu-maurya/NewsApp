@@ -1,5 +1,5 @@
-const Comment = require("../models/Comment.js");
-const Article = require("../models/Article.js");
+const Comment = require("../models/commemt.ja");
+const Article = require("../models/article.js");
 
 // ---------- helpers ----------
 const isOwnerOrAdmin = (article, user) => {

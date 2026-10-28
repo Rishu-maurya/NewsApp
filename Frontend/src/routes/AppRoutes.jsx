@@ -17,12 +17,9 @@ import Profile from '../pages/Profile/Profile';
 import Report from '../pages/Report/Report';
 import NotFound from '../pages/NotFound/NotFound';
 
-const STAFF = ['journalist', 'editor', 'admin'];
-
 export default function AppRoutes({ session, onLogin, onLogout }) {
-    const home = <Navigate to="/" replace />;
+    const dashboard = <Navigate to="/dashboard" replace />;
     const shared = { session, onLogout };
-    const isStaff = session && STAFF.includes(session.user.role);
 
     return (
         <Routes>
@@ -39,17 +36,11 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
             <Route path="/report" element={<Report {...shared} />} />
             <Route
                 path="/dashboard"
-                element={
-                    isStaff ? (
-                        <Dashboard {...shared} />
-                    ) : (
-                        <Navigate to={session ? '/' : '/login'} replace />
-                    )
-                }
+                element={session ? <Dashboard {...shared} /> : <Navigate to="/login" replace />}
             />
-            <Route path="/login" element={session ? home : <Login onLoginSuccess={onLogin} />} />
-            <Route path="/register" element={session ? home : <Register />} />
-            <Route path="/forgot-password" element={session ? home : <ForgotPassword />} />
+            <Route path="/login" element={session ? dashboard : <Login onLoginSuccess={onLogin} />} />
+            <Route path="/register" element={session ? dashboard : <Register onRegistrationSuccess={onLogin} />} />
+            <Route path="/forgot-password" element={session ? dashboard : <ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="*" element={<NotFound {...shared} />} />
         </Routes>

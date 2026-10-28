@@ -9,10 +9,10 @@ import {
     validatePassword,
     validateConfirmPassword,
 } from '../../utils/validators';
-import { register } from '../../services/authService';
+import { register, saveSession } from '../../services/authService';
 import '../../style/Register.css';
 
-export default function Register() {
+export default function Register({ onRegistrationSuccess }) {
     const navigate = useNavigate();
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
     const [errors, setErrors] = useState({});
@@ -39,8 +39,10 @@ export default function Register() {
 
         setLoading(true);
         try {
-            await register(form);
-            navigate('/login', { state: { message: 'Account created. Log in to continue.' } });
+            const session = await register(form);
+            saveSession(session, false);
+            onRegistrationSuccess(session);
+            navigate('/dashboard', { replace: true });
         } catch (err) {
             setFormError(err.message);
         } finally {
