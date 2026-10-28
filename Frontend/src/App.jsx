@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AppRoutes from './routes/AppRoutes';
 import { ArticlesProvider } from './context/ArticlesContext';
 import { ActivityProvider } from './context/ActivityContext';
+import { ProfileProvider } from './context/ProfileContext';
 import { getSession, clearSession } from './services/authService';
 
 export default function App() {
@@ -15,7 +16,9 @@ export default function App() {
   return (
     <ArticlesProvider>
       <ActivityProvider>
-        <AppRoutes session={session} onLogin={setSession} onLogout={handleLogout} />
+        <ProfileProvider user={session?.user}>
+          <AppRoutes session={session} onLogin={setSession} onLogout={handleLogout} />
+        </ProfileProvider>
       </ActivityProvider>
     </ArticlesProvider>
   );

@@ -1,7 +1,13 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useArticles } from '../../context/ArticlesContext';
 import { useActivity } from '../../context/ActivityContext';
+<<<<<<< Updated upstream
 import { isLive } from '../../utils/dateUtils';
+=======
+import { useProfiles } from '../../context/ProfileContext';
+import { isLive } from '../../utils/dateUtils';
+import Avatar from '../profile/Avtar';
+>>>>>>> Stashed changes
 import NavDateFilter from './NavDateFilter';
 import '../../style/site.css';
 
@@ -12,6 +18,12 @@ export default function SiteLayout({ session, onLogout, children }) {
     const user = session?.user;
     const { articles } = useArticles();
     const { saved } = useActivity();
+<<<<<<< Updated upstream
+=======
+    const { profiles } = useProfiles();
+
+    const me = user ? profiles[user.email] || { name: user.name, photo: '' } : null;
+>>>>>>> Stashed changes
 
     const bookmarkCount = user
         ? articles.filter(
@@ -40,10 +52,15 @@ export default function SiteLayout({ session, onLogout, children }) {
                         )}
                     </nav>
 
+                    <NavDateFilter />
+
                     <div className="s-account">
                         {user ? (
                             <>
-                                <span className="s-name">{user.name}</span>
+                                <Link to="/profile" className="s-me" aria-label="Open my profile">
+                                    <Avatar profile={me} size={34} />
+                                    <span className="s-name">{me.name}</span>
+                                </Link>
                                 <button type="button" className="s-btn" onClick={onLogout}>Log out</button>
                             </>
                         ) : (

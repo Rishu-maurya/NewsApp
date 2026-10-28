@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/Home/Home';
 import ArticleDetail from '../pages/Article/ArticleDetail';
 import Bookmarks from '../pages/Bookmarks/Bookmarks';
+<<<<<<< Updated upstream
+=======
+import Profile from '../pages/Profile/Profile';
+>>>>>>> Stashed changes
 import Live from '../pages/Live/Live';
 import Feedback from '../pages/Feedback/Feedback';
 import Dashboard from '../pages/Dashboard/Dashboard';
@@ -22,6 +26,11 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
             <Route path="/" element={<Home {...shared} />} />
             <Route path="/article/:id" element={<ArticleDetail {...shared} />} />
             <Route path="/bookmarks" element={<Bookmarks {...shared} />} />
+<<<<<<< Updated upstream
+=======
+            <Route path="/profile" element={<Profile {...shared} />} />
+            <Route path="/profile/:email" element={<Profile {...shared} />} />
+>>>>>>> Stashed changes
             <Route path="/live" element={<Live {...shared} />} />
             <Route path="/feedback" element={<Feedback {...shared} />} />
             <Route

@@ -5,6 +5,7 @@
     background: var(--paper);
 }
 
+/* ---------- Navbar ---------- */
 .s-nav {
     position: sticky;
     top: 0;
@@ -14,13 +15,13 @@
 }
 
 .s-nav__inner {
-    max-width: 1080px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 8px 24px;
     min-height: 64px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 8px 16px;
     flex-wrap: wrap;
 }
 
@@ -35,18 +36,20 @@
     font-size: 20px;
     color: var(--ink);
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .s-links {
     display: flex;
     gap: 4px;
-    flex: 1;
+    flex-wrap: wrap;
 }
 
 .s-account {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-left: auto;
 }
 
 .s-name {
@@ -59,6 +62,7 @@
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 8px;
+    white-space: nowrap;
 }
 
 .s-link:hover {
@@ -70,6 +74,64 @@
     color: var(--accent-dark);
 }
 
+.s-count {
+    display: inline-block;
+    margin-left: 6px;
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* Date, din aur time (navbar ke andar) */
+.s-navdate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 4px 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.s-clock {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.s-navdate .s-input,
+.s-navdate .s-select {
+    width: auto;
+    margin: 0;
+    height: 34px;
+    padding: 0 8px;
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+}
+
+.s-navdate .s-select {
+    min-width: 110px;
+}
+
+.s-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ---------- Buttons ---------- */
 .s-btn {
     display: inline-block;
     border: 1px solid var(--line);
@@ -130,6 +192,7 @@
     outline-offset: 2px;
 }
 
+<<<<<<< Updated upstream
 .s-count {
     display: inline-block;
     margin-left: 6px;
@@ -169,6 +232,9 @@
     white-space: nowrap;
 }
 
+=======
+/* ---------- Layout ---------- */
+>>>>>>> Stashed changes
 .s-main {
     flex: 1;
     width: 100%;
@@ -235,6 +301,7 @@
     align-items: flex-end;
 }
 
+/* ---------- Inputs ---------- */
 .s-search {
     width: 100%;
     max-width: 440px;
@@ -247,14 +314,6 @@
     font-size: 16px;
 }
 
-.s-search:focus-visible,
-.s-textarea:focus-visible,
-.s-select:focus-visible,
-.s-input:focus-visible {
-    outline: 3px solid rgba(47, 91, 255, 0.28);
-    border-color: var(--accent);
-}
-
 .s-input {
     height: 44px;
     padding: 0 12px;
@@ -265,6 +324,44 @@
     font-size: 16px;
 }
 
+.s-input--full {
+    width: 100%;
+    margin: 0 0 14px;
+}
+
+.s-search:focus-visible,
+.s-textarea:focus-visible,
+.s-select:focus-visible,
+.s-input:focus-visible {
+    outline: 3px solid rgba(47, 91, 255, 0.28);
+    border-color: var(--accent);
+}
+
+<<<<<<< Updated upstream
+.s-input {
+    height: 44px;
+    padding: 0 12px;
+=======
+.s-label {
+    display: block;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 6px;
+}
+
+.s-textarea,
+.s-select {
+    width: 100%;
+    padding: 11px 14px;
+>>>>>>> Stashed changes
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font-size: 16px;
+<<<<<<< Updated upstream
+}
+
 .s-input--nav {
     height: 36px;
     font-size: 14px;
@@ -272,6 +369,38 @@
     min-width: 0;
 }
 
+=======
+    margin: 0 0 14px;
+}
+
+.s-textarea {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.s-note,
+.s-err {
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 0 0 14px;
+    font-size: 15px;
+}
+
+.s-note {
+    background: #e9f8f0;
+    color: #17694a;
+    border: 1px solid #b4e3cd;
+}
+
+.s-err {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid #f2b8be;
+}
+
+/* ---------- Chips ---------- */
+>>>>>>> Stashed changes
 .s-chips {
     display: flex;
     flex-wrap: wrap;
@@ -300,6 +429,7 @@
     color: #fff;
 }
 
+/* ---------- Cards ---------- */
 .s-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -378,6 +508,7 @@
     margin: 0 0 16px;
 }
 
+/* ---------- Article ---------- */
 .s-article {
     max-width: 720px;
     margin: 0 auto;
@@ -401,6 +532,7 @@
     text-decoration: underline;
 }
 
+<<<<<<< Updated upstream
 .s-label {
     display: block;
     font-weight: 600;
@@ -459,6 +591,9 @@
     border: 1px solid #f2b8be;
 }
 
+=======
+/* ---------- Comments ---------- */
+>>>>>>> Stashed changes
 .s-comments {
     list-style: none;
     margin: 20px 0 0;
@@ -492,6 +627,7 @@
     line-height: 1.55;
 }
 
+/* ---------- Live ---------- */
 .s-live-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -582,6 +718,112 @@ button.s-live-pick {
     max-width: 46ch;
 }
 
+/* ---------- Profile ---------- */
+.s-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 2px 8px 2px 2px;
+}
+
+.s-me:hover {
+    background: var(--paper);
+}
+
+.s-me:focus-visible {
+    outline: 3px solid rgba(47, 91, 255, 0.35);
+    outline-offset: 2px;
+}
+
+.s-avatar {
+    display: inline-block;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.s-avatar--blank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+}
+
+.s-profile {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin: 0 0 8px;
+}
+
+.s-profile__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.s-profile__info .s-h1 {
+    margin-bottom: 2px;
+}
+
+.s-profile__bio {
+    margin: 10px 0;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.s-edit {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.s-edit__photo {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 0 0 20px;
+    flex-wrap: wrap;
+}
+
+.s-people {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.s-person {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+}
+
+.s-person__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    text-decoration: none;
+    min-width: 0;
+}
+
+.s-person__link:hover strong {
+    text-decoration: underline;
+}
+
+/* ---------- Responsive ---------- */
 @media (max-width: 900px) {
 
     .s-grid,
@@ -607,11 +849,15 @@ button.s-live-pick {
 
     .s-nav__inner {
         padding: 10px 16px;
-        gap: 8px 12px;
     }
 
-    .s-links {
-        order: 3;
+    .s-navdate {
+        order: 5;
+        flex-basis: 100%;
+        flex-wrap: wrap;
+    }
+
+    .s-clock {
         flex-basis: 100%;
     }
 
@@ -633,5 +879,16 @@ button.s-live-pick {
 
     .s-h1 {
         font-size: 28px;
+    }
+
+    .s-profile {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .s-profile .s-meta,
+    .s-profile .s-row {
+        justify-content: center;
     }
 }
