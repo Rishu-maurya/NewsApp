@@ -43,11 +43,6 @@ const createArticle = async (req, res) => {
             });
         }
 
-        res.status(200).json({
-            success: true,
-            message: "Validation passed",
-        });
-
         const slug = await generateUniqueSlug(title.trim());
         if (!slug) {
             return res.status(400).json({
@@ -83,7 +78,7 @@ const createArticle = async (req, res) => {
         }
 
         if (error.name === "ValidationError") {
-            const message = Object.value (error.errors)[0].message
+            const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
         }
         

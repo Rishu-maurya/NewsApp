@@ -1,5 +1,5 @@
-const Bookmark = require("../models/Bookmark.js");
-const Article = require("../models/Article.js");
+const Bookmark = require("../models/bookmark.js");
+const Article = require("../models/article.js");
 const mongoose = require("mongoose");
 
 const invalidId = (res) =>

@@ -1,5 +1,5 @@
-const Review = require("../models/Review.js");
-const Article = require("../models/Article.js");
+const Review = require("../models/review.js");
+const Article = require("../models/article.js");
 
 // ---------- constants ----------
 // ASSUMED article workflow (edit these to match your Article schema enum):

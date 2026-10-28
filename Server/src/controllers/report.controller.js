@@ -1,5 +1,5 @@
-const Report = require("../models/Report.js");
-const Comment = require("../models/Comment.js");
+const Report = require("../models/report.js");
+const Comment = require("../models/comment.js");
 
 // ---------- constants (must match the schema enums) ----------
 const REASONS = [

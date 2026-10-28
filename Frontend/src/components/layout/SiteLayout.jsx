@@ -5,7 +5,6 @@ import { isLive } from '../../utils/dateUtils';
 import NavDateFilter from './NavDateFilter';
 import '../../style/SiteLayout.css';
 
-const STAFF = ['journalist', 'editor', 'admin'];
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
 export default function SiteLayout({ session, onLogout, children }) {
@@ -39,9 +38,7 @@ export default function SiteLayout({ session, onLogout, children }) {
                         <NavLink to="/about" className={linkClass}>About</NavLink>
                         <NavLink to="/contact" className={linkClass}>Contact</NavLink>
                         {user && <NavLink to="/profile" className={linkClass}>Profile</NavLink>}
-                        {user && STAFF.includes(user.role) && (
-                            <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
-                        )}
+                        {user && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
                     </nav>
 
                     <div className="s-account">

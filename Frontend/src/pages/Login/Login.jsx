@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/layout/AuthLayout';
 import InputField from '../../components/common/InputField';
 import PasswordField from '../../components/common/PasswordField';
@@ -8,6 +8,7 @@ import { login, saveSession, isDemoMode } from '../../services/authService';
 import '../../style/Login.css';
 
 export default function Login({ onLoginSuccess }) {
+  const navigate = useNavigate();
   const location = useLocation();
   const notice = location.state?.message;
 
@@ -37,6 +38,7 @@ export default function Login({ onLoginSuccess }) {
       const session = await login(form);
       saveSession(session, form.remember);
       onLoginSuccess(session);
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setFormError(err.message);
     } finally {

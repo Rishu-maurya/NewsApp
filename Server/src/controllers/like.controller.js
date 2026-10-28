@@ -1,5 +1,5 @@
-const Like = require("../models/Like.js");
-const Article = require("../models/Article.js");
+const Like = require("../models/like.js");
+const Article = require("../models/article.js");
 
 // ---------- helpers ----------
 const isOwnerOrAdmin = (article, user) => {
