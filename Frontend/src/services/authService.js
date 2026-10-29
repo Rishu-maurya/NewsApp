@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export {getSession, clearSession} from './session'
+
 const API_URL = import.meta.env.VITE_API_URL || '';
-const SESSION_KEY = 'news_session';
+
 const REGISTERED_KEY = 'demo_registered_users';
 
 const DEMO_USERS = {
