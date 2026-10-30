@@ -1,17 +1,25 @@
-const Like = require("../models/like.js");
-const Article = require("../models/article.js");
+const mongoose = require("mongoose");
+const Article = require("../models/Article.js");
+const Like = require("../models/Like.js");
+
 
 // ---------- helpers ----------
 const isOwnerOrAdmin = (article, user) => {
     if (!user) return false;
-    return user.role === "admin" || article.author.toString() === user._id.toString();
+    if (user.role === "admin") return true;
+    return !!article.author && article.author.toString() === user._id.toString();
 };
+
+const invalidId = (res) =>
+    res.status(400).json({ success: false, message: "Invalid article ID" });
 
 // ---------- 1) TOGGLE LIKE ----------
 // POST /api/articles/:articleId/like
 const toggleLike = async (req, res) => {
     try {
         const { articleId } = req.params;
+        if (!mongoose.isValidObjectId(articleId)) return invalidId(res);
+
         const userId = req.user._id;
 
         // Try to remove an existing like first, so a user can always unlike,
@@ -28,7 +36,7 @@ const toggleLike = async (req, res) => {
         }
 
         // No existing like, so this is a new like: the article must be published
-        const article = await Article.findById(articleId);
+        const article = await Article.findById(articleId).select("status");
         if (!article || article.status !== "published") {
             return res.status(404).json({
                 success: false,
@@ -52,12 +60,6 @@ const toggleLike = async (req, res) => {
             data: { liked: true, likeCount },
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid article ID",
-            });
-        }
         if (error.name === "ValidationError") {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
@@ -69,11 +71,13 @@ const toggleLike = async (req, res) => {
 
 // ---------- 2) GET LIKE COUNT ----------
 // GET /api/articles/:articleId/likes
+// Public route: needs optionalAuth so req.user is set when a token is sent
 const getLikeCount = async (req, res) => {
     try {
         const { articleId } = req.params;
+        if (!mongoose.isValidObjectId(articleId)) return invalidId(res);
 
-        const article = await Article.findById(articleId);
+        const article = await Article.findById(articleId).select("status author");
 
         // Drafts are visible only to their author and admins
         if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
@@ -98,12 +102,6 @@ const getLikeCount = async (req, res) => {
             data,
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid article ID",
-            });
-        }
         console.error("Get Like Count Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }

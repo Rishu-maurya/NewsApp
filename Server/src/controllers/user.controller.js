@@ -1,21 +1,25 @@
+const mongoose = require("mongoose");
 const User = require("../models/users.js");
 
 // ---------- constants (must match the schema) ----------
 const ROLES = ["user", "journalist", "editor", "admin"];
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
+const invalidId = (res) =>
+    res.status(400).json({ success: false, message: "Invalid user ID" });
+
 // ---------- 1) GET ALL USERS ----------
 // GET /api/users?page=1&limit=10&role=editor&isActive=false&search=john   (admin only)
 const getUsers = async (req, res) => {
     try {
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
         const { role, isActive, search } = req.query;
 
         const filter = {};
 
         if (role) {
-            if (!ROLES.includes(role)) {
+            if (typeof role !== "string" || !ROLES.includes(role)) {
                 return res.status(400).json({
                     success: false,
                     message: `Role must be one of: ${ROLES.join(", ")}`,
@@ -27,7 +31,13 @@ const getUsers = async (req, res) => {
         if (isActive === "false") filter.isActive = false;
 
         if (search) {
-            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            if (typeof search !== "string") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Search must be text",
+                });
+            }
+            const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             filter.$or = [
                 { fullName: { $regex: escaped, $options: "i" } },
                 { email: { $regex: escaped, $options: "i" } },
@@ -65,6 +75,7 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) return invalidId(res);
 
         const isSelf = req.user._id.toString() === id;
         if (req.user.role !== "admin" && !isSelf) {
@@ -88,12 +99,6 @@ const getUserById = async (req, res) => {
             data: user,
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID",
-            });
-        }
         console.error("Get User Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
@@ -103,43 +108,56 @@ const getUserById = async (req, res) => {
 // PUT /api/users/profile   body: { fullName?, phone? }
 const updateProfile = async (req, res) => {
     try {
-        const { fullName, phone } = req.body;
-        const updates = {};
+        const { fullName, phone } = req.body || {};
+        const set = {};
+        const unset = {};
 
         if (fullName !== undefined) {
-            if (!fullName.trim()) {
+            if (typeof fullName !== "string" || !fullName.trim()) {
                 return res.status(400).json({
                     success: false,
                     message: "Name cannot be empty",
                 });
             }
-            updates.fullName = fullName.trim();
+            set.fullName = fullName.trim();
         }
 
         if (phone !== undefined) {
-            // an empty string clears the phone number
-            if (phone !== "" && !PHONE_REGEX.test(phone.trim())) {
+            if (typeof phone !== "string") {
                 return res.status(400).json({
                     success: false,
                     message: "Enter a valid 10 digit phone number",
                 });
             }
-            updates.phone = phone.trim();
+            const cleanPhone = phone.trim();
+            if (cleanPhone === "") {
+                unset.phone = ""; // an empty string clears the phone number
+            } else if (!PHONE_REGEX.test(cleanPhone)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Enter a valid 10 digit phone number",
+                });
+            } else {
+                set.phone = cleanPhone;
+            }
         }
 
-        if (Object.keys(updates).length === 0) {
+        if (Object.keys(set).length === 0 && Object.keys(unset).length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "Provide a name or phone number to update",
             });
         }
 
+        const update = {};
+        if (Object.keys(set).length) update.$set = set;
+        if (Object.keys(unset).length) update.$unset = unset;
+
         // email, password, role and isActive are deliberately not updatable here
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            { $set: updates },
-            { new: true, runValidators: true }
-        );
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, update, {
+            new: true,
+            runValidators: true,
+        });
 
         res.status(200).json({
             success: true,
@@ -161,9 +179,11 @@ const updateProfile = async (req, res) => {
 const updateUserRole = async (req, res) => {
     try {
         const { id } = req.params;
-        const { role } = req.body;
+        if (!mongoose.isValidObjectId(id)) return invalidId(res);
 
-        if (!role || !ROLES.includes(role)) {
+        const { role } = req.body || {};
+
+        if (typeof role !== "string" || !ROLES.includes(role)) {
             return res.status(400).json({
                 success: false,
                 message: `Role must be one of: ${ROLES.join(", ")}`,
@@ -197,12 +217,6 @@ const updateUserRole = async (req, res) => {
             data: user,
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID",
-            });
-        }
         if (error.name === "ValidationError") {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
@@ -217,7 +231,9 @@ const updateUserRole = async (req, res) => {
 const updateUserStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { isActive } = req.body;
+        if (!mongoose.isValidObjectId(id)) return invalidId(res);
+
+        const { isActive } = req.body || {};
 
         if (typeof isActive !== "boolean") {
             return res.status(400).json({
@@ -253,12 +269,6 @@ const updateUserStatus = async (req, res) => {
             data: user,
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID",
-            });
-        }
         console.error("Update User Status Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }

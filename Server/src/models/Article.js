@@ -89,4 +89,4 @@ articleSchema.index({
 articleSchema.index({ category: 1, status: 1 });
 articleSchema.index({ author: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Article", articleSchema);
+module.exports = mongoose.models.Article || mongoose.model("Article", articleSchema);
