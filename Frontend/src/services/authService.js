@@ -1,161 +1,73 @@
-import axios from 'axios';
+import api from "./axiosInstance";
 
-export {getSession, clearSession} from './session'
+export { saveSession, getSession, clearSession } from "./session";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+export const isDemoMode = false;
 
-const REGISTERED_KEY = 'demo_registered_users';
-
-const DEMO_USERS = {
-  'reader@news.com': { name: 'Riya', role: 'reader', password: 'password123' },
-  'journalist@news.com': { name: 'Jay', role: 'journalist', password: 'password123' },
-  'editor@news.com': { name: 'Esha', role: 'editor', password: 'password123' },
-  'admin@news.com': { name: 'Arun', role: 'admin', password: 'password123' },
-};
-
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
-
-const wait = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function getDemoUsers() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    return { ...DEMO_USERS, ...saved };
-  } catch {
-    return { ...DEMO_USERS };
-  }
-}
-
-async function apiPost(path, body, fallbackMessage) {
-  try {
-    const { data } = await axios.post(`${API_URL.replace(/\/$/, '')}${path}`, body);
-    return data;
-  } catch (err) {
-    const message = err.response
-      ? err.response.data?.message || fallbackMessage
-      : 'Cannot reach the server. Check your connection and try again.';
-    throw new Error(message);
-  }
+function getErrorMessage(err, fallback) {
+  if (!err.response) return "Cannot reach the server. Check your connection and try again.";
+  return err.response.data?.message || fallback;
 }
 
 function createSession(response) {
-  const authData = response?.data ?? response;
-  const name = authData?.fullName || authData?.name;
-  const role = authData?.role === 'user' ? 'reader' : authData?.role;
-
-  if (!authData?.token || !authData.email || !name || !role) {
-    throw new Error('The server returned an invalid authentication response.');
-  }
-
+  const data = response.data.data;
   return {
-    token: authData.token,
+    token: data.token,
     user: {
-      id: authData._id,
-      email: authData.email,
-      name,
-      role,
+      id: data._id,
+      email: data.email,
+      name: data.fullName,
+      role: data.role === "user" ? "reader" : data.role,
     },
   };
 }
 
 export async function login({ email, password }) {
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (isDemoMode) {
-    await wait();
-    const user = getDemoUsers()[cleanEmail];
-    if (!user || user.password !== password) {
-      throw new Error('Incorrect email or password. Check both and try again.');
-    }
-    return createSession({
-      token: 'demo-token',
-      email: cleanEmail,
-      name: user.name,
-      role: user.role,
+  try {
+    const response = await api.post("/auth/login", {
+      email: email.trim().toLowerCase(),
+      password,
     });
+    return createSession(response);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Incorrect email or password."));
   }
-
-  const response = await apiPost(
-    '/api/auth/login',
-    { email: cleanEmail, password },
-    'Incorrect email or password. Check both and try again.'
-  );
-  return createSession(response);
 }
 
 export async function register({ name, email, password }) {
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (isDemoMode) {
-    await wait();
-    if (getDemoUsers()[cleanEmail]) {
-      throw new Error('An account with this email already exists. Log in instead.');
-    }
-    const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    saved[cleanEmail] = { name: name.trim(), role: 'reader', password };
-    localStorage.setItem(REGISTERED_KEY, JSON.stringify(saved));
-    return createSession({
-      token: 'demo-token',
-      email: cleanEmail,
-      name: name.trim(),
-      role: 'reader',
+  try {
+    const response = await api.post("/auth/register", {
+      fullName: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
     });
+    return createSession(response);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not create the account. Try again."));
   }
-
-  const response = await apiPost(
-    '/api/auth/register',
-    { fullName: name.trim(), email: cleanEmail, password },
-    'Could not create the account. Try again.'
-  );
-  return createSession(response);
 }
 
 export async function forgotPassword(email) {
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (isDemoMode) {
-    await wait();
-    return { message: 'Reset link sent.' };
+  try {
+    const response = await api.post("/auth/forgot-password", {
+      email: email.trim().toLowerCase(),
+    });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not send the reset link. Try again."));
   }
-
-  return apiPost(
-    '/api/auth/forgot-password',
-    { email: cleanEmail },
-    'Could not send the reset link. Try again.'
-  );
 }
 
 export async function resetPassword(token, password) {
-  if (isDemoMode) {
-    await wait();
-    if (token === 'expired') {
-      throw new Error('This reset link has expired. Request a new one.');
-    }
-    return { message: 'Password updated.' };
-  }
-
-  return apiPost(
-    '/api/auth/reset-password',
-    { token, password },
-    'This reset link is invalid or has expired. Request a new one.'
-  );
-}
-
-export function saveSession(session, remember) {
-  const storage = remember ? localStorage : sessionStorage;
-  storage.setItem(SESSION_KEY, JSON.stringify(session));
-}
-
-export function getSession() {
-  const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
   try {
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+    const response = await api.post("/auth/reset-password", { token, password });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "This reset link is invalid or has expired."));
   }
 }
 
-export function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_KEY);
+export async function getMe() {
+  const response = await api.get("/auth/me");
+  return response.data.data;
 }
