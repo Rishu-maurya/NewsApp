@@ -1,9 +1,8 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useArticles } from '../../context/ArticlesContext';
 import { useActivity } from '../../context/ActivityContext';
-import { isLive } from '../../utils/dateUtils';
-import NavDateFilter from './NavDateFilter';
-import '../../style/SiteLayout.css';
+import { ROLE_LABELS, HOME_BY_ROLE } from '../../data/roles';
+// import '../../style/site.css';
 
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
@@ -14,9 +13,12 @@ export default function SiteLayout({ session, onLogout, children }) {
 
     const bookmarkCount = user
         ? articles.filter(
-            (a) => isLive(a) && (saved[String(a.id)] || []).includes(user.email)
+            (a) => a.status === 'published' && (saved[String(a.id)] || []).includes(user.email)
         ).length
         : 0;
+
+    const isStaff = user && user.role !== 'reader';
+    const workspaceLabel = user?.role === 'journalist' ? 'Publisher' : 'Dashboard';
 
     return (
         <div className="site">
@@ -27,7 +29,6 @@ export default function SiteLayout({ session, onLogout, children }) {
                     <nav className="s-links" aria-label="Main">
                         <NavLink to="/" end className={linkClass}>News</NavLink>
                         <NavLink to="/live" className={linkClass}>Live</NavLink>
-                        <NavLink to="/categories" className={linkClass}>Categories</NavLink>
                         {user && (
                             <NavLink to="/bookmarks" className={linkClass}>
                                 Bookmarks
@@ -35,26 +36,24 @@ export default function SiteLayout({ session, onLogout, children }) {
                             </NavLink>
                         )}
                         {user && <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>}
-                        <NavLink to="/about" className={linkClass}>About</NavLink>
-                        <NavLink to="/contact" className={linkClass}>Contact</NavLink>
-                        {user && <NavLink to="/profile" className={linkClass}>Profile</NavLink>}
-                        {user && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
+                        {isStaff && (
+                            <NavLink to={HOME_BY_ROLE[user.role]} className={linkClass}>
+                                {workspaceLabel}
+                            </NavLink>
+                        )}
                     </nav>
 
                     <div className="s-account">
                         {user ? (
                             <>
                                 <span className="s-name">{user.name}</span>
+                                <span className="s-role">{ROLE_LABELS[user.role]}</span>
                                 <button type="button" className="s-btn" onClick={onLogout}>Log out</button>
                             </>
                         ) : (
                             <Link to="/login" className="s-btn s-btn--solid">Sign in</Link>
                         )}
                     </div>
-                </div>
-
-                <div className="s-nav__row">
-                    <NavDateFilter />
                 </div>
             </header>
 

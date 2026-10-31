@@ -1,109 +1,353 @@
+/* ==========================================================================
+   FULL-SCREEN HERO — covers the whole first screen, content centred
+   ========================================================================== */
 .s-home-hero {
     position: relative;
     display: flex;
-    min-height: 230px;
+    /* break out of the page container so it spans edge to edge */
+    width: 100vw;
+    min-height: max(520px, calc(100svh - 200px));
     flex-direction: column;
+    align-items: center;
     justify-content: center;
-    margin-bottom: 36px;
-    padding: 42px clamp(24px, 5vw, 64px);
+    margin: -28px calc(50% - 50vw) 40px;
+    padding: 64px clamp(20px, 6vw, 96px) 96px;
     overflow: hidden;
-    border-radius: 5px;
-    color: #f9f5ea;
+    border-bottom: 5px solid var(--accent);
+    border-radius: 0;
+    color: #fff;
+    text-align: center;
     background:
-    radial-gradient(ellipse at 87% 14%, rgba(216, 145, 91, 0.34), transparent 35%),
-    linear-gradient(115deg, #19352d 0%, #27483c 66%, #425a43 100%);
+        radial-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px) 0 0 / 28px 28px,
+        radial-gradient(55% 60% at 12% 92%, rgba(30, 58, 138, 0.4), transparent 70%),
+        radial-gradient(85% 85% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.5)),
+        linear-gradient(160deg, #0b0b0f 0%, #15151c 58%, #1f0d10 100%);
+    box-shadow: var(--shadow-glow);
+    animation: fade-in 900ms ease backwards;
 }
 
+/* big red orb drifting slowly behind the text */
+.s-home-hero::before {
+    position: absolute;
+    top: 6%;
+    right: 6%;
+    width: min(52vmin, 520px);
+    height: min(52vmin, 520px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, rgba(255, 60, 70, 0.55), rgba(215, 25, 32, 0.25) 45%, transparent 70%);
+    content: '';
+    filter: blur(8px);
+    pointer-events: none;
+    will-change: transform;
+    animation: drift 16s ease-in-out infinite;
+}
+
+/* animated "scroll down" mouse icon */
 .s-home-hero::after {
     position: absolute;
-    right: 7%;
-    bottom: -180px;
-    width: 360px;
-    height: 360px;
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    border-radius: 50%;
-    box-shadow: 0 0 0 34px rgba(255, 255, 255, 0.035), 0 0 0 70px rgba(255, 255, 255, 0.025);
+    bottom: 26px;
+    left: 50%;
+    width: 26px;
+    height: 42px;
+    margin-left: -13px;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-radius: 14px;
+    background: radial-gradient(circle at 50% 9px, #fff 3px, transparent 4px) 0 0 / 100% 100% no-repeat;
     content: '';
     pointer-events: none;
+    animation: wheel 1.8s ease-in-out infinite, fade-in 1s ease backwards 2s;
 }
 
-.s-home-hero .s-eyebrow {
-    color: #e3b58a;
+@keyframes wheel {
+    0%   { background-position: 0 0; }
+    75%, 100% { background-position: 0 20px; }
 }
 
-.s-home-hero .s-h1 {
+.s-home-hero > * {
     position: relative;
     z-index: 1;
-    max-width: 16ch;
-    color: #fffaf0;
-    font-size: clamp(42px, 6vw, 68px);
+    max-width: 100%;
 }
 
-.s-home-hero .s-sub {
-    position: relative;
-    z-index: 1;
-    margin: 12px 0 0;
-    color: #d3ddd4;
-}
-
+/* ---------- Search: now sits at the very TOP of the hero ---------- */
 .s-search {
+    order: -1;
     width: 100%;
-    max-width: 520px;
-    height: 48px;
-    margin-top: 10px;
-    padding: 0 16px;
-    border: 1px solid #d8d5cb;
-    border-radius: 4px;
+    max-width: 580px;
+    height: 60px;
+    margin: 0 auto 44px;
+    padding: 0 22px 0 56px;
+    border: 2px solid transparent;
+    border-radius: 8px;
     color: var(--ink);
-    background: var(--surface);
-    font-size: 14px;
-    box-shadow: 0 2px 6px rgba(32, 43, 40, 0.025);
+    background: #fff
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b6b76' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E")
+        no-repeat 20px center;
+    font-size: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    transition: max-width 450ms var(--ease), border-color 180ms ease, box-shadow 240ms ease, transform 300ms var(--ease);
+    animation: rise 800ms var(--ease) backwards 100ms;
+}
+
+.s-search:hover {
+    transform: translateY(-2px);
 }
 
 .s-search:focus {
-    border-color: var(--forest);
-    outline: 2px solid rgba(25, 53, 45, 0.12);
-    outline-offset: 1px;
+    max-width: 700px;
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 5px rgba(215, 25, 32, 0.35), 0 0 50px rgba(215, 25, 32, 0.35), 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* glass "live" pill above the headline */
+.s-home-hero .s-eyebrow {
+    margin: 0 0 26px;
+    padding: 8px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 99px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    font-size: 12px;
+    animation: rise 800ms var(--ease) backwards 350ms;
+}
+
+.s-home-hero .s-eyebrow::before {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ff4b53;
+    color: #ff4b53;
+    animation: pulse-ring 1.6s ease-out infinite;
+}
+
+/* ==========================================================================
+   MASKED HEADING — a red curtain wipes across, the headline appears behind it
+   ========================================================================== */
+.s-home-hero .s-h1 {
+    max-width: 15ch;
+    margin: 0;
+    font-size: clamp(46px, 8.2vw, 108px);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: transparent;
+    background: linear-gradient(100deg, #fff 0%, #fff 42%, #ff9ea3 50%, #fff 58%, #fff 100%);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    /* text stays hidden until the curtain fully covers it, then a red light keeps sweeping over the letters */
+    animation: text-on 1300ms linear 600ms both, text-shine 7s linear infinite 2s;
+}
+
+.s-home-hero .s-h1::before {
+    position: absolute;
+    inset: 0 -0.12em 31px -0.12em;
+    z-index: 2;
+    background: linear-gradient(90deg, #d71920, #ff3b44);
+    box-shadow: 0 0 44px rgba(255, 60, 70, 0.55);
+    content: '';
+    pointer-events: none;
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: curtain 1300ms cubic-bezier(0.77, 0, 0.18, 1) 600ms both;
+}
+
+.s-home-hero .s-h1::after {
+    width: 96px;
+    margin: 26px auto 0;
+    background: var(--accent);
+    box-shadow: 0 0 22px rgba(255, 60, 70, 0.7);
+    animation: rule-draw 800ms var(--ease) backwards 1700ms;
+}
+
+@keyframes curtain {
+    0%   { transform: scaleX(0); transform-origin: left center; }
+    45%  { transform: scaleX(1); transform-origin: left center; }
+    46%  { transform: scaleX(1); transform-origin: right center; }
+    100% { transform: scaleX(0); transform-origin: right center; }
+}
+
+@keyframes text-on {
+    0%, 44% { background-size: 0% 100%; }
+    45%, 100% { background-size: 200% auto; }
+}
+
+/* sub-text is revealed with a left-to-right wipe */
+.s-home-hero .s-sub {
+    max-width: 56ch;
+    margin: 4px auto 0;
+    color: #c9c9d2;
+    font-size: clamp(16px, 1.6vw, 20px);
+    animation: wipe 900ms var(--ease) backwards 1500ms, rise 900ms var(--ease) backwards 1500ms;
+}
+
+@keyframes wipe {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0 0 0); }
+}
+
+/* as you scroll down, the hero content shrinks and fades out */
+@keyframes hero-out {
+    to { scale: 0.92; filter: opacity(0); }
+}
+
+@supports (animation-timeline: scroll()) {
+    .s-home-hero .s-search {
+        animation: rise 800ms var(--ease) backwards 100ms, hero-out linear both;
+        animation-timeline: auto, scroll(root);
+        animation-range: normal, 0px 440px;
+    }
+
+    .s-home-hero .s-eyebrow {
+        animation: rise 800ms var(--ease) backwards 350ms, hero-out linear both;
+        animation-timeline: auto, scroll(root);
+        animation-range: normal, 0px 440px;
+    }
+
+    .s-home-hero .s-h1 {
+        animation: text-on 1300ms linear 600ms both, text-shine 7s linear infinite 2s, hero-out linear both;
+        animation-timeline: auto, auto, scroll(root);
+        animation-range: normal, normal, 0px 440px;
+    }
+
+    .s-home-hero .s-sub {
+        animation: wipe 900ms var(--ease) backwards 1500ms, rise 900ms var(--ease) backwards 1500ms, hero-out linear both;
+        animation-timeline: auto, auto, scroll(root);
+        animation-range: normal, normal, 0px 440px;
+    }
+}
+
+/* ==========================================================================
+   CATEGORY CHIPS — bigger, "sticker" style: hard shadow, red fill rises on hover
+   ========================================================================== */
 .s-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 18px 0 28px;
+    gap: 14px;
+    margin: 32px 0 40px;
 }
 
 .s-chip {
-    min-height: 34px;
-    padding: 7px 13px;
-    border: 1px solid #ddd9ce;
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    min-height: 50px;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    overflow: hidden;
+    border: 2px solid var(--ink);
     border-radius: 99px;
-    color: #59635e;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 700;
+    color: var(--ink);
+    background: #fff;
+    box-shadow: 4px 4px 0 var(--ink);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+    transition: color 200ms ease, transform 220ms var(--ease), box-shadow 220ms var(--ease);
+}
+
+/* red fill that rises from the bottom */
+.s-chip::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--accent);
+    content: '';
+    transform: translateY(101%);
+    transition: transform 380ms var(--ease);
 }
 
 .s-chip:hover {
-    border-color: var(--forest);
+    color: #fff;
+    box-shadow: 7px 7px 0 var(--ink);
+    transform: translate(-3px, -3px);
 }
 
+.s-chip:hover::before {
+    transform: translateY(0);
+}
+
+/* pressing pushes the sticker into the page */
+.s-chip:active {
+    box-shadow: 1px 1px 0 var(--ink);
+    transform: translate(3px, 3px);
+}
+
+/* selected category: black with a red shadow and a live dot */
 .s-chip[aria-pressed='true'] {
-    border-color: var(--forest);
     color: #fff;
-    background: var(--forest);
+    background: var(--ink);
+    box-shadow: 4px 4px 0 var(--accent);
+    animation: pop 360ms var(--ease-spring);
+}
+
+.s-chip[aria-pressed='true']::before {
+    transform: translateY(101%);
+}
+
+.s-chip[aria-pressed='true']::after {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4b53;
+    color: #ff4b53;
+    content: '';
+    animation: pulse-ring 1.6s ease-out infinite;
 }
 
 @media (max-width: 640px) {
     .s-home-hero {
-        min-height: 210px;
-        margin-bottom: 27px;
-        padding: 28px 22px;
+        min-height: max(480px, calc(100svh - 150px));
+        margin: -12px calc(50% - 50vw) 28px;
+        padding: 40px 20px 84px;
+    }
+
+    .s-search {
+        height: 54px;
+        margin-bottom: 32px;
+    }
+
+    .s-home-hero .s-eyebrow {
+        margin-bottom: 18px;
+        padding: 7px 14px;
+        font-size: 10px;
     }
 
     .s-home-hero .s-h1 {
-        font-size: 44px;
+        font-size: clamp(40px, 12vw, 62px);
+    }
+
+    /* chips become a swipeable row on phones */
+    .s-chips {
+        flex-wrap: nowrap;
+        gap: 12px;
+        margin: 24px -6px 30px;
+        padding: 6px 6px 14px;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+    .s-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .s-chip {
+        flex: none;
+        min-height: 46px;
+        padding: 10px 22px;
+        font-size: 13px;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-height: 560px) {
+    .s-home-hero::after {
+        display: none;
     }
 }

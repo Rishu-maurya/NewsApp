@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { DEFAULT_ROLE, SELECTABLE_ROLES } from '../data/roles';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL;
 const SESSION_KEY = 'news_session';
 const REGISTERED_KEY = 'demo_registered_users';
 
@@ -11,7 +12,7 @@ const DEMO_USERS = {
   'admin@news.com': { name: 'Arun', role: 'admin', password: 'password123' },
 };
 
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+export const isDemoMode = !API_URL;
 
 const wait = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,7 +27,7 @@ function getDemoUsers() {
 
 async function apiPost(path, body, fallbackMessage) {
   try {
-    const { data } = await axios.post(`${API_URL.replace(/\/$/, '')}${path}`, body);
+    const { data } = await axios.post(`${API_URL}${path}`, body);
     return data;
   } catch (err) {
     const message = err.response
@@ -34,26 +35,6 @@ async function apiPost(path, body, fallbackMessage) {
       : 'Cannot reach the server. Check your connection and try again.';
     throw new Error(message);
   }
-}
-
-function createSession(response) {
-  const authData = response?.data ?? response;
-  const name = authData?.fullName || authData?.name;
-  const role = authData?.role === 'user' ? 'reader' : authData?.role;
-
-  if (!authData?.token || !authData.email || !name || !role) {
-    throw new Error('The server returned an invalid authentication response.');
-  }
-
-  return {
-    token: authData.token,
-    user: {
-      id: authData._id,
-      email: authData.email,
-      name,
-      role,
-    },
-  };
 }
 
 export async function login({ email, password }) {
@@ -65,24 +46,19 @@ export async function login({ email, password }) {
     if (!user || user.password !== password) {
       throw new Error('Incorrect email or password. Check both and try again.');
     }
-    return createSession({
-      token: 'demo-token',
-      email: cleanEmail,
-      name: user.name,
-      role: user.role,
-    });
+    return { token: 'demo-token', user: { email: cleanEmail, name: user.name, role: user.role } };
   }
 
-  const response = await apiPost(
+  return apiPost(
     '/api/auth/login',
     { email: cleanEmail, password },
     'Incorrect email or password. Check both and try again.'
   );
-  return createSession(response);
 }
 
-export async function register({ name, email, password }) {
+export async function register({ name, email, password, role }) {
   const cleanEmail = email.trim().toLowerCase();
+  const safeRole = SELECTABLE_ROLES.includes(role) ? role : DEFAULT_ROLE;
 
   if (isDemoMode) {
     await wait();
@@ -90,22 +66,16 @@ export async function register({ name, email, password }) {
       throw new Error('An account with this email already exists. Log in instead.');
     }
     const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    saved[cleanEmail] = { name: name.trim(), role: 'reader', password };
+    saved[cleanEmail] = { name: name.trim(), role: safeRole, password };
     localStorage.setItem(REGISTERED_KEY, JSON.stringify(saved));
-    return createSession({
-      token: 'demo-token',
-      email: cleanEmail,
-      name: name.trim(),
-      role: 'reader',
-    });
+    return { message: 'Account created.' };
   }
 
-  const response = await apiPost(
+  return apiPost(
     '/api/auth/register',
-    { fullName: name.trim(), email: cleanEmail, password },
+    { name: name.trim(), email: cleanEmail, password, role: safeRole },
     'Could not create the account. Try again.'
   );
-  return createSession(response);
 }
 
 export async function forgotPassword(email) {

@@ -4,13 +4,17 @@
     flex-direction: column;
 }
 
+/* ---------- Masthead / navigation ---------- */
 .s-nav {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background: rgba(255, 254, 250, 0.97);
-    border-bottom: 1px solid var(--line);
-    backdrop-filter: blur(14px);
+    z-index: 20;
+    border-top: 4px solid var(--accent);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(0, 0, 0, 0.04);
+    animation: slide-down 600ms var(--ease) backwards;
 }
 
 .s-nav__inner,
@@ -20,7 +24,7 @@
 }
 
 .s-nav__inner {
-    min-height: 78px;
+    min-height: 92px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -32,20 +36,29 @@
     align-items: center;
     gap: 10px;
     flex: none;
-    color: var(--forest);
+    color: var(--ink);
     font-family: var(--font-display);
-    font-size: 25px;
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
     text-decoration: none;
 }
 
 .s-brand::before {
-    width: 10px;
-    height: 28px;
-    border-radius: 2px;
+    width: 13px;
+    height: 42px;
+    border-radius: 1px;
     background: var(--accent);
     content: '';
+    transition: width 350ms var(--ease), transform 350ms var(--ease);
+}
+
+.s-brand:hover {
+    color: var(--ink);
+}
+
+.s-brand:hover::before {
+    width: 20px;
 }
 
 .s-account {
@@ -56,14 +69,13 @@
 
 .s-name {
     color: var(--muted);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
 }
 
 .s-links {
     display: flex;
-    gap: 4px;
-    padding-bottom: 10px;
+    gap: 2px;
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -73,27 +85,46 @@
 }
 
 .s-link {
+    position: relative;
     flex: none;
-    padding: 9px 13px;
-    border-radius: 7px;
-    color: #57625c;
-    font-size: 13px;
+    padding: 17px 20px 18px;
+    color: var(--ink-2);
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.015em;
+    letter-spacing: 0.07em;
     text-decoration: none;
-    transition: color 140ms ease, background 140ms ease;
+    text-transform: uppercase;
+    transition: color 180ms ease;
+}
+
+/* red underline slides in on hover / active */
+.s-link::after {
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+    left: 20px;
+    height: 4px;
+    background: var(--accent);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 320ms var(--ease);
 }
 
 .s-link:hover,
 .s-link.is-active {
-    color: var(--forest);
-    background: #eef0e9;
+    color: var(--accent);
+}
+
+.s-link:hover::after,
+.s-link.is-active::after {
+    transform: scaleX(1);
 }
 
 .s-count {
     display: inline-grid;
-    min-width: 19px;
-    height: 19px;
+    min-width: 22px;
+    height: 22px;
     place-items: center;
     margin-left: 6px;
     padding-inline: 5px;
@@ -101,12 +132,15 @@
     color: #fff;
     background: var(--accent);
     font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
     line-height: 1;
+    animation: pop 500ms var(--ease-spring) backwards 400ms;
 }
 
 .s-nav__row {
-    border-top: 1px solid #eeebe3;
-    background: #faf8f3;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
 }
 
 .s-sr {
@@ -120,18 +154,34 @@
     border: 0;
 }
 
+/* ---------- Page area (re-animates on every route change) ---------- */
 .s-main {
     flex: 1;
     width: min(100% - 48px, 1180px);
     margin-inline: auto;
-    padding-block: 52px 80px;
+    padding-block: 44px 80px;
+    animation: fade-in 450ms ease backwards;
 }
 
+.s-main > .s-page-intro,
+.s-main > .s-h1,
+.s-main > .s-sub,
+.s-main > .s-block,
+.s-main > .s-home-hero,
+.s-main > .s-chips,
+.s-main > .s-prompt {
+    animation: rise 650ms var(--ease) backwards;
+}
+
+.s-main > :nth-child(2) { animation-delay: 70ms; }
+.s-main > :nth-child(3) { animation-delay: 140ms; }
+.s-main > :nth-child(4) { animation-delay: 210ms; }
+
 .s-footer {
-    border-top: 1px solid var(--line);
-    background: #eeebe3;
-    padding: 24px;
-    color: var(--muted);
+    border-top: 4px solid var(--accent);
+    padding: 36px 24px;
+    background: var(--dark);
+    color: #a3a3ae;
     text-align: center;
     font-size: 13px;
 }
@@ -140,43 +190,70 @@
     margin: 0;
 }
 
+/* ---------- Typography ---------- */
 .s-h1,
 .s-h2 {
     font-family: var(--font-display);
-    letter-spacing: -0.035em;
+    color: var(--ink);
 }
 
 .s-h1 {
-    max-width: 18ch;
-    margin: 0 0 10px;
-    color: var(--forest-deep);
-    font-size: clamp(36px, 5vw, 58px);
-    font-weight: 600;
-    line-height: 0.99;
+    max-width: 20ch;
+    margin: 0 0 16px;
+    font-size: clamp(36px, 5.4vw, 62px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+}
+
+/* short red rule that draws itself under every page title */
+.s-h1::after {
+    display: block;
+    width: 72px;
+    height: 5px;
+    margin-top: 18px;
+    background: var(--accent);
+    content: '';
+    transform-origin: left;
+    animation: rule-draw 900ms var(--ease) backwards 250ms;
+}
+
+@keyframes rule-draw {
+    from { transform: scaleX(0); }
 }
 
 .s-h2 {
     margin: 0 0 14px;
-    color: var(--forest);
     font-size: 28px;
-    font-weight: 600;
-    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+}
+
+/* newspaper-style section header */
+.s-block > .s-h2 {
+    position: relative;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+}
+
+.s-block > .s-h2::after {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 72px;
+    height: 2px;
+    background: var(--accent);
+    content: '';
 }
 
 .s-sub {
     max-width: 62ch;
     margin: 0 0 28px;
     color: var(--muted);
-    font-size: 16px;
-    line-height: 1.65;
-}
-
-.s-input:focus,
-.s-select:focus,
-.s-textarea:focus {
-    border-color: var(--forest);
-    outline: 2px solid rgba(25, 53, 45, 0.12);
-    outline-offset: 1px;
+    font-size: 17px;
+    line-height: 1.7;
 }
 
 .s-muted {
@@ -184,44 +261,73 @@
 }
 
 .s-page-intro {
-    margin-bottom: 36px;
+    margin-bottom: 34px;
 }
 
 .s-eyebrow {
-    margin: 0 0 10px;
-    color: var(--accent-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 12px;
+    color: var(--accent);
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.13em;
+    font-weight: 800;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
 }
 
+.s-eyebrow::before {
+    width: 9px;
+    height: 9px;
+    background: var(--accent);
+    content: '';
+    animation: blink 1.6s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
+/* ---------- Buttons ---------- */
 .s-btn {
     display: inline-flex;
     min-height: 40px;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 9px 15px;
-    border: 1px solid #d8d5cb;
+    gap: 8px;
+    padding: 9px 18px;
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
-    color: var(--forest);
-    background: var(--surface);
+    color: var(--ink);
+    background: #fff;
     font-size: 13px;
     font-weight: 700;
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
-    transition: color 140ms ease, border-color 140ms ease, background 140ms ease, transform 140ms ease;
+    transition: color 160ms ease, border-color 160ms ease, background 160ms ease,
+        transform 200ms var(--ease), box-shadow 200ms ease;
 }
 
 .s-btn:hover {
-    border-color: var(--forest);
-    background: #f2f1e9;
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--surface-2);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .s-btn:active {
+    box-shadow: none;
     transform: translateY(1px);
+}
+
+.s-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .s-btn--solid {
@@ -231,51 +337,64 @@
 }
 
 .s-btn--solid:hover {
-    border-color: var(--accent-dark);
+    border-color: var(--accent-strong);
     color: #fff;
-    background: var(--accent-dark);
+    background: var(--accent-strong);
+    box-shadow: 0 8px 20px rgba(215, 25, 32, 0.35);
 }
 
 .s-btn--small {
     min-height: 32px;
-    padding: 6px 11px;
+    padding: 6px 12px;
     font-size: 12px;
 }
 
+/* ---------- Forms ---------- */
 .s-input,
 .s-select,
 .s-textarea {
     width: 100%;
-    padding: 11px 13px;
-    border: 1px solid #d8d5cb;
+    padding: 11px 14px;
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
     color: var(--ink);
-    background: var(--surface);
+    background: #fff;
     font-size: 14px;
+    transition: border-color 160ms ease, box-shadow 200ms ease;
+}
+
+.s-input:hover,
+.s-select:hover,
+.s-textarea:hover {
+    border-color: #9c9ca6;
+}
+
+.s-input:focus,
+.s-select:focus,
+.s-textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: var(--ring);
 }
 
 .s-input {
-    height: 42px;
+    height: 44px;
 }
 
 .s-textarea {
-    min-height: 112px;
+    min-height: 120px;
     resize: vertical;
     line-height: 1.6;
 }
 
 .s-block {
-    margin: 34px 0;
-}
-
-.s-block > .s-h2 {
-    margin-bottom: 16px;
+    margin: 38px 0;
 }
 
 .s-label {
     display: block;
     margin: 0 0 7px;
-    color: var(--forest);
+    color: var(--ink-2);
     font-size: 12px;
     font-weight: 700;
 }
@@ -295,21 +414,26 @@
     margin: 0 0 16px;
     padding: 12px 14px;
     border: 1px solid;
+    border-left-width: 4px;
     border-radius: 4px;
     font-size: 13px;
     line-height: 1.5;
+    animation: slide-down 400ms var(--ease) backwards;
 }
 
 .s-note {
-    border-color: #bbd5c3;
-    color: #215e41;
-    background: #eef6ef;
+    border-color: var(--success-line);
+    border-left-color: var(--success);
+    color: #0a5c2f;
+    background: var(--success-bg);
 }
 
 .s-err {
-    border-color: #edc0b9;
+    border-color: var(--danger-line);
+    border-left-color: var(--danger);
     color: var(--danger);
     background: var(--danger-bg);
+    animation: slide-down 400ms var(--ease) backwards, shake 450ms ease 150ms;
 }
 
 .s-row {
@@ -320,11 +444,17 @@
 }
 
 .s-empty {
-    padding: 54px 20px;
-    border: 1px dashed #d4d0c5;
-    border-radius: 5px;
+    padding: 56px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
     color: var(--muted);
+    background: #fff;
     text-align: center;
+    transition: border-color 200ms ease;
+}
+
+.s-empty:hover {
+    border-color: var(--accent);
 }
 
 .s-empty p {
@@ -334,7 +464,31 @@
 .s-empty--compact {
     padding: 24px 8px;
     border: 0;
+    background: transparent;
     text-align: left;
+}
+
+/* navbar tightens as you scroll (pure CSS) */
+@keyframes nav-shrink {
+    to { min-height: 70px; }
+}
+
+@keyframes brand-shrink {
+    to { font-size: 32px; }
+}
+
+@supports (animation-timeline: scroll()) {
+    .s-nav__inner {
+        animation: nav-shrink linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 140px;
+    }
+
+    .s-nav .s-brand {
+        animation: brand-shrink linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 140px;
+    }
 }
 
 @media (max-width: 640px) {
@@ -343,63 +497,45 @@
     .s-main {
         width: min(100% - 32px, 1180px);
     }
-}
 
-@media (max-width: 640px) {
     .s-nav__inner {
-        min-height: 64px;
+        min-height: 72px;
         gap: 8px;
     }
-}
 
-@media (max-width: 640px) {
     .s-brand {
-        gap: 7px;
-        font-size: 21px;
+        gap: 8px;
+        font-size: 30px;
     }
-}
 
-@media (max-width: 640px) {
     .s-brand::before {
-        width: 7px;
-        height: 23px;
+        width: 10px;
+        height: 30px;
     }
-}
 
-@media (max-width: 640px) {
     .s-account {
         gap: 7px;
     }
-}
 
-@media (max-width: 640px) {
     .s-name {
         display: none;
     }
-}
 
-@media (max-width: 640px) {
-    .s-links {
-        gap: 1px;
-        padding-bottom: 7px;
-    }
-}
-
-@media (max-width: 640px) {
     .s-link {
-        padding: 8px 10px;
+        padding: 13px 14px 14px;
         font-size: 12px;
     }
-}
 
-@media (max-width: 640px) {
-    .s-main {
-        padding-block: 32px 54px;
+    .s-link::after {
+        right: 14px;
+        left: 14px;
     }
-}
 
-@media (max-width: 640px) {
+    .s-main {
+        padding-block: 28px 56px;
+    }
+
     .s-sub {
-        font-size: 14px;
+        font-size: 15px;
     }
 }

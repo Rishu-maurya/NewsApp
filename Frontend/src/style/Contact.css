@@ -2,7 +2,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    gap: 18px;
+    gap: 22px;
 }
 
 .s-contact-list {
@@ -15,17 +15,25 @@
 .s-contact-list li {
     display: grid;
     gap: 4px;
+    padding-left: 14px;
+    border-left: 3px solid var(--line-strong);
+    transition: border-color 200ms ease, transform 250ms var(--ease);
+}
+
+.s-contact-list li:hover {
+    border-left-color: var(--accent);
+    transform: translateX(5px);
 }
 
 .s-contact-list strong {
-    color: var(--forest);
+    color: var(--ink);
     font-size: 14px;
 }
 
 .s-contact-list span {
     color: var(--muted);
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .s-input--wide {

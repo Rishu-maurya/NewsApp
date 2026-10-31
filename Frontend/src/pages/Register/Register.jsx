@@ -3,18 +3,25 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/layout/AuthLayout';
 import InputField from '../../components/common/InputField';
 import PasswordField from '../../components/common/PasswordField';
+import RoleSelect from '../../components/common/RoleSelect';
+import { DEFAULT_ROLE, ROLE_OPTIONS } from '../../data/roles';
 import {
     validateName,
     validateEmail,
     validatePassword,
     validateConfirmPassword,
 } from '../../utils/validators';
-import { register, saveSession } from '../../services/authService';
-import '../../style/Register.css';
+import { register } from '../../services/authService';
 
-export default function Register({ onRegistrationSuccess }) {
+export default function Register() {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: DEFAULT_ROLE,
+    });
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -39,10 +46,11 @@ export default function Register({ onRegistrationSuccess }) {
 
         setLoading(true);
         try {
-            const session = await register(form);
-            saveSession(session, false);
-            onRegistrationSuccess(session);
-            navigate('/dashboard', { replace: true });
+            await register(form);
+            const roleLabel = ROLE_OPTIONS.find((r) => r.value === form.role)?.label || 'Reader';
+            navigate('/login', {
+                state: { message: `Account created as ${roleLabel}. Log in to continue.` },
+            });
         } catch (err) {
             setFormError(err.message);
         } finally {
@@ -52,7 +60,6 @@ export default function Register({ onRegistrationSuccess }) {
 
     return (
         <AuthLayout
-            variant="register"
             title="Create account"
             subtitle="Join to read, save and comment on news."
             footer={
@@ -105,6 +112,8 @@ export default function Register({ onRegistrationSuccess }) {
                     onChange={handleChange}
                     error={errors.confirmPassword}
                 />
+
+                <RoleSelect value={form.role} onChange={handleChange} />
 
                 <button className="btn" type="submit" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create account'}
