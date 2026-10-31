@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware.js"); 
-const adminOnly = require("../middlewares/admin.middleware.js");
+// const adminOnly = require("../middlewares/admin.middleware.js");
 const {
     createReport,
     getReports,
@@ -13,8 +13,8 @@ const {
 router.post("/comments/:commentId/reports", authMiddleware, createReport);
 
 // Admin only
-router.get("/reports", authMiddleware, adminOnly, getReports);
-router.patch("/reports/:id", authMiddleware, adminOnly, updateReport);
+// router.get("/reports", authMiddleware, adminOnly, getReports);
+// router.patch("/reports/:id", authMiddleware, adminOnly, updateReport);
 
 module.exports = router;
 

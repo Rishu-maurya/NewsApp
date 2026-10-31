@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware.js");
 const optionalAuth = require("../middlewares/optionalauth.middleware.js");
-const adminOnly = require("../middlewares/admin.middleware.js");
+// const adminOnly = require("../middlewares/admin.middleware.js");
 const {
     getComments,
     createComment,
@@ -19,6 +19,6 @@ router.post("/articles/:articleId/comments", authMiddleware, createComment);
 router.delete("/comments/:id", authMiddleware, deleteComment);
 
 // Admin only
-router.patch("/comments/:id/moderate", authMiddleware, adminOnly, moderateComment);
+// router.patch("/comments/:id/moderate", authMiddleware, adminOnly, moderateComment);
 
 module.exports = router;

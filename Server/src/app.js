@@ -1,14 +1,5 @@
-<<<<<<< Updated upstream
-const express = require('express');
-const cors = require('cors');
-const authRoutes = require("./routes/auth.routes")
-const categoryRoutes = require("./routes/category.routes");
-const articalRoutes = require("./routes/article.routes")
-const bookmarkRoutes = require("./routes/bookmark.routes");
-=======
 const express = require("express");
 const cors = require("cors");
->>>>>>> Stashed changes
 
 const authRoutes = require("./routes/auth.routes.js");
 const categoryRoutes = require("./routes/category.routes.js");
@@ -18,6 +9,8 @@ const commentRoutes = require("./routes/comment.routes.js");
 const reportRoutes = require("./routes/report.routes.js");
 const likeRoutes = require("./routes/like.routes.js");
 const userRoutes = require("./routes/user.routes.js");
+const publisherRoutes = require("./routes/publisher.routes.js"); 
+const workflowRoutes = require("./routes/workflow.rotes.js");
 
 const app = express();
 
@@ -35,10 +28,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
-<<<<<<< Updated upstream
-
-=======
 app.use("/api/users", userRoutes);
+app.use("/api/publisher", publisherRoutes); 
+app.use("/api/workflow", workflowRoutes);
 
 // ---------- routes that define full paths inside the router ----------
 // like:    /articles/:articleId/like, /articles/:articleId/likes
@@ -76,6 +68,6 @@ app.use((err, req, res, next) => {
     console.error("Unhandled Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
 });
->>>>>>> Stashed changes
+
 
 module.exports = app;
