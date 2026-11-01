@@ -2,16 +2,14 @@
     position: sticky;
     top: 0;
     z-index: 5;
-    border-bottom: 4px solid var(--accent);
-    color: #fff;
-    background: var(--dark);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-    animation: slide-down 600ms var(--ease) backwards;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f7f4eb;
+    background: var(--forest);
 }
 
 .dash__bar-inner {
     width: min(100% - 48px, 1180px);
-    min-height: 66px;
+    min-height: 68px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -20,124 +18,188 @@
 }
 
 .dash__brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
     font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 900;
+    font-size: 23px;
+    font-weight: 700;
     letter-spacing: -0.03em;
-}
-
-.dash__brand::before {
-    width: 9px;
-    height: 26px;
-    background: var(--accent);
-    content: '';
 }
 
 .dash__user {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #d6d6de;
     font-size: 13px;
     font-weight: 600;
 }
 
 .dash__role {
-    padding: 5px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 3px;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.08);
+    padding: 5px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 99px;
+    color: #e1e9de;
     font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-weight: 700;
+    text-transform: capitalize;
 }
 
 .dash__bar .dbtn {
     min-height: 34px;
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.25);
     color: #fff;
     background: transparent;
-    box-shadow: none;
     font-size: 11px;
 }
 
 .dash__bar .dbtn:hover {
     border-color: #fff;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.dash__main {
+.dash__hero {
+    position: relative;
+    overflow: hidden;
+    color: #f7f4eb;
+    background:
+        radial-gradient(circle at 85% -20%, rgba(198, 79, 55, 0.38), transparent 46%),
+        linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+}
+
+.dash__hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 75%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 75%);
+    pointer-events: none;
+}
+
+.dash__hero::after {
+    content: '';
+    position: absolute;
+    right: -90px;
+    bottom: -150px;
+    width: 360px;
+    height: 360px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 38px rgba(255, 255, 255, 0.03),
+        0 0 0 76px rgba(255, 255, 255, 0.02);
+    pointer-events: none;
+}
+
+.dash__hero-inner {
+    position: relative;
+    z-index: 1;
     width: min(100% - 48px, 1180px);
     margin-inline: auto;
-    padding-block: 42px 76px;
-    animation: fade-in 450ms ease backwards;
+    padding-block: 46px 100px;
 }
 
-.dash__main > h1 {
+.dash__eyebrow {
+    margin: 0 0 10px;
+    color: #f0b9aa;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dash__hero h1 {
     margin: 0 0 8px;
-    color: var(--ink);
+    color: #fff;
     font-family: var(--font-display);
-    font-size: clamp(36px, 5vw, 56px);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.05;
-    animation: rise 650ms var(--ease) backwards;
+    font-size: clamp(36px, 5vw, 54px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
 }
 
 .dash__sub {
-    margin: 0 0 30px;
+    margin: 0 0 22px;
     color: var(--muted);
+    font-size: 14px;
+}
+
+.dash__hero .dash__sub {
+    color: #cdd9d1;
     font-size: 15px;
-    animation: rise 650ms var(--ease) backwards 90ms;
+}
+
+.dash__hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0;
+    color: #b9c8bf;
+    font-size: 13px;
+}
+
+.dash__chip {
+    padding: 4px 11px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 99px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.dash__date {
+    margin-left: auto;
+    color: #f0b9aa;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dash__main {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    width: min(100% - 48px, 1180px);
+    margin: -58px auto 0;
+    padding-block: 0 72px;
 }
 
 .dash__h2 {
-    position: relative;
-    margin: 40px 0 16px;
-    padding-left: 16px;
-    color: var(--ink);
+    margin: 38px 0 16px;
+    color: var(--forest);
     font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.015em;
+    font-size: 29px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
 }
 
-.dash__h2::before {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 5px;
-    height: 78%;
-    background: var(--accent);
-    content: '';
-    transform: translateY(-50%);
-    animation: grow-bar 600ms var(--ease) backwards 150ms;
+.dash__foot {
+    padding: 22px 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    background: rgba(255, 254, 250, 0.7);
+    font-size: 12px;
+    text-align: center;
 }
 
-@keyframes grow-bar {
-    from { transform: translateY(-50%) scaleY(0); }
+.dash__foot p {
+    margin: 0;
 }
 
 @media (max-width: 640px) {
     .dash__bar-inner,
+    .dash__hero-inner,
     .dash__main {
         width: min(100% - 32px, 1180px);
     }
 
     .dash__bar-inner {
-        min-height: 58px;
+        min-height: 62px;
         gap: 8px;
     }
 
     .dash__brand {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     .dash__user {
@@ -149,7 +211,21 @@
         display: none;
     }
 
+    .dash__bar .dbtn {
+        min-height: 32px;
+        padding: 6px 8px;
+    }
+
+    .dash__hero-inner {
+        padding-block: 32px 84px;
+    }
+
+    .dash__date {
+        margin-left: 0;
+    }
+
     .dash__main {
-        padding-block: 28px 52px;
+        margin-top: -48px;
+        padding-block: 0 52px;
     }
 }
