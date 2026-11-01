@@ -1,3 +1,68 @@
 .dash {
+    display: flex;
     min-height: 100vh;
+    flex-direction: column;
+    background:
+        radial-gradient(circle at 8% 42%, rgba(198, 79, 55, 0.06), transparent 34%),
+        radial-gradient(circle at 96% 66%, rgba(25, 53, 45, 0.07), transparent 38%),
+        linear-gradient(rgba(32, 43, 40, 0.035) 1px, transparent 1px) 0 0 / 100% 32px,
+        var(--paper);
+}
+
+.dash .stats .stat {
+    box-shadow: 0 14px 34px rgba(16, 37, 31, 0.14);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.dash .stats .stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(16, 37, 31, 0.18);
+}
+
+.dash .dash__h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dash .dash__h2::before {
+    content: '';
+    flex: none;
+    width: 5px;
+    height: 26px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.dash .item {
+    border-left: 4px solid var(--forest);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.dash .item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(32, 43, 40, 0.09);
+}
+
+.dash .panel {
+    border-top: 3px solid var(--forest);
+}
+
+.dash .dtable tbody tr:hover {
+    background: #faf8f1;
+}
+
+.dash .empty-note {
+    padding: 30px 20px;
+    border: 1px dashed #cfcabd;
+    border-radius: 6px;
+    background: rgba(255, 254, 250, 0.7);
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dash .stats .stat:hover,
+    .dash .item:hover {
+        transform: none;
+    }
 }
