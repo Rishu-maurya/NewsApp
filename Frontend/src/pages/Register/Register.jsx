@@ -25,6 +25,7 @@ export default function Register() {
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState('');
     const [loading, setLoading] = useState(false);
+    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
