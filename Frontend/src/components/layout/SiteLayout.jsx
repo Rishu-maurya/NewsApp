@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useArticles } from '../../context/ArticlesContext';
 import { useActivity } from '../../context/ActivityContext';
 import { isLive } from '../../utils/dateUtils';
 import NavDateFilter from './NavDateFilter';
 import '../../style/SiteLayout.css';
+import '../../style/Navbar.css';
 
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
@@ -11,6 +13,14 @@ export default function SiteLayout({ session, onLogout, children }) {
     const user = session?.user;
     const { articles } = useArticles();
     const { saved } = useActivity();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 20);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const bookmarkCount = user
         ? articles.filter(
@@ -20,7 +30,7 @@ export default function SiteLayout({ session, onLogout, children }) {
 
     return (
         <div className="site">
-            <header className="s-nav">
+            <header className={`s-nav${scrolled ? ' is-scrolled' : ''}`}>
                 <div className="s-nav__inner">
                     <Link to="/" className="s-brand">News Platform</Link>
 

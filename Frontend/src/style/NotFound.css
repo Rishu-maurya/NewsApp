@@ -1,8 +1,22 @@
 .s-not-found {
-    max-width: 640px;
-    margin: 38px auto;
+    max-width: 680px;
+    margin: 50px auto;
+    text-align: center;
 }
 
 .s-not-found .s-h1 {
-    margin-bottom: 12px;
+    max-width: none;
+    margin-bottom: 14px;
+    color: var(--accent);
+    font-size: clamp(64px, 14vw, 150px);
+    font-weight: 900;
+    animation: float 5s ease-in-out infinite;
+}
+
+.s-not-found .s-h1::after {
+    margin-inline: auto;
+}
+
+.s-not-found .s-sub {
+    margin-inline: auto;
 }

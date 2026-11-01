@@ -1,28 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+
+/* ==========================================================================
+   CLASSIC NEWSROOM — white + black + signal red (like major news sites)
+   ========================================================================== */
+@property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
 
 :root {
-    font-family: 'DM Sans', 'Segoe UI', sans-serif;
-    color: #202b28;
-    background: #f5f2eb;
+    color-scheme: light;
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--bg);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --ink: #202b28;
-    --muted: #68716c;
-    --forest: #19352d;
-    --forest-deep: #10251f;
-    --accent: #c64f37;
-    --accent-dark: #a53d2a;
-    --paper: #f5f2eb;
-    --surface: #fffefa;
-    --line: #e2ded4;
-    --danger: #b13d39;
-    --danger-bg: #fcecea;
-    --success: #256d4d;
-    --font-display: 'Newsreader', Georgia, serif;
-    --font-body: 'DM Sans', 'Segoe UI', sans-serif;
-    --shadow-card: 0 10px 30px rgba(32, 43, 40, 0.045);
+
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --surface-2: #f7f7f8;
+    --panel-2: #efeff1;
+    --line: #e3e3e7;
+    --line-strong: #cdcdd3;
+
+    --ink: #111114;
+    --ink-2: #3a3a42;
+    --muted: #6b6b76;
+    --faint: #8d8d98;
+
+    --accent: #d71920;
+    --accent-strong: #b3121a;
+    --accent-soft: #fdecec;
+    --accent-line: rgba(215, 25, 32, 0.3);
+    --dark: #111114;
+    --dark-2: #1c1c22;
+
+    --danger: #b42318;
+    --danger-bg: #fef3f2;
+    --danger-line: rgba(180, 35, 24, 0.3);
+    --success: #0a7f3f;
+    --success-bg: #e9f7ef;
+    --success-line: rgba(10, 127, 63, 0.3);
+    --amber: #d9922b;
+
+    --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+
+    --radius: 6px;
+    --radius-lg: 8px;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px rgba(0, 0, 0, 0.05);
+    --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.06), 0 18px 40px rgba(0, 0, 0, 0.13);
+    --shadow-glow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 24px 50px rgba(0, 0, 0, 0.12);
+    --ring: 0 0 0 3px rgba(215, 25, 32, 0.18);
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* legacy aliases so nothing older breaks */
+    --paper: transparent;
+    --forest: var(--ink);
+    --forest-deep: var(--ink);
+    --forest-soft: var(--ink-2);
+    --accent-dark: var(--accent-strong);
+    --indigo: var(--accent);
+    --teal: var(--accent);
+    --grad-hot: var(--accent);
+    --grad-brand: var(--accent);
 }
 
 *,
@@ -34,6 +81,8 @@
 html {
     min-width: 320px;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #b9b9c2 transparent;
 }
 
 body {
@@ -42,7 +91,8 @@ body {
     margin: 0;
     font-family: var(--font-body);
     color: var(--ink);
-    background: var(--paper);
+    background: var(--bg);
+    overflow-x: hidden;
 }
 
 button,
@@ -52,20 +102,22 @@ textarea {
     font: inherit;
 }
 
-button,
-a,
-input,
-select,
-textarea {
-    -webkit-tap-highlight-color: transparent;
-}
-
 button {
     color: inherit;
 }
 
 a {
-    color: var(--accent-dark);
+    color: var(--accent-strong);
+    transition: color 160ms ease;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+option {
+    color: var(--ink);
+    background: #fff;
 }
 
 ::selection {
@@ -73,9 +125,183 @@ a {
     background: var(--accent);
 }
 
+::placeholder {
+    color: #9a9aa5;
+}
+
+input:-webkit-autofill {
+    -webkit-text-fill-color: var(--ink);
+    box-shadow: 0 0 0 1000px #fff inset;
+    caret-color: var(--ink);
+}
+
 :focus-visible {
-    outline: 3px solid rgba(198, 79, 55, 0.42);
+    outline: 3px solid rgba(215, 25, 32, 0.45);
     outline-offset: 3px;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 3px solid var(--bg);
+    border-radius: 99px;
+    background: #b9b9c2;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   Keyframes (shared). `translate`/`scale` are used instead of `transform`
+   so hover transforms are never blocked by a finished animation.
+   ========================================================================== */
+@keyframes aurora {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    50%  { transform: translate3d(3%, -4%, 0) rotate(6deg) scale(1.12); }
+    100% { transform: translate3d(-4%, 3%, 0) rotate(-5deg) scale(1.05); }
+}
+
+@keyframes rise {
+    from { opacity: 0; translate: 0 26px; }
+    to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes slide-down {
+    from { opacity: 0; translate: 0 -12px; }
+    to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes pop {
+    0%   { scale: 0.8; }
+    60%  { scale: 1.12; }
+    100% { scale: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { translate: 0 0; }
+    20%      { translate: -7px 0; }
+    40%      { translate: 7px 0; }
+    60%      { translate: -4px 0; }
+    80%      { translate: 4px 0; }
+}
+
+@keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 currentColor; }
+    70%  { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@keyframes float {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -22px; }
+}
+
+@keyframes drift {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    50%      { translate: -26px -18px; rotate: 8deg; }
+}
+
+@keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes text-shine {
+    to { background-position: 200% center; }
+}
+
+@keyframes glow-breathe {
+    0%, 100% { box-shadow: 0 8px 22px rgba(215, 25, 32, 0.28); }
+    50%      { box-shadow: 0 12px 32px rgba(215, 25, 32, 0.45); }
+}
+
+@keyframes spin-border {
+    to { --angle: 360deg; }
+}
+
+@keyframes shimmer {
+    to { background-position: -200% 0; }
+}
+
+@keyframes spin {
+    to { rotate: 360deg; }
+}
+
+@keyframes reveal {
+    from { opacity: 0; translate: 0 44px; scale: 0.96; }
+    to   { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+@keyframes progress {
+    to { transform: scaleX(1); }
+}
+
+/* scroll progress bar */
+@supports (animation-timeline: scroll()) {
+    body::after {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 100;
+        height: 3px;
+        background: var(--accent);
+        box-shadow: none;
+        content: '';
+        pointer-events: none;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        animation: progress linear both;
+        animation-timeline: scroll(root);
+    }
+}
+
+/* ==========================================================================
+   Staggered entrance + scroll reveal for grids & lists
+   ========================================================================== */
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(1) { --i: 0; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(2) { --i: 1; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(3) { --i: 2; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(4) { --i: 3; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(5) { --i: 4; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(6) { --i: 5; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(7) { --i: 6; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(8) { --i: 7; }
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > :nth-child(n+9) { --i: 8; }
+
+:is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments, .s-profile-stats, .s-contact-list) > * {
+    animation: rise 700ms var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+@supports (animation-timeline: view()) {
+    :is(.s-grid, .s-info-grid, .s-live-grid, .stats, .list, .s-comments) > * {
+        animation: reveal linear both;
+        animation-delay: 0s;
+        animation-timeline: view();
+        animation-range: entry 0% entry 42%;
+    }
+}
+
+.skeleton {
+    min-height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, rgba(0,0,0,.05) 25%, rgba(0,0,0,.11) 50%, rgba(0,0,0,.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -85,6 +311,11 @@ a {
         scroll-behavior: auto !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+        animation-delay: 0s !important;
         transition-duration: 0.01ms !important;
+    }
+
+    body::after {
+        display: none;
     }
 }

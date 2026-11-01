@@ -1,6 +1,6 @@
 .s-comments {
     display: grid;
-    gap: 10px;
+    gap: 12px;
     margin: 20px 0 0;
     padding: 0;
     list-style: none;
@@ -9,8 +9,16 @@
 .s-comment {
     padding: 16px 18px;
     border: 1px solid var(--line);
+    border-left: 4px solid var(--line-strong);
     border-radius: 4px;
-    background: var(--surface);
+    background: #fff;
+    transition: border-left-color 200ms ease, box-shadow 250ms ease, transform 250ms var(--ease);
+}
+
+.s-comment:hover {
+    border-left-color: var(--accent);
+    box-shadow: var(--shadow-card);
+    transform: translateX(3px);
 }
 
 .s-comment__head {
@@ -18,30 +26,40 @@
     justify-content: space-between;
     gap: 12px;
     margin: 0 0 8px;
-    color: var(--muted);
+    color: var(--faint);
     font-size: 11px;
 }
 
 .s-comment__head strong {
-    color: var(--forest);
+    color: var(--ink);
 }
 
 .s-comment__text {
     margin: 0 0 6px;
+    color: var(--ink-2);
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.65;
     overflow-wrap: anywhere;
 }
 
 .s-link-btn {
     padding: 4px 0;
     border: 0;
-    color: var(--accent-dark);
+    color: var(--accent-strong);
     background: transparent;
     font-size: 12px;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
+    transition: color 160ms ease, transform 160ms ease;
+}
+
+.s-link-btn:hover {
+    color: var(--accent);
+}
+
+.s-link-btn:active {
+    transform: scale(0.95);
 }
 
 .s-link-btn--report {

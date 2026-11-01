@@ -1,30 +1,25 @@
 .s-info-card {
+    position: relative;
+    padding: 26px;
+    overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 5px;
-    background: var(--surface);
+    border-top: 4px solid var(--ink);
+    border-radius: 6px;
+    background: #fff;
     box-shadow: var(--shadow-card);
+    transition: transform 320ms var(--ease), box-shadow 320ms ease, border-top-color 220ms ease;
+}
+
+.s-info-card:hover {
+    border-top-color: var(--accent);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-6px);
 }
 
 .s-info-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-}
-
-@media (max-width: 900px) {
-    .s-info-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 640px) {
-    .s-info-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.s-info-card {
-    padding: 24px;
+    gap: 22px;
 }
 
 .s-info-card > :last-child {
@@ -38,30 +33,48 @@
 }
 
 .s-info-card .s-h2 {
-    margin: 8px 0;
+    margin: 10px 0;
 }
 
 .s-info-card__number {
     display: inline-grid;
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     place-items: center;
-    border-radius: 50%;
-    color: var(--accent-dark);
-    background: #f5e9df;
+    border-radius: 4px;
+    color: #fff;
+    background: var(--ink);
     font-family: var(--font-display);
-    font-size: 19px;
+    font-size: 20px;
+    font-weight: 800;
+    transition: background 220ms ease, transform 320ms var(--ease-spring);
+}
+
+.s-info-card:hover .s-info-card__number {
+    background: var(--accent);
+    transform: rotate(-6deg) scale(1.08);
 }
 
 .s-callout {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    margin-top: 18px;
-    padding: 26px;
-    border-radius: 5px;
-    background: #e8ebe3;
+    gap: 22px;
+    margin-top: 22px;
+    padding: 30px;
+    border-left: 6px solid var(--accent);
+    border-radius: 6px;
+    color: #fff;
+    background: var(--dark);
+    box-shadow: var(--shadow-card);
+}
+
+.s-callout .s-h2 {
+    color: #fff;
+}
+
+.s-callout p {
+    color: #c9c9d2;
 }
 
 .s-callout .s-h2,
@@ -69,7 +82,17 @@
     margin: 0 0 6px;
 }
 
+@media (max-width: 900px) {
+    .s-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 640px) {
+    .s-info-grid {
+        grid-template-columns: 1fr;
+    }
+
     .s-callout {
         align-items: flex-start;
         flex-direction: column;
