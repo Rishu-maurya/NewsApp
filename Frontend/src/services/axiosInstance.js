@@ -1,8 +1,10 @@
 import axios from "axios";
 import { getSession } from "./session";
 
+const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
+
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: apiUrl ? `${apiUrl}/api` : "/api",
 });
 
 api.interceptors.request.use((config) => {

@@ -4,7 +4,7 @@ const roleRequestSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "User",
             required: true,
         },
         requestedRole: {
@@ -32,7 +32,7 @@ const roleRequestSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["pending", "approved", "removed"],
+            enum: ["pending", "approved", "rejected"],
             default: "pending",
         },
         reviewedBy: { 

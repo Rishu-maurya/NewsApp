@@ -8,6 +8,8 @@ export const ROLE_OPTIONS = [
         description: 'Read news, watch live videos, like, save and comment.',
     },
     {
+        value: 'journalist',
+        label: 'journalist',
         value: 'publisher',
         label: 'Publisher',
         isDefault: false,
@@ -20,6 +22,11 @@ export const ROLE_OPTIONS = [
         description: 'Review stories and approve, reject or ask for changes.',
     },
     {
+        value: 'publisher',
+        label: 'Publiser',
+        isDeffault: false,
+        description: 'Verify journalist and editor requests.'
+    }
         value: 'journalist',
         label: 'Journalist',
         isDefault: false,
@@ -34,6 +41,7 @@ export const ROLE_LABELS = {
     publisher: 'Publisher',
     journalist: 'Journalist',
     editor: 'Editor',
+    publisher: 'Publisher',
     admin: 'Admin',
 };
 
