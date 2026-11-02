@@ -1,5 +1,6 @@
-const Report = require("../models/report.js");
-const Comment = require("../models/comment.js");
+const mongoose = require("mongoose");
+const Report = require("../models/Report.js");
+const Comment = require("../models/Comment.js");
 
 // ---------- constants (must match the schema enums) ----------
 const REASONS = [
@@ -11,13 +12,20 @@ const REASONS = [
     "other",
 ];
 const STATUSES = ["pending", "reviewing", "resolved", "dismissed"];
+const MAX_DESCRIPTION = 1000;
+const MAX_NOTE = 2000;
+
+const badId = (res, label) =>
+    res.status(400).json({ success: false, message: `Invalid ${label} ID` });
 
 // ---------- 1) CREATE REPORT ----------
-// POST /api/comments/:commentId/reports
+// POST /api/comments/:commentId/reports   body: { reason, description? }
 const createReport = async (req, res) => {
     try {
         const { commentId } = req.params;
-        const { reason, description } = req.body;
+        if (!mongoose.isValidObjectId(commentId)) return badId(res, "comment");
+
+        const { reason, description } = req.body || {};
 
         if (!reason) {
             return res.status(400).json({
@@ -25,20 +33,27 @@ const createReport = async (req, res) => {
                 message: "Reason is required",
             });
         }
-        if (!REASONS.includes(reason)) {
+        if (typeof reason !== "string" || !REASONS.includes(reason)) {
             return res.status(400).json({
                 success: false,
                 message: `Reason must be one of: ${REASONS.join(", ")}`,
             });
         }
-        if (description && description.trim().length > 1000) {
+        if (description !== undefined && typeof description !== "string") {
             return res.status(400).json({
                 success: false,
-                message: "Description cannot exceed 1000 characters",
+                message: "Description must be text",
+            });
+        }
+        const cleanDescription = description ? description.trim() : "";
+        if (cleanDescription.length > MAX_DESCRIPTION) {
+            return res.status(400).json({
+                success: false,
+                message: `Description cannot exceed ${MAX_DESCRIPTION} characters`,
             });
         }
 
-        const comment = await Comment.findById(commentId);
+        const comment = await Comment.findById(commentId).select("status user");
 
         // Only visible (active) comments can be reported
         if (!comment || comment.status !== "active") {
@@ -55,13 +70,13 @@ const createReport = async (req, res) => {
             });
         }
 
-        // The { comment, reportedBy } index is NOT unique, so check manually
+        // Friendly pre-check. The unique index (see notes) is what stops race conditions.
         const alreadyReported = await Report.exists({
             comment: comment._id,
             reportedBy: req.user._id,
         });
         if (alreadyReported) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
                 message: "You have already reported this comment",
             });
@@ -71,7 +86,7 @@ const createReport = async (req, res) => {
             comment: comment._id,
             reportedBy: req.user._id, // from the token, never from req.body
             reason,
-            description: description ? description.trim() : "",
+            description: cleanDescription,
             // status, adminNote, reviewedBy and reviewedAt are admin-controlled
         });
 
@@ -81,15 +96,16 @@ const createReport = async (req, res) => {
             data: report,
         });
     } catch (error) {
+        if (error.code === 11000) {
+            // unique index on { comment, reportedBy }
+            return res.status(409).json({
+                success: false,
+                message: "You have already reported this comment",
+            });
+        }
         if (error.name === "ValidationError") {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
-        }
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid comment ID",
-            });
         }
         console.error("Create Report Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
@@ -100,14 +116,14 @@ const createReport = async (req, res) => {
 // GET /api/reports?status=pending&reason=spam&comment=<id>&page=1&limit=10   (admin only)
 const getReports = async (req, res) => {
     try {
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
         const { status, reason, comment } = req.query;
 
         const filter = {};
 
         if (status) {
-            if (!STATUSES.includes(status)) {
+            if (typeof status !== "string" || !STATUSES.includes(status)) {
                 return res.status(400).json({
                     success: false,
                     message: `Status must be one of: ${STATUSES.join(", ")}`,
@@ -116,7 +132,7 @@ const getReports = async (req, res) => {
             filter.status = status;
         }
         if (reason) {
-            if (!REASONS.includes(reason)) {
+            if (typeof reason !== "string" || !REASONS.includes(reason)) {
                 return res.status(400).json({
                     success: false,
                     message: `Reason must be one of: ${REASONS.join(", ")}`,
@@ -124,7 +140,12 @@ const getReports = async (req, res) => {
             }
             filter.reason = reason;
         }
-        if (comment) filter.comment = comment;
+        if (comment) {
+            if (typeof comment !== "string" || !mongoose.isValidObjectId(comment)) {
+                return badId(res, "comment");
+            }
+            filter.comment = comment;
+        }
 
         const [reports, total] = await Promise.all([
             Report.find(filter)
@@ -153,12 +174,6 @@ const getReports = async (req, res) => {
             data: reports,
         });
     } catch (error) {
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid filter value",
-            });
-        }
         console.error("Get Reports Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
@@ -168,7 +183,10 @@ const getReports = async (req, res) => {
 // PATCH /api/reports/:id   (admin only)   body: { status?, adminNote? }
 const updateReport = async (req, res) => {
     try {
-        const { status, adminNote } = req.body;
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) return badId(res, "report");
+
+        const { status, adminNote } = req.body || {};
 
         if (status === undefined && adminNote === undefined) {
             return res.status(400).json({
@@ -176,20 +194,28 @@ const updateReport = async (req, res) => {
                 message: "Provide a status or an admin note to update",
             });
         }
-        if (status !== undefined && !STATUSES.includes(status)) {
+        if (status !== undefined && (typeof status !== "string" || !STATUSES.includes(status))) {
             return res.status(400).json({
                 success: false,
                 message: `Status must be one of: ${STATUSES.join(", ")}`,
             });
         }
-        if (adminNote !== undefined && adminNote.trim().length > 2000) {
-            return res.status(400).json({
-                success: false,
-                message: "Admin note cannot exceed 2000 characters",
-            });
+        if (adminNote !== undefined) {
+            if (typeof adminNote !== "string") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Admin note must be text",
+                });
+            }
+            if (adminNote.trim().length > MAX_NOTE) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Admin note cannot exceed ${MAX_NOTE} characters`,
+                });
+            }
         }
 
-        const report = await Report.findById(req.params.id);
+        const report = await Report.findById(id);
 
         if (!report) {
             return res.status(404).json({
@@ -205,9 +231,9 @@ const updateReport = async (req, res) => {
         report.reviewedBy = req.user._id;
         report.reviewedAt = new Date();
 
-        const updatedReport = await report.save(); // runs schema validators
+        await report.save(); // runs schema validators
 
-        await updatedReport.populate([
+        await report.populate([
             { path: "reportedBy", select: "fullName email" },
             { path: "reviewedBy", select: "fullName" },
         ]);
@@ -215,18 +241,12 @@ const updateReport = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Report updated successfully",
-            data: updatedReport,
+            data: report,
         });
     } catch (error) {
         if (error.name === "ValidationError") {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
-        }
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid report ID",
-            });
         }
         console.error("Update Report Error:", error);
         res.status(500).json({ success: false, message: "Server error" });

@@ -1,10 +1,7 @@
-const Review = require("../models/review.js");
 const Article = require("../models/article.js");
+const Review = require("../models/Review.js");
 
-// ---------- constants ----------
-// ASSUMED article workflow (edit these to match your Article schema enum):
-//   draft -> pending_review -> approved | rejected | changes_requested
-//   approved -> published
+
 const ARTICLE_STATUS = {
     PENDING: "pending_review",
     APPROVED: "approved",
