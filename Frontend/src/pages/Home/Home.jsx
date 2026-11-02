@@ -39,6 +39,11 @@ export default function Home({ session, onLogout }) {
                     {session ? `Welcome back, ${session.user.name}.` : 'The stories shaping your day.'}
                 </h1>
                 <p className="s-sub">Thoughtful local reporting, reviewed by editors and made for curious readers.</p>
+                <div className="s-hero-stats">
+                    <div><strong>{published.length}</strong><span>Published stories</span></div>
+                    <div><strong>{CATEGORIES.length}</strong><span>Categories</span></div>
+                    <div><strong>{LIVE_STREAMS.length}</strong><span>Live streams</span></div>
+                </div>
             </section>
 
             {session ? (
@@ -58,56 +63,63 @@ export default function Home({ session, onLogout }) {
                 <LoginPrompt message="Log in to watch live videos, save stories, like, comment and share feedback." />
             )}
 
-            <input
-                className="s-search"
-                type="search"
-                placeholder="Search by title, topic or author"
-                aria-label="Search news"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-            />
+            <section className="s-toolbar" aria-label="Find stories">
+                <input
+                    className="s-search"
+                    type="search"
+                    placeholder="Search by title, topic or author"
+                    aria-label="Search news"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
 
-            <div className="s-chips" role="group" aria-label="Categories">
-                {['All', ...CATEGORIES].map((c) => (
-                    <button
-                        key={c}
-                        type="button"
-                        className="s-chip"
-                        aria-pressed={category === c}
-                        onClick={() => setCategory(c)}
-                    >
-                        {c}
-                    </button>
-                ))}
-            </div>
-
-            {results.length === 0 ? (
-                <div className="s-empty">
-                    <p>No stories match your search. Try another word, category or date.</p>
-                    <button
-                        type="button"
-                        className="s-btn"
-                        onClick={() => {
-                            setQuery('');
-                            setCategory('All');
-                            setParams(new URLSearchParams());
-                        }}
-                    >
-                        Clear filters
-                    </button>
-                </div>
-            ) : (
-                <div className="s-grid">
-                    {results.map((a, i) => (
-                        <ArticleCard
-                            key={a.id}
-                            article={a}
-                            session={session}
-                            lead={i === 0 && results.length > 2}
-                        />
+                <div className="s-chips" role="group" aria-label="Categories">
+                    {['All', ...CATEGORIES].map((c) => (
+                        <button
+                            key={c}
+                            type="button"
+                            className="s-chip"
+                            aria-pressed={category === c}
+                            onClick={() => setCategory(c)}
+                        >
+                            {c}
+                        </button>
                     ))}
                 </div>
-            )}
+            </section>
+
+            <section className="s-block s-stories">
+                <h2 className="s-h2">
+                    Latest stories <span className="s-pill">{results.length}</span>
+                </h2>
+                {results.length === 0 ? (
+                    <div className="s-empty">
+                        <p>No stories match your search. Try another word, category or date.</p>
+                        <button
+                            type="button"
+                            className="s-btn"
+                            onClick={() => {
+                                setQuery('');
+                                setCategory('All');
+                                setParams(new URLSearchParams());
+                            }}
+                        >
+                            Clear filters
+                        </button>
+                    </div>
+                ) : (
+                    <div className="s-grid">
+                        {results.map((a, i) => (
+                            <ArticleCard
+                                key={a.id}
+                                article={a}
+                                session={session}
+                                lead={i === 0 && results.length > 2}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
         </SiteLayout>
     );
 }

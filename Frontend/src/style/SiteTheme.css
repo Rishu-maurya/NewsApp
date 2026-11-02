@@ -1,0 +1,109 @@
+/* ==========================================================================
+   Site theme additions: account area in the navbar, toolbar card,
+   section headers. (Page background lives in global.css.)
+   ========================================================================== */
+
+/* ---------- Navbar account area ---------- */
+.s-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 14px 4px 4px;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.s-user:hover,
+.s-user.is-active {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+}
+
+.s-avatar {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #ff5a62);
+    box-shadow: 0 4px 12px rgba(215, 25, 32, 0.3);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    transition: transform 260ms var(--ease-spring);
+}
+
+.s-user:hover .s-avatar {
+    transform: scale(1.08);
+}
+
+.s-user .s-name {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.s-user:hover .s-name,
+.s-user.is-active .s-name {
+    color: var(--accent-strong);
+}
+
+/* ---------- Search + category filter card ---------- */
+.s-toolbar {
+    position: relative;
+    margin: 0 0 34px;
+    padding: 22px 24px 20px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-card);
+}
+
+.s-main > .s-toolbar {
+    animation: rise 650ms var(--ease) backwards;
+}
+
+/* ---------- Section headers ---------- */
+.s-block > .s-h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.s-pill {
+    display: inline-grid;
+    min-width: 30px;
+    height: 26px;
+    place-items: center;
+    padding-inline: 9px;
+    border-radius: 99px;
+    color: #fff;
+    background: var(--ink);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+/* ---------- Soft frosted look for notice / empty boxes on the new background ---------- */
+.s-empty,
+.s-prompt {
+    box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 640px) {
+    .s-user {
+        padding: 3px;
+    }
+
+    .s-toolbar {
+        margin-bottom: 26px;
+        padding: 16px 14px 8px;
+    }
+}

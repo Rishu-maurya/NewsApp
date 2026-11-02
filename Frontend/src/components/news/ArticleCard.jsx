@@ -43,6 +43,9 @@ export default function ArticleCard({ article, session, lead, removable }) {
 
             <div className="s-card__foot">
                 <Link to={`/article/${article.id}`} className="s-btn">Read</Link>
+                <Link to={`/article/${article.id}#comments`} className="s-btn">
+                    Comment{commentCount > 0 ? ` (${commentCount})` : ''}
+                </Link>
                 <button type="button" className="s-btn" aria-pressed={isSaved} onClick={handleSave}>
                     {label}
                 </button>

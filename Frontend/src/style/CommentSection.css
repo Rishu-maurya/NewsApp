@@ -1,3 +1,42 @@
+/* keeps the heading below the sticky navbar when jumping to #comments */
+.s-comments-block {
+    scroll-margin-top: 150px;
+}
+
+.s-comment-form {
+    margin-bottom: 8px;
+}
+
+.s-comment-form .s-input {
+    max-width: 360px;
+    margin-bottom: 14px;
+}
+
+.s-comment-form .s-textarea {
+    margin-bottom: 12px;
+}
+
+.s-comment-form .s-btn {
+    margin-bottom: 6px;
+}
+
+.s-comment__who {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.s-comment__guest {
+    padding: 2px 8px;
+    border-radius: 99px;
+    color: var(--muted);
+    background: var(--panel-2);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
 .s-comments {
     display: grid;
     gap: 12px;

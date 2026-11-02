@@ -4,6 +4,8 @@ import ArticleDetail from '../pages/Article/ArticleDetail';
 import Bookmarks from '../pages/Bookmarks/Bookmarks';
 import Live from '../pages/Live/Live';
 import Feedback from '../pages/Feedback/Feedback';
+import Profile from '../pages/Profile/Profile';
+import Contact from '../pages/Contact/Contact';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import Overview from '../pages/Publisher/Overview';
 import WriteStory from '../pages/Publisher/WriteStory';
@@ -22,10 +24,12 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
     const toLanding = <Navigate to={HOME_BY_ROLE[role] || '/'} replace />;
     const denied = <Navigate to={session ? '/' : '/login'} replace />;
 
-    const publisherOnly = (page) => (role === 'journalist' ? page : denied);
+    // publishers and journalists both use the story-writing panel
+    const writesStories = role === 'publisher' || role === 'journalist';
+    const publisherOnly = (page) => (writesStories ? page : denied);
 
     let dashboard = denied;
-    if (role === 'journalist') dashboard = <Navigate to="/publisher" replace />;
+    if (writesStories) dashboard = <Navigate to="/publisher" replace />;
     if (role === 'editor' || role === 'admin') dashboard = <Dashboard {...shared} />;
 
     return (
@@ -35,6 +39,8 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
             <Route path="/bookmarks" element={<Bookmarks {...shared} />} />
             <Route path="/live" element={<Live {...shared} />} />
             <Route path="/feedback" element={<Feedback {...shared} />} />
+            <Route path="/contact" element={<Contact {...shared} />} />
+            <Route path="/profile" element={<Profile {...shared} onSessionUpdate={onLogin} />} />
 
             <Route path="/dashboard" element={dashboard} />
 
