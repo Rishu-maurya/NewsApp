@@ -3,6 +3,7 @@ import ReaderView from './ReaderView';
 import JournalistView from './JournalistView';
 import EditorView from './EditorView';
 import AdminView from './AdminView';
+import PublisherView from './PublisherView';
 import '../../style/Dashboard.css';
 
 const VIEWS = {
@@ -15,6 +16,11 @@ const VIEWS = {
         title: 'Journalist dashboard',
         subtitle: 'Write stories and track their review.',
         View: JournalistView,
+    },
+    publisher: {
+        title: 'Publisher dashboard',
+        subtitle: 'Review role requests and manage stories.',
+        View: PublisherView,
     },
     editor: {
         title: 'Editor dashboard',

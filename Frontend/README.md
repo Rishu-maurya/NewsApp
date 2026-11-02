@@ -13,7 +13,16 @@ The frontend is a React single-page app built with Vite and React Router.
 
 ## Run locally
 
+Start the backend and frontend in separate terminals:
+
 ```sh
+cd Server
+npm install
+npm run dev
+```
+
+```sh
+cd Frontend
 npm install
 npm run dev
 ```

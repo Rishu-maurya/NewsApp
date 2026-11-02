@@ -1,25 +1,42 @@
 const User = require("../models/users.js");
+const RoleRequest = require("../models/rolerequest.js");
 const generateToken = require("../utils/generateToken.js");
 const bcrypt = require("bcryptjs");
 
 const registerUser = async (req, res) => {
     try {
-        const { fullName, email, password, phone } = req.body;
+        const { fullName, email, password, phone, role = "reader", organization } = req.body || {};
+        const cleanName = typeof fullName === "string" ? fullName.trim() : "";
+        const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+        const cleanOrganization = typeof organization === "string" ? organization.trim() : "";
+        const requestedRoles = ["journalist", "editor", "publisher"];
 
-        if (!fullName || !email || !password) {                          // (1)
+        if (!cleanName || !cleanEmail || typeof password !== "string" || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Name, email and password are required",
             });
         }
-        if (password.length < 6) {                                       // (2)
+        if (password.length < 6) {
             return res.status(400).json({
                 success: false,
                 message: "Password must be at least 6 characters",
             });
         }
+        if (role !== "reader" && !requestedRoles.includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: "Choose reader, journalist, editor or publisher",
+            });
+        }
+        if (role !== "reader" && !cleanOrganization) {
+            return res.status(400).json({
+                success: false,
+                message: "Organization is required for a role request",
+            });
+        }
 
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ email: cleanEmail });
         if (userExists) {
             return res.status(400).json({
                 success: false,
@@ -30,9 +47,26 @@ const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);          // (3)
 
         const newUser = await User.create({
-            fullName, email, password: hashedPassword, phone,
+            fullName: cleanName,
+            email: cleanEmail,
+            password: hashedPassword,
+            ...(typeof phone === "string" && phone.trim() ? { phone: phone.trim() } : {}),
             role: "user",                                              // (4)
         });
+
+        let roleRequest;
+        if (role !== "reader") {
+            try {
+                roleRequest = await RoleRequest.create({
+                    user: newUser._id,
+                    requestedRole: role,
+                    organization: cleanOrganization,
+                });
+            } catch (error) {
+                await User.deleteOne({ _id: newUser._id });
+                throw error;
+            }
+        }
 
         res.status(201).json({
             success: true,
@@ -45,6 +79,11 @@ const registerUser = async (req, res) => {
                 role: newUser.role,
                 token: generateToken(newUser._id),
             },
+            roleRequest: roleRequest ? {
+                id: roleRequest._id,
+                requestedRole: roleRequest.requestedRole,
+                status: roleRequest.status,
+            } : null,
         });
     } catch (error) {
         if (error.code === 11000) {                                      // (5)
@@ -64,16 +103,17 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
+        const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-        if (!email || !password) {
+        if (!cleanEmail || typeof password !== "string" || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Email and password are required",
             });
         }
 
-        const user = await User.findOne({ email }).select("+password");
+        const user = await User.findOne({ email: cleanEmail }).select("+password");
         if (!user) {
             return res.status(401).json({
                 success: false,

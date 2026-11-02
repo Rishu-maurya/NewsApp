@@ -5,6 +5,7 @@ const categoryRoutes = require("./routes/category.routes");
 const articalRoutes = require("./routes/article.routes")
 const bookmarkRoutes = require("./routes/bookmark.routes");
 const roleRequestRoutes = require("./routes/rolerequest.routes");
+const userRoutes = require("./routes/user.routes");
 
 
 const app = express();
@@ -28,6 +29,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/articles", articalRoutes)
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/role-requests", roleRequestRoutes);
+app.use("/api/users", userRoutes);
 
 
 module.exports = app;

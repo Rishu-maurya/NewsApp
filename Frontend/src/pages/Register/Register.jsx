@@ -23,6 +23,7 @@ export default function Register() {
         password: '',
         confirmPassword: '',
         role: DEFAULT_ROLE,
+        organization: '',
     });
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState('');
@@ -37,6 +38,17 @@ export default function Register() {
         setFormError('');
     };
 
+    const finishRegistration = (role) => {
+        const roleLabel = ROLE_OPTIONS.find((option) => option.value === role)?.label || 'Reader';
+        navigate('/login', {
+            state: {
+                message: role === DEFAULT_ROLE
+                    ? 'Account created as Reader. Log in to continue.'
+                    : `Account created as Reader. Your ${roleLabel} role request was submitted for review. Log in to continue.`,
+            },
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const nextErrors = {
@@ -45,6 +57,9 @@ export default function Register() {
             phone: validatePhone(form.phone),
             password: validatePassword(form.password),
             confirmPassword: validateConfirmPassword(form.password, form.confirmPassword),
+            organization: form.role !== DEFAULT_ROLE && !form.organization.trim()
+                ? 'Enter your organization for a role request.'
+                : '',
         };
         setErrors(nextErrors);
         if (Object.values(nextErrors).some(Boolean)) return;
@@ -52,10 +67,7 @@ export default function Register() {
         setLoading(true);
         try {
             await register(form);
-            const roleLabel = ROLE_OPTIONS.find((r) => r.value === form.role)?.label || 'Reader';
-            navigate('/login', {
-                state: { message: `Account created as ${roleLabel}. Log in to continue.` },
-            });
+            finishRegistration(form.role);
         } catch (err) {
             setFormError(err.message);
         } finally {
@@ -110,6 +122,21 @@ export default function Register() {
                     error={errors.phone}
                 />
 
+                <RoleSelect value={form.role} onChange={handleChange} />
+
+                {form.role !== DEFAULT_ROLE && (
+                    <InputField
+                        id="organization"
+                        label="Organization"
+                        type="text"
+                        autoComplete="organization"
+                        placeholder="Your news organization"
+                        value={form.organization}
+                        onChange={handleChange}
+                        error={errors.organization}
+                    />
+                )}
+
                 <PasswordField
                     id="password"
                     label="Password"
@@ -129,8 +156,6 @@ export default function Register() {
                     onChange={handleChange}
                     error={errors.confirmPassword}
                 />
-
-                <RoleSelect value={form.role} onChange={handleChange} />
 
                 <button className="btn" type="submit" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create account'}

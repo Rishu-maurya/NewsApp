@@ -4,6 +4,7 @@ import { INITIAL_USERS } from '../../data/dummyData';
 import StatCard from '../../components/dashboard/StatCard';
 import { useActivity } from '../../context/ActivityContext';
 import FeedbackPanel from '../../components/dashboard/FeedbackPanel';
+import RoleRequestsPanel from '../../components/dashboard/RoleRequestsPanel';
 import '../../style/AdminView.css';
 
 const ROLES = ['reader', 'publisher', 'journalist', 'editor', 'admin'];
@@ -31,6 +32,7 @@ export default function AdminView({ session }) {
 
     return (
         <>
+            <RoleRequestsPanel />
             <div className="stats">
                 <StatCard label="Users" value={users.length} />
                 <StatCard label="Published stories" value={articles.filter((a) => a.status === 'published').length} />
