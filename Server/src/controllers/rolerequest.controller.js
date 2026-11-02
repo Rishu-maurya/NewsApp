@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("../models/user");
+const User = require("../models/users");
 const RoleRequest = require("../models/rolerequest");
 
 const ALLOWED_ROLES = ["journalist", "editor", "publisher"];
@@ -127,14 +127,14 @@ const reviewRoleRequest = async (req, res) => {
         if (!["approved", "rejected"].includes(decision)) {
             return res.status(400).json({
                 success: false,
-                message: "Decision must be Approved or Rejected",
+                message: "Decision must be approved or rejected",
             });
         }
 
         if (decision === "rejected" && (typeof reviewNote !== "string" || !reviewNote.trim())) {
             return res.status(400).json({
                 success: false,
-                message: "Reason is reuired to request",
+                message: "Reason is required to reject a request",
             })
         }
 
@@ -161,9 +161,9 @@ const reviewRoleRequest = async (req, res) => {
         );
 
         if (!updated) {
-            return res.status(400).json({
+            return res.status(409).json({
                 success: false,
-                message: "This requrst was already reviewed",
+                message: "This request was already reviewed",
             })
         }
 
@@ -173,22 +173,22 @@ const reviewRoleRequest = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: `Reqest ${decision}`,
+            message: `Request ${decision}`,
             data: updated,
         })
     } catch (error) {
         if (error.name === "ValidationError") {
             const message = Object.values(error.errors)[0].message;
-            return res.status(409).json({
+            return res.status(400).json({
                 success: false, message
             })
         }
 
         console.error("Review Role Request Error:", error)
-         res.status(500).json({
-                success: false,
-                message: "Sever error"
-            })
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        })
     }
 }
 
