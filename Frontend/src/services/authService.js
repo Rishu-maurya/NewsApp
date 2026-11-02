@@ -1,29 +1,18 @@
-import axios from 'axios';
-import { DEFAULT_ROLE, SELECTABLE_ROLES } from '../data/roles';
+import { DEFAULT_ROLE, SELECTABLE_ROLES } from "../data/roles";
+import api from "./axiosInstance";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const SESSION_KEY = 'news_session';
 const REGISTERED_KEY = 'demo_registered_users';
 const PROFILE_KEY = 'demo_profile_overrides';
 
-const DEMO_USERS = {
-  'reader@news.com': { name: 'Riya', role: 'reader', password: 'password123' },
-  'journalist@news.com': { name: 'Jay', role: 'journalist', password: 'password123' },
-  'editor@news.com': { name: 'Esha', role: 'editor', password: 'password123' },
-  'admin@news.com': { name: 'Arun', role: 'admin', password: 'password123' },
-};
+export const isDemoMode = false;
 
-export const isDemoMode = !API_URL;
-
-const wait = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function getDemoUsers() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    return { ...DEMO_USERS, ...saved };
-  } catch {
-    return { ...DEMO_USERS };
+function getErrorMessage(err, fallback) {
+  if (!err.response) {
+    return "Cannot reach the server. Check your connection and try again.";
   }
+  return err.response.data?.message || fallback;
 }
 
 function getProfileOverrides() {
@@ -66,12 +55,6 @@ export async function login({ email, password }) {
       },
     };
   }
-
-  return apiPost(
-    '/api/auth/login',
-    { email: cleanEmail, password },
-    'Incorrect email or password. Check both and try again.'
-  );
 }
 
 export async function register({ name, email, phone = '', password, role }) {
@@ -98,18 +81,14 @@ export async function register({ name, email, phone = '', password, role }) {
 }
 
 export async function forgotPassword(email) {
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (isDemoMode) {
-    await wait();
-    return { message: 'Reset link sent.' };
+  try {
+    const response = await api.post("/auth/forgot-password", {
+      email: email.trim().toLowerCase(),
+    });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not send the reset link. Try again."));
   }
-
-  return apiPost(
-    '/api/auth/forgot-password',
-    { email: cleanEmail },
-    'Could not send the reset link. Try again.'
-  );
 }
 
 export async function resetPassword(token, password) {
@@ -173,13 +152,14 @@ export function saveSession(session, remember) {
 export function getSession() {
   const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
   try {
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+    const response = await api.post("/auth/reset-password", { token, password });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "This reset link is invalid or has expired."));
   }
 }
 
-export function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_KEY);
+export async function getMe() {
+  const response = await api.get("/auth/me");
+  return response.data.data;
 }
