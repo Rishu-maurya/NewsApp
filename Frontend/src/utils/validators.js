@@ -23,3 +23,10 @@ export function validateConfirmPassword(password, confirm) {
   if (password !== confirm) return 'Passwords do not match.';
   return '';
 }
+
+export function validatePhone(value) {
+  const phone = value.trim();
+  if (!phone) return '';
+  if (!/^[6-9]\d{9}$/.test(phone)) return 'Enter a valid 10 digit mobile number.';
+  return '';
+}

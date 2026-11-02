@@ -4,11 +4,12 @@ import '../../style/ReactionBar.css';
 
 export default function ReactionBar({ articleId, session }) {
     const navigate = useNavigate();
-    const { likes, saved, toggleLike, toggleSave } = useActivity();
+    const { likes, saved, comments, toggleLike, toggleSave } = useActivity();
 
     const email = session?.user.email;
     const key = String(articleId);
     const likeList = likes[key] || [];
+    const commentCount = comments.filter((c) => c.targetId === key).length;
     const isLiked = email ? likeList.includes(email) : false;
     const isSaved = email ? (saved[key] || []).includes(email) : false;
 
@@ -33,6 +34,7 @@ export default function ReactionBar({ articleId, session }) {
             >
                 {isSaved ? 'Saved' : 'Save'}
             </button>
+            <a href="#comments" className="s-btn">Comment ({commentCount})</a>
         </div>
     );
 }

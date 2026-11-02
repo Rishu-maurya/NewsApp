@@ -8,10 +8,10 @@ export const ROLE_OPTIONS = [
         description: 'Read news, watch live videos, like, save and comment.',
     },
     {
-        value: 'journalist',
+        value: 'publisher',
         label: 'Publisher',
         isDefault: false,
-        description: 'Write stories and send them to an editor for review.',
+        description: 'Publish stories on the platform and send them to an editor for review.',
     },
     {
         value: 'editor',
@@ -19,19 +19,27 @@ export const ROLE_OPTIONS = [
         isDefault: false,
         description: 'Review stories and approve, reject or ask for changes.',
     },
+    {
+        value: 'journalist',
+        label: 'Journalist',
+        isDefault: false,
+        description: 'Report and write stories and send them to an editor for review.',
+    },
 ];
 
 export const SELECTABLE_ROLES = ROLE_OPTIONS.map((r) => r.value);
 
 export const ROLE_LABELS = {
     reader: 'Reader',
-    journalist: 'Publisher',
+    publisher: 'Publisher',
+    journalist: 'Journalist',
     editor: 'Editor',
     admin: 'Admin',
 };
 
 export const HOME_BY_ROLE = {
     reader: '/',
+    publisher: '/publisher',
     journalist: '/publisher',
     editor: '/dashboard',
     admin: '/dashboard',
