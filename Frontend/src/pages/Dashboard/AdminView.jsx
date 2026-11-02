@@ -6,8 +6,7 @@ import { useActivity } from '../../context/ActivityContext';
 import FeedbackPanel from '../../components/dashboard/FeedbackPanel';
 import '../../style/AdminView.css';
 
-const ROLES = ['reader', 'journalist', 'editor', 'admin'];
-
+const ROLES = ['reader', 'publisher', 'journalist', 'editor', 'admin'];
 export default function AdminView({ session }) {
     const { articles, resetDemoData } = useArticles();
     const { reports, updateReport, resetActivity } = useActivity();

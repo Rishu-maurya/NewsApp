@@ -69,35 +69,31 @@
     max-width: 100%;
 }
 
-/* ---------- Search: now sits at the very TOP of the hero ---------- */
+/* ---------- Search: sits inside the white toolbar card ---------- */
 .s-search {
-    order: -1;
     width: 100%;
-    max-width: 580px;
-    height: 60px;
-    margin: 0 auto 44px;
-    padding: 0 22px 0 56px;
-    border: 2px solid transparent;
-    border-radius: 8px;
+    height: 56px;
+    margin: 0 0 20px;
+    padding: 0 22px 0 54px;
+    border: 2px solid var(--line);
+    border-radius: 10px;
     color: var(--ink);
-    background: #fff
+    background: var(--surface-2)
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b6b76' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E")
-        no-repeat 20px center;
+        no-repeat 19px center;
     font-size: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-    transition: max-width 450ms var(--ease), border-color 180ms ease, box-shadow 240ms ease, transform 300ms var(--ease);
-    animation: rise 800ms var(--ease) backwards 100ms;
+    transition: border-color 180ms ease, box-shadow 240ms ease, background-color 180ms ease;
 }
 
 .s-search:hover {
-    transform: translateY(-2px);
+    border-color: var(--line-strong);
 }
 
 .s-search:focus {
-    max-width: 700px;
     border-color: var(--accent);
+    background-color: #fff;
     outline: none;
-    box-shadow: 0 0 0 5px rgba(215, 25, 32, 0.35), 0 0 50px rgba(215, 25, 32, 0.35), 0 16px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--ring);
 }
 
 /* glass "live" pill above the headline */
@@ -219,14 +215,59 @@
     }
 }
 
+/* quick numbers under the hero text */
+.s-hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 38px;
+    animation: rise 900ms var(--ease) backwards 1900ms;
+}
+
+.s-hero-stats > div {
+    display: grid;
+    min-width: 150px;
+    gap: 2px;
+    padding: 16px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 260ms var(--ease), background 200ms ease, border-color 200ms ease;
+}
+
+.s-hero-stats > div:hover {
+    border-color: rgba(255, 90, 98, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px);
+}
+
+.s-hero-stats strong {
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.s-hero-stats span {
+    color: #b9b9c4;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
 /* ==========================================================================
    CATEGORY CHIPS — bigger, "sticker" style: hard shadow, red fill rises on hover
    ========================================================================== */
 .s-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    margin: 32px 0 40px;
+    gap: 12px;
+    margin: 0;
 }
 
 .s-chip {
@@ -308,8 +349,18 @@
     }
 
     .s-search {
-        height: 54px;
-        margin-bottom: 32px;
+        height: 52px;
+        margin-bottom: 16px;
+    }
+
+    .s-hero-stats > div {
+        min-width: 0;
+        flex: 1 1 100px;
+        padding: 12px 14px;
+    }
+
+    .s-hero-stats strong {
+        font-size: 26px;
     }
 
     .s-home-hero .s-eyebrow {
@@ -326,7 +377,7 @@
     .s-chips {
         flex-wrap: nowrap;
         gap: 12px;
-        margin: 24px -6px 30px;
+        margin: 0 -6px;
         padding: 6px 6px 14px;
         overflow-x: auto;
         scroll-snap-type: x proximity;

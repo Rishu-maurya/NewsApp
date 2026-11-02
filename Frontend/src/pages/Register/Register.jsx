@@ -8,6 +8,7 @@ import { DEFAULT_ROLE, ROLE_OPTIONS } from '../../data/roles';
 import {
     validateName,
     validateEmail,
+    validatePhone,
     validatePassword,
     validateConfirmPassword,
 } from '../../utils/validators';
@@ -18,6 +19,7 @@ export default function Register() {
     const [form, setForm] = useState({
         name: '',
         email: '',
+        phone: '',
         password: '',
         confirmPassword: '',
         role: DEFAULT_ROLE,
@@ -29,7 +31,8 @@ export default function Register() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        const next = name === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value;
+        setForm((prev) => ({ ...prev, [name]: next }));
         setErrors((prev) => ({ ...prev, [name]: '' }));
         setFormError('');
     };
@@ -39,6 +42,7 @@ export default function Register() {
         const nextErrors = {
             name: validateName(form.name),
             email: validateEmail(form.email),
+            phone: validatePhone(form.phone),
             password: validatePassword(form.password),
             confirmPassword: validateConfirmPassword(form.password, form.confirmPassword),
         };
@@ -92,6 +96,18 @@ export default function Register() {
                     value={form.email}
                     onChange={handleChange}
                     error={errors.email}
+                />
+
+                <InputField
+                    id="phone"
+                    label={<>Mobile number <span className="label-optional">(optional)</span></>}
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="10 digit mobile number"
+                    value={form.phone}
+                    onChange={handleChange}
+                    error={errors.phone}
                 />
 
                 <PasswordField

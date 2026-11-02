@@ -10,8 +10,10 @@ export const ROLE_OPTIONS = [
     {
         value: 'journalist',
         label: 'journalist',
+        value: 'publisher',
+        label: 'Publisher',
         isDefault: false,
-        description: 'Write stories and send them to an editor for review.',
+        description: 'Publish stories on the platform and send them to an editor for review.',
     },
     {
         value: 'editor',
@@ -25,12 +27,18 @@ export const ROLE_OPTIONS = [
         isDeffault: false,
         description: 'Verify journalist and editor requests.'
     }
+        value: 'journalist',
+        label: 'Journalist',
+        isDefault: false,
+        description: 'Report and write stories and send them to an editor for review.',
+    },
 ];
 
 export const SELECTABLE_ROLES = ROLE_OPTIONS.map((r) => r.value);
 
 export const ROLE_LABELS = {
     reader: 'Reader',
+    publisher: 'Publisher',
     journalist: 'Journalist',
     editor: 'Editor',
     publisher: 'Publisher',
@@ -39,6 +47,7 @@ export const ROLE_LABELS = {
 
 export const HOME_BY_ROLE = {
     reader: '/',
+    publisher: '/publisher',
     journalist: '/publisher',
     editor: '/dashboard',
     admin: '/dashboard',

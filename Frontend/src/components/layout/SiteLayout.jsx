@@ -6,6 +6,7 @@ import { isLive } from '../../utils/dateUtils';
 import NavDateFilter from './NavDateFilter';
 import '../../style/SiteLayout.css';
 import '../../style/Navbar.css';
+import '../../style/SiteTheme.css';
 
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
@@ -47,14 +48,22 @@ export default function SiteLayout({ session, onLogout, children }) {
                         {user && <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>}
                         <NavLink to="/about" className={linkClass}>About</NavLink>
                         <NavLink to="/contact" className={linkClass}>Contact</NavLink>
-                        {user && <NavLink to="/profile" className={linkClass}>Profile</NavLink>}
-                        {user && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
                     </nav>
 
                     <div className="s-account">
                         {user ? (
                             <>
-                                <span className="s-name">{user.name}</span>
+                                <NavLink
+                                    to="/profile"
+                                    className={({ isActive }) => `s-user${isActive ? ' is-active' : ''}`}
+                                    title="Open your profile"
+                                    aria-label={`${user.name}, open your profile`}
+                                >
+                                    <span className="s-avatar" aria-hidden="true">
+                                        {user.name.trim().charAt(0).toUpperCase()}
+                                    </span>
+                                    <span className="s-name">{user.name}</span>
+                                </NavLink>
                                 <button type="button" className="s-btn" onClick={onLogout}>Log out</button>
                             </>
                         ) : (
