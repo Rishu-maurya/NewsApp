@@ -1,8 +1,68 @@
+.s-contact-cards {
+    margin-bottom: 22px;
+}
+
+.s-contact-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    transition: color 220ms ease, background 220ms ease, transform 320ms var(--ease-spring);
+}
+
+.s-info-card:hover .s-contact-icon {
+    color: #fff;
+    background: var(--accent);
+    transform: rotate(-6deg) scale(1.08);
+}
+
+.s-contact-link {
+    display: inline-block;
+    margin-top: 4px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    border-bottom: 2px solid var(--accent);
+    transition: color 160ms ease;
+}
+
+.s-contact-link:hover {
+    color: var(--accent);
+}
+
+.s-contact-address {
+    display: grid;
+    gap: 2px;
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.s-info-card .s-contact-hours {
+    margin: 0;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .s-contact-layout {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     align-items: start;
-    gap: 18px;
+    gap: 22px;
+}
+
+/* form cards should not jump around while typing */
+.s-contact-form-card:hover {
+    transform: none;
 }
 
 .s-contact-list {
@@ -15,17 +75,25 @@
 .s-contact-list li {
     display: grid;
     gap: 4px;
+    padding-left: 14px;
+    border-left: 3px solid var(--line-strong);
+    transition: border-color 200ms ease, transform 250ms var(--ease);
+}
+
+.s-contact-list li:hover {
+    border-left-color: var(--accent);
+    transform: translateX(5px);
 }
 
 .s-contact-list strong {
-    color: var(--forest);
+    color: var(--ink);
     font-size: 14px;
 }
 
 .s-contact-list span {
     color: var(--muted);
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .s-input--wide {
@@ -36,6 +104,12 @@
 .s-form__hint {
     margin: 12px 0 0;
     font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .s-contact-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 640px) {

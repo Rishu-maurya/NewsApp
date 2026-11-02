@@ -1,64 +1,119 @@
 .s-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    gap: 24px;
 }
 
 .s-card {
+    position: relative;
     display: flex;
-    min-height: 280px;
+    min-height: 270px;
     flex-direction: column;
-    padding: 22px;
-    transition: transform 160ms ease, box-shadow 160ms ease;
+    padding: 24px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: var(--shadow-card);
+    transition: transform 320ms var(--ease), box-shadow 320ms ease, border-color 200ms ease, filter 320ms ease;
+}
+
+/* red bar sweeps across the top on hover */
+.s-card::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+    background: var(--accent);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 450ms var(--ease);
 }
 
 .s-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 34px rgba(32, 43, 40, 0.08);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-6px);
+}
+
+.s-card:hover::before {
+    transform: scaleX(1);
 }
 
 .s-card--lead {
     grid-column: span 2;
-    min-height: 310px;
-    padding: clamp(24px, 4vw, 42px);
-    border-top: 3px solid var(--accent);
+    min-height: 320px;
+    padding: clamp(24px, 4vw, 40px);
+    border-left: 5px solid var(--accent);
+    background: linear-gradient(135deg, #fff 60%, #fbf3f3);
+}
+
+/* lead story gets a "TOP STORY" ribbon instead of the hover bar */
+.s-card--lead {
+    padding-top: clamp(52px, 6vw, 64px);
+}
+
+.s-card--lead::before {
+    top: 0;
+    right: auto;
+    left: 0;
+    height: auto;
+    padding: 7px 16px;
+    background: var(--accent);
+    color: #fff;
+    content: 'TOP STORY';
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    transform: none;
+    transition: none;
 }
 
 .s-cat {
-    margin: 0 0 9px;
-    color: var(--accent-dark);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.13em;
+    display: inline-block;
+    align-self: flex-start;
+    margin: 0 0 12px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
 .s-card__title {
-    margin: 0 0 11px;
-    color: var(--forest-deep);
-    font-size: 25px;
-    font-weight: 600;
-    line-height: 1.12;
+    margin: 0 0 12px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
 }
 
 .s-card--lead .s-card__title {
     max-width: 22ch;
-    font-size: clamp(32px, 4vw, 44px);
-    line-height: 1.02;
+    font-size: clamp(30px, 3.8vw, 46px);
+    font-weight: 800;
+    line-height: 1.08;
 }
 
 .s-card__title a {
     color: inherit;
     text-decoration: none;
+    background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 3px no-repeat;
+    transition: background-size 400ms var(--ease), color 160ms ease;
 }
 
 .s-card__title a:hover {
-    color: var(--accent-dark);
+    color: var(--ink);
+    background-size: 100% 3px;
 }
 
 .s-card__text {
     flex: 1;
-    margin: 0 0 20px;
+    margin: 0 0 18px;
     color: var(--muted);
     font-size: 14px;
     line-height: 1.7;
@@ -69,28 +124,31 @@
     flex-wrap: wrap;
     gap: 4px 14px;
     margin: 0 0 8px;
-    color: var(--muted);
+    color: var(--faint);
     font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 .s-card__foot {
     display: flex;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 10px;
     padding-top: 14px;
-    border-top: 1px solid #eeebe3;
+    border-top: 1px solid var(--line);
 }
 
-.s-card {
-    border: 1px solid var(--line);
-    border-radius: 5px;
-    background: var(--surface);
-    box-shadow: var(--shadow-card);
+/* spotlight: hover one story, the rest step back */
+@media (hover: hover) {
+    .s-grid:has(.s-card:hover) > .s-card:not(:hover) {
+        filter: saturate(0.4) opacity(0.65);
+    }
 }
 
-.s-card__title {
-    font-family: var(--font-display);
-    letter-spacing: -0.035em;
+@media (max-width: 900px) {
+    .s-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 640px) {
@@ -109,6 +167,95 @@
     }
 
     .s-card--lead .s-card__title {
-        font-size: 34px;
+        font-size: 32px;
     }
+}
+
+/* ==========================================================================
+   MORE INTERACTIVE CARDS
+   ========================================================================== */
+
+/* the WHOLE card is clickable (the headline link stretches over the card) */
+.s-card {
+    isolation: isolate;
+    cursor: pointer;
+}
+
+.s-card .s-card__title {
+    position: static;
+    transition: translate 380ms var(--ease);
+}
+
+.s-card__title a::after {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    content: '';
+}
+
+/* buttons in the card footer stay clickable above the stretched link */
+.s-card__foot {
+    z-index: 3;
+}
+
+/* headline nudges right, category label gets an underline that draws itself */
+.s-card:hover .s-card__title {
+    translate: 5px 0;
+}
+
+.s-cat {
+    padding-bottom: 4px;
+    background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat;
+    transition: background-size 420ms var(--ease);
+}
+
+.s-card:hover .s-cat {
+    background-size: 100% 2px;
+}
+
+.s-card:hover .s-meta {
+    color: var(--ink-2);
+}
+
+/* round arrow button pops in at the top-right corner */
+.s-card::after {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 3;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 8px 18px rgba(215, 25, 32, 0.4);
+    color: #fff;
+    content: '\2192';
+    font-size: 18px;
+    font-weight: 700;
+    opacity: 0;
+    rotate: -45deg;
+    scale: 0.5;
+    pointer-events: none;
+    transition: opacity 250ms ease, scale 420ms var(--ease-spring), rotate 420ms var(--ease-spring);
+}
+
+.s-card:hover::after {
+    opacity: 1;
+    rotate: 0deg;
+    scale: 1;
+}
+
+.s-card--lead::after {
+    top: 22px;
+    right: 22px;
+    width: 54px;
+    height: 54px;
+    font-size: 24px;
+}
+
+/* press feedback */
+.s-card:active {
+    transform: translateY(-2px) scale(0.99);
 }

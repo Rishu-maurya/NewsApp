@@ -1,34 +1,31 @@
-import axios from 'axios';
+import { DEFAULT_ROLE, SELECTABLE_ROLES } from "../data/roles";
+import api from "./axiosInstance";
 
-export {getSession, clearSession} from './session'
-
-const API_URL = import.meta.env.VITE_API_URL || '';
-
+const API_URL = import.meta.env.VITE_API_URL;
+const SESSION_KEY = 'news_session';
 const REGISTERED_KEY = 'demo_registered_users';
+const PROFILE_KEY = 'demo_profile_overrides';
 
-const DEMO_USERS = {
-  'reader@news.com': { name: 'Riya', role: 'reader', password: 'password123' },
-  'journalist@news.com': { name: 'Jay', role: 'journalist', password: 'password123' },
-  'editor@news.com': { name: 'Esha', role: 'editor', password: 'password123' },
-  'admin@news.com': { name: 'Arun', role: 'admin', password: 'password123' },
-};
+export const isDemoMode = false;
 
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+function getErrorMessage(err, fallback) {
+  if (!err.response) {
+    return "Cannot reach the server. Check your connection and try again.";
+  }
+  return err.response.data?.message || fallback;
+}
 
-const wait = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function getDemoUsers() {
+function getProfileOverrides() {
   try {
-    const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    return { ...DEMO_USERS, ...saved };
+    return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
   } catch {
-    return { ...DEMO_USERS };
+    return {};
   }
 }
 
 async function apiPost(path, body, fallbackMessage) {
   try {
-    const { data } = await axios.post(`${API_URL.replace(/\/$/, '')}${path}`, body);
+    const { data } = await axios.post(`${API_URL}${path}`, body);
     return data;
   } catch (err) {
     const message = err.response
@@ -36,26 +33,6 @@ async function apiPost(path, body, fallbackMessage) {
       : 'Cannot reach the server. Check your connection and try again.';
     throw new Error(message);
   }
-}
-
-function createSession(response) {
-  const authData = response?.data ?? response;
-  const name = authData?.fullName || authData?.name;
-  const role = authData?.role === 'user' ? 'reader' : authData?.role;
-
-  if (!authData?.token || !authData.email || !name || !role) {
-    throw new Error('The server returned an invalid authentication response.');
-  }
-
-  return {
-    token: authData.token,
-    user: {
-      id: authData._id,
-      email: authData.email,
-      name,
-      role,
-    },
-  };
 }
 
 export async function login({ email, password }) {
@@ -67,24 +44,23 @@ export async function login({ email, password }) {
     if (!user || user.password !== password) {
       throw new Error('Incorrect email or password. Check both and try again.');
     }
-    return createSession({
+    const saved = getProfileOverrides()[cleanEmail] || {};
+    return {
       token: 'demo-token',
-      email: cleanEmail,
-      name: user.name,
-      role: user.role,
-    });
+      user: {
+        email: cleanEmail,
+        name: saved.name || user.name,
+        role: user.role,
+        phone: saved.phone ?? user.phone ?? '',
+      },
+    };
   }
-
-  const response = await apiPost(
-    '/api/auth/login',
-    { email: cleanEmail, password },
-    'Incorrect email or password. Check both and try again.'
-  );
-  return createSession(response);
 }
 
-export async function register({ name, email, password }) {
+export async function register({ name, email, phone = '', password, role }) {
   const cleanEmail = email.trim().toLowerCase();
+  const cleanPhone = phone.trim();
+  const safeRole = SELECTABLE_ROLES.includes(role) ? role : DEFAULT_ROLE;
 
   if (isDemoMode) {
     await wait();
@@ -92,37 +68,27 @@ export async function register({ name, email, password }) {
       throw new Error('An account with this email already exists. Log in instead.');
     }
     const saved = JSON.parse(localStorage.getItem(REGISTERED_KEY) || '{}');
-    saved[cleanEmail] = { name: name.trim(), role: 'reader', password };
+    saved[cleanEmail] = { name: name.trim(), role: safeRole, password, phone: cleanPhone };
     localStorage.setItem(REGISTERED_KEY, JSON.stringify(saved));
-    return createSession({
-      token: 'demo-token',
-      email: cleanEmail,
-      name: name.trim(),
-      role: 'reader',
-    });
-  }
-
-  const response = await apiPost(
-    '/api/auth/register',
-    { fullName: name.trim(), email: cleanEmail, password },
-    'Could not create the account. Try again.'
-  );
-  return createSession(response);
-}
-
-export async function forgotPassword(email) {
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (isDemoMode) {
-    await wait();
-    return { message: 'Reset link sent.' };
+    return { message: 'Account created.' };
   }
 
   return apiPost(
-    '/api/auth/forgot-password',
-    { email: cleanEmail },
-    'Could not send the reset link. Try again.'
+    '/api/auth/register',
+    { name: name.trim(), email: cleanEmail, phone: cleanPhone, password, role: safeRole },
+    'Could not create the account. Try again.'
   );
+}
+
+export async function forgotPassword(email) {
+  try {
+    const response = await api.post("/auth/forgot-password", {
+      email: email.trim().toLowerCase(),
+    });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not send the reset link. Try again."));
+  }
 }
 
 export async function resetPassword(token, password) {
@@ -141,6 +107,43 @@ export async function resetPassword(token, password) {
   );
 }
 
+export async function updateProfile(session, { name, phone }) {
+  const cleanName = name.trim();
+  const cleanPhone = phone.trim();
+
+  if (isDemoMode) {
+    await wait(400);
+    const overrides = getProfileOverrides();
+    overrides[session.user.email] = { name: cleanName, phone: cleanPhone };
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(overrides));
+    return { ...session, user: { ...session.user, name: cleanName, phone: cleanPhone } };
+  }
+
+  try {
+    const { data } = await axios.put(
+      `${API_URL}/api/users/profile`,
+      { fullName: cleanName, phone: cleanPhone },
+      { headers: { Authorization: `Bearer ${session.token}` } }
+    );
+    const saved = data?.data || {};
+    return {
+      ...session,
+      user: { ...session.user, name: saved.fullName || cleanName, phone: saved.phone ?? cleanPhone },
+    };
+  } catch (err) {
+    const message = err.response
+      ? err.response.data?.message || 'Could not update your profile. Try again.'
+      : 'Cannot reach the server. Check your connection and try again.';
+    throw new Error(message);
+  }
+}
+
+export function updateStoredSession(session) {
+  const value = JSON.stringify(session);
+  if (localStorage.getItem(SESSION_KEY)) localStorage.setItem(SESSION_KEY, value);
+  if (sessionStorage.getItem(SESSION_KEY)) sessionStorage.setItem(SESSION_KEY, value);
+}
+
 export function saveSession(session, remember) {
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -149,13 +152,14 @@ export function saveSession(session, remember) {
 export function getSession() {
   const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
   try {
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
+    const response = await api.post("/auth/reset-password", { token, password });
+    return response.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "This reset link is invalid or has expired."));
   }
 }
 
-export function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_KEY);
+export async function getMe() {
+  const response = await api.get("/auth/me");
+  return response.data.data;
 }

@@ -1,10 +1,10 @@
 .list {
     display: grid;
-    gap: 12px;
+    gap: 16px;
 }
 
 .item {
-    padding: 20px;
+    padding: 22px;
 }
 
 .item__top {
@@ -15,21 +15,22 @@
 }
 
 .item__cat {
-    margin: 0 0 5px;
-    color: var(--accent-dark);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    margin: 0 0 6px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
 .item__title {
-    margin: 0 0 9px;
-    color: var(--forest);
+    margin: 0 0 10px;
+    color: var(--ink);
     font-family: var(--font-display);
     font-size: 24px;
-    font-weight: 600;
-    line-height: 1.14;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
 }
 
 .item__meta {
@@ -37,14 +38,16 @@
     flex-wrap: wrap;
     gap: 4px 14px;
     margin: 0 0 12px;
-    color: var(--muted);
+    color: var(--faint);
     font-size: 11px;
+    font-weight: 600;
 }
 
 .item__body {
     margin: 0 0 15px;
+    color: var(--ink-2);
     font-size: 14px;
-    line-height: 1.7;
+    line-height: 1.75;
 }
 
 .table-wrap {
@@ -59,16 +62,29 @@
 
 .dtable th,
 .dtable td {
-    padding: 13px 15px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--line);
     font-size: 12px;
     text-align: left;
 }
 
 .dtable th {
-    color: var(--muted);
-    background: #f6f4ee;
-    font-weight: 700;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border-bottom: 2px solid var(--ink);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dtable tbody tr {
+    transition: background 160ms ease;
+}
+
+.dtable tbody tr:hover {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .dtable tr:last-child td {
@@ -77,11 +93,16 @@
 
 .dtable select {
     padding: 6px 8px;
-    border: 1px solid #d8d5cb;
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
     color: var(--ink);
-    background: #fffefa;
+    background: #fff;
     font-size: 12px;
+    transition: border-color 160ms ease, box-shadow 200ms ease;
+}
+
+.dtable select:hover {
+    border-color: #9c9ca6;
 }
 
 .empty-note,
@@ -98,9 +119,7 @@
     .item__title {
         font-size: 21px;
     }
-}
 
-@media (max-width: 640px) {
     .item__top {
         flex-direction: column;
     }

@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useArticles } from '../../context/ArticlesContext';
 import { useActivity } from '../../context/ActivityContext';
 import { isLive } from '../../utils/dateUtils';
 import NavDateFilter from './NavDateFilter';
 import '../../style/SiteLayout.css';
+import '../../style/Navbar.css';
+import '../../style/SiteTheme.css';
 
 const linkClass = ({ isActive }) => `s-link${isActive ? ' is-active' : ''}`;
 
@@ -11,6 +14,14 @@ export default function SiteLayout({ session, onLogout, children }) {
     const user = session?.user;
     const { articles } = useArticles();
     const { saved } = useActivity();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 20);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const bookmarkCount = user
         ? articles.filter(
@@ -20,7 +31,7 @@ export default function SiteLayout({ session, onLogout, children }) {
 
     return (
         <div className="site">
-            <header className="s-nav">
+            <header className={`s-nav${scrolled ? ' is-scrolled' : ''}`}>
                 <div className="s-nav__inner">
                     <Link to="/" className="s-brand">News Platform</Link>
 
@@ -37,14 +48,22 @@ export default function SiteLayout({ session, onLogout, children }) {
                         {user && <NavLink to="/feedback" className={linkClass}>Feedback</NavLink>}
                         <NavLink to="/about" className={linkClass}>About</NavLink>
                         <NavLink to="/contact" className={linkClass}>Contact</NavLink>
-                        {user && <NavLink to="/profile" className={linkClass}>Profile</NavLink>}
-                        {user && <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>}
                     </nav>
 
                     <div className="s-account">
                         {user ? (
                             <>
-                                <span className="s-name">{user.name}</span>
+                                <NavLink
+                                    to="/profile"
+                                    className={({ isActive }) => `s-user${isActive ? ' is-active' : ''}`}
+                                    title="Open your profile"
+                                    aria-label={`${user.name}, open your profile`}
+                                >
+                                    <span className="s-avatar" aria-hidden="true">
+                                        {user.name.trim().charAt(0).toUpperCase()}
+                                    </span>
+                                    <span className="s-name">{user.name}</span>
+                                </NavLink>
                                 <button type="button" className="s-btn" onClick={onLogout}>Log out</button>
                             </>
                         ) : (

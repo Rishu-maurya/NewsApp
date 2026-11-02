@@ -1,9 +1,9 @@
 .s-navdate {
     width: min(100% - 48px, 1180px);
-    min-height: 44px;
+    min-height: 46px;
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 10px;
     margin-inline: auto;
     padding-block: 5px;
 }
@@ -12,14 +12,19 @@
     margin-right: auto;
     color: var(--muted);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    font-variant-numeric: tabular-nums;
 }
 
+.s-navdate .s-input--nav,
+.s-navdate .s-select--inline,
 .s-input--nav,
 .s-select--inline {
     width: auto;
-    height: 31px;
-    padding: 4px 8px;
+    height: 32px;
+    padding: 2px 14px;
+    border-radius: 4px;
     font-size: 12px;
 }
 
