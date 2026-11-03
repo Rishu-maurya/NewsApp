@@ -9,7 +9,7 @@ import Contact from '../pages/Contact/Contact';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import Overview from '../pages/Publisher/Overview';
 import WriteStory from '../pages/Publisher/WriteStory';
-import MyStories from '../pages/Publisher/MyStories';
+import MyStories from '../pages/Publisher/Mystories';
 import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword';
@@ -24,13 +24,14 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
     const toLanding = <Navigate to={HOME_BY_ROLE[role] || '/'} replace />;
     const denied = <Navigate to={session ? '/' : '/login'} replace />;
 
-    // publishers and journalists both use the story-writing panel
-    const writesStories = role === 'publisher' || role === 'journalist';
-    const publisherOnly = (page) => (writesStories ? page : denied);
+    const writesStories = role === 'journalist' || role === 'publisher';
+    const publisherWorkspace = (page) => (writesStories ? page : denied);
 
     let dashboard = denied;
     if (writesStories) dashboard = <Navigate to="/publisher" replace />;
-    if (role === 'editor' || role === 'admin') dashboard = <Dashboard {...shared} />;
+    if (role === 'publisher' || role === 'editor' || role === 'admin') {
+        dashboard = <Dashboard {...shared} />;
+    }
 
     return (
         <Routes>
@@ -44,10 +45,10 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
 
             <Route path="/dashboard" element={dashboard} />
 
-            <Route path="/publisher" element={publisherOnly(<Overview {...shared} />)} />
-            <Route path="/publisher/write" element={publisherOnly(<WriteStory {...shared} />)} />
-            <Route path="/publisher/write/:id" element={publisherOnly(<WriteStory {...shared} />)} />
-            <Route path="/publisher/stories" element={publisherOnly(<MyStories {...shared} />)} />
+            <Route path="/publisher" element={publisherWorkspace(<Overview {...shared} />)} />
+            <Route path="/publisher/write" element={publisherWorkspace(<WriteStory {...shared} />)} />
+            <Route path="/publisher/write/:id" element={publisherWorkspace(<WriteStory {...shared} />)} />
+            <Route path="/publisher/stories" element={publisherWorkspace(<MyStories {...shared} />)} />
 
             <Route path="/login" element={session ? toLanding : <Login onLoginSuccess={onLogin} />} />
             <Route path="/register" element={session ? toLanding : <Register />} />

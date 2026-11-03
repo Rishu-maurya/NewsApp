@@ -1,21 +1,59 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import PublisherLayout from '../../components/publisher/PublisherLayout';
 import StatusBadge from '../../components/dashboard/StatusBadge';
-import { useArticles } from '../../context/ArticlesContext';
 import { STATUS_LABELS } from '../../data/dummyData';
+import { deleteMyArticle, getMyArticles, submitMyArticle } from '../../services/publisherService';
 
 const FILTERS = ['all', 'draft', 'submitted', 'changes_requested', 'published', 'rejected'];
 
 export default function MyStories({ session, onLogout }) {
     const location = useLocation();
     const notice = location.state?.message;
-    const { articles, submitArticle, deleteArticle } = useArticles();
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [busyId, setBusyId] = useState('');
+    const [error, setError] = useState('');
     const [filter, setFilter] = useState('all');
 
-    const mine = articles.filter((a) => a.authorEmail === session.user.email);
+    useEffect(() => {
+        let cancelled = false;
+        getMyArticles()
+            .then((result) => {
+                if (!cancelled) setArticles(result);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err.message);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const mine = articles;
     const shown = filter === 'all' ? mine : mine.filter((a) => a.status === filter);
     const countFor = (f) => (f === 'all' ? mine.length : mine.filter((a) => a.status === f).length);
+
+    const updateStory = async (article, action) => {
+        setBusyId(article.id);
+        setError('');
+        try {
+            if (action === 'submit') {
+                const updated = await submitMyArticle(article.id);
+                setArticles((current) => current.map((item) => item.id === article.id ? updated : item));
+            } else {
+                await deleteMyArticle(article.id);
+                setArticles((current) => current.filter((item) => item.id !== article.id));
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusyId('');
+        }
+    };
 
     return (
         <PublisherLayout
@@ -25,7 +63,9 @@ export default function MyStories({ session, onLogout }) {
             subtitle="Everything you have written, with its review status."
         >
             {notice && <p className="dnote" role="status">{notice}</p>}
+            {error && <p className="derr" role="alert">{error}</p>}
 
+            {!loading && !error && (
             <div className="pub-chips" role="group" aria-label="Filter by status">
                 {FILTERS.map((f) => (
                     <button
@@ -39,8 +79,11 @@ export default function MyStories({ session, onLogout }) {
                     </button>
                 ))}
             </div>
+            )}
 
-            {shown.length === 0 ? (
+            {loading ? (
+                <p className="empty-note">Loading your stories...</p>
+            ) : shown.length === 0 ? (
                 <div className="panel">
                     <p className="muted" style={{ marginTop: 0 }}>
                         {mine.length === 0
@@ -79,9 +122,10 @@ export default function MyStories({ session, onLogout }) {
                                         <button
                                             type="button"
                                             className="dbtn dbtn--primary"
-                                            onClick={() => submitArticle(a.id)}
+                                            onClick={() => updateStory(a, 'submit')}
+                                            disabled={Boolean(busyId)}
                                         >
-                                            Send for review
+                                            {busyId === a.id ? 'Sending...' : 'Send for review'}
                                         </button>
                                     )}
                                     {a.status === 'published' && (
@@ -91,9 +135,10 @@ export default function MyStories({ session, onLogout }) {
                                         <button
                                             type="button"
                                             className="dbtn dbtn--danger"
-                                            onClick={() => deleteArticle(a.id)}
+                                            onClick={() => updateStory(a, 'delete')}
+                                            disabled={Boolean(busyId)}
                                         >
-                                            Delete
+                                            {busyId === a.id ? 'Deleting...' : 'Delete'}
                                         </button>
                                     )}
                                 </div>

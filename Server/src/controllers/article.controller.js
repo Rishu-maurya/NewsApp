@@ -14,7 +14,15 @@ const isOwnerOrAdmin = (article, user) => {
 // 1) CREATE 
 const createArticle = async (req, res) => {
     try {
-        const { title, body, summary, category, tags, featuredImage } = req.body;
+        const {
+            title,
+            body,
+            summary,
+            category,
+            tags,
+            featuredImage,
+            status = "draft",
+        } = req.body || {};
 
         if (typeof title !== "string" || !title.trim() ||
             typeof body !== "string" || !body.trim() ||
@@ -32,6 +40,18 @@ const createArticle = async (req, res) => {
                 success: false,
                 message: "Invalid category id"
             })
+        }
+        if (!["draft", "submitted"].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be either draft or submitted",
+            });
+        }
+        if (status === "submitted" && body.trim().length < 30) {
+            return res.status(400).json({
+                success: false,
+                message: "Write at least 30 characters before sending for review",
+            });
         }
 
         const validCategory = await Category.findOne({ _id: category, isActive: true })
@@ -60,7 +80,7 @@ const createArticle = async (req, res) => {
             tags: Array.isArray(tags) ? tags : [],
             featuredImage: featuredImage || "",
             author: req.user._id,
-            status: "draft",
+            status,
         });
 
         return res.status(201).json({
@@ -158,8 +178,7 @@ const getArticleById = async (req, res) => {
     try {
         const article = await Article.findById(req.params.id).populate("author", "fullName");
 
-        // Drafts return the same 404 to non-owners so their existence isn't leaked
-        if (!article || (article.status === "draft" && !isOwnerOrAdmin(article, req.user))) {
+        if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
             return res.status(404).json({
                 success: false,
                 message: "Article not found",
@@ -182,6 +201,23 @@ const getArticleById = async (req, res) => {
     }
 };
 
+const getMyArticles = async (req, res) => {
+    try {
+        const articles = await Article.find({ author: req.user._id })
+            .populate("category", "name slug")
+            .sort({ updatedAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: articles.length,
+            data: articles,
+        });
+    } catch (error) {
+        console.error("Get My Articles Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 // 4) UPDATE
 const updateArticle = async (req, res) => {
     try {
@@ -199,45 +235,89 @@ const updateArticle = async (req, res) => {
                 message: "Not authorized to update this article",
             });
         }
+        if (!["draft", "changes_requested"].includes(article.status)) {
+            return res.status(409).json({
+                success: false,
+                message: "Only drafts or stories with requested changes can be edited",
+            });
+        }
 
-        const { title, content, summary, category, tags, coverImage, status } = req.body;
+        const { title, body, summary, category, tags, featuredImage, status } = req.body || {};
 
         if (title !== undefined) {
-            if (title.trim().length < 5) {
+            if (typeof title !== "string" || title.trim().length < 5) {
                 return res.status(400).json({
                     success: false,
                     message: "Title must be at least 5 characters",
                 });
             }
             article.title = title.trim();
+            article.slug = await generateUniqueSlug(title.trim());
         }
-        if (content !== undefined) {
-            if (!content) {
+        if (body !== undefined) {
+            if (typeof body !== "string" || !body.trim()) {
                 return res.status(400).json({
                     success: false,
-                    message: "Content cannot be empty",
+                    message: "Story cannot be empty",
                 });
             }
-            article.content = content;
+            article.body = body.trim();
         }
-        if (status !== undefined) {
-            if (!["draft", "published"].includes(status)) {
+        if (summary !== undefined) {
+            if (typeof summary !== "string" || !summary.trim()) {
                 return res.status(400).json({
                     success: false,
-                    message: "Status must be either draft or published",
+                    message: "Summary cannot be empty",
+                });
+            }
+            article.summary = summary.trim();
+        }
+        if (category !== undefined) {
+            if (typeof category !== "string" || !mongoose.isValidObjectId(category)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid category id",
+                });
+            }
+            const validCategory = await Category.findOne({ _id: category, isActive: true });
+            if (!validCategory) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid or inactive category",
+                });
+            }
+            article.category = validCategory._id;
+        }
+        if (status !== undefined) {
+            if (!["draft", "submitted"].includes(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Status must be either draft or submitted",
+                });
+            }
+            if (status === "submitted" && article.body.trim().length < 30) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Write at least 30 characters before sending for review",
                 });
             }
             article.status = status;
         }
-        if (summary !== undefined) article.summary = summary;
-        if (category !== undefined) article.category = category;
-        if (tags !== undefined) article.tags = tags;
-        if (coverImage !== undefined) article.coverImage = coverImage;
+        if (tags !== undefined) {
+            if (!Array.isArray(tags) || tags.some((tag) => typeof tag !== "string")) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Tags must be a list of strings",
+                });
+            }
+            article.tags = tags;
+        }
+        if (featuredImage !== undefined) article.featuredImage = featuredImage;
         // author is never updatable
 
-        const updatedArticle = await article.save(); // runs schema validators
+        const updatedArticle = await article.save();
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Article updated successfully",
             data: updatedArticle,
@@ -281,10 +361,16 @@ const deleteArticle = async (req, res) => {
                 message: "Not authorized to delete this article",
             });
         }
+        if (!["draft", "rejected"].includes(article.status)) {
+            return res.status(409).json({
+                success: false,
+                message: "Only drafts or rejected stories can be deleted",
+            });
+        }
 
         await article.deleteOne();
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Article deleted successfully",
         });
@@ -303,6 +389,7 @@ const deleteArticle = async (req, res) => {
 module.exports = {
     createArticle,
     getArticles,
+    getMyArticles,
     getArticleById,
     updateArticle,
     deleteArticle,

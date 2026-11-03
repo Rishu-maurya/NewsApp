@@ -19,7 +19,7 @@ const VIEWS = {
     },
     publisher: {
         title: 'Publisher dashboard',
-        subtitle: 'Review role requests and manage stories.',
+        subtitle: 'Verify journalist and editor role requests.',
         View: PublisherView,
     },
     editor: {

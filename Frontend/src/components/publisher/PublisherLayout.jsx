@@ -46,4 +46,4 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
             </div>
         </div>
     );
-}
+}
