@@ -11,9 +11,19 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                 <div className="dash__bar-inner">
                     <span className="dash__brand">News Platform</span>
                     <div className="dash__user">
-                        <span>{session.user.name}</span>
-                        <span className="dash__role">Publisher</span>
-                        <Link to="/" className="dbtn">View site</Link>
+                        {/* name + role badge open the signed-in user's profile */}
+                        <Link
+                            to="/profile"
+                            className="dash__profile"
+                            title="Open your profile"
+                            aria-label={`${session.user.name}, open your profile`}
+                        >
+                            <span className="dash__avatar" aria-hidden="true">
+                                {session.user.name.trim().charAt(0).toUpperCase()}
+                            </span>
+                            <span className="dash__name">{session.user.name}</span>
+                            <span className="dash__role">Publisher</span>
+                        </Link>
                         <button type="button" className="dbtn" onClick={onLogout}>Log out</button>
                     </div>
                 </div>
@@ -36,4 +46,4 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
             </div>
         </div>
     );
-}
+}

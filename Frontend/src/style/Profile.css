@@ -200,3 +200,8 @@
         grid-row: span 2;
     }
 }
+
+/* "Back to dashboard" link shown above the profile for staff roles */
+.s-profile-back {
+    margin: 0 0 18px;
+}

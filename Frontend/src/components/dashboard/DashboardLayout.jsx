@@ -25,9 +25,19 @@ export default function DashboardLayout({ session, onLogout, title, subtitle, ch
                 <div className="dash__bar-inner">
                     <span className="dash__brand">News Platform</span>
                     <div className="dash__user">
-                        <span>{name}</span>
-                        <span className="dash__role">{role}</span>
-                        <Link to="/" className="dbtn">View site</Link>
+                        {/* name + role badge open the signed-in user's profile */}
+                        <Link
+                            to="/profile"
+                            className="dash__profile"
+                            title="Open your profile"
+                            aria-label={`${name}, open your profile`}
+                        >
+                            <span className="dash__avatar" aria-hidden="true">
+                                {name.trim().charAt(0).toUpperCase()}
+                            </span>
+                            <span className="dash__name">{name}</span>
+                            <span className="dash__role">{role}</span>
+                        </Link>
                         <Link to="/login" className="dbtn" onClick={onLogout}>
                             Log out
                         </Link>

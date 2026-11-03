@@ -1,15 +1,45 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
+import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import PublisherLayout from '../../components/publisher/PublisherLayout';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import { useActivity } from '../../context/ActivityContext';
 import { useArticles } from '../../context/ArticlesContext';
-import { ROLE_LABELS } from '../../data/roles';
+import { HOME_BY_ROLE, ROLE_LABELS } from '../../data/roles';
 import { updateProfile, updateStoredSession } from '../../services/authService';
 import { validateName, validatePhone } from '../../utils/validators';
 import { isLive } from '../../utils/dateUtils';
 import '../../style/Profile.css';
 import '../../style/InfoCard.css';
+
+const DASHBOARD_ROLES = ['admin', 'editor'];
+const PUBLISHER_ROLES = ['publisher', 'journalist'];
+
+const PROFILE_TITLE = 'Your profile';
+const PROFILE_SUBTITLE = 'Keep your name and contact details up to date.';
+
+// Staff open their profile from the dashboard navbar, so the page keeps the same
+// navbar they came from. Readers and signed-out visitors keep the public site layout.
+function ProfileShell({ session, onLogout, children }) {
+    const role = session?.user?.role;
+
+    if (DASHBOARD_ROLES.includes(role)) {
+        return (
+            <DashboardLayout session={session} onLogout={onLogout} title={PROFILE_TITLE} subtitle={PROFILE_SUBTITLE}>
+                {children}
+            </DashboardLayout>
+        );
+    }
+    if (PUBLISHER_ROLES.includes(role)) {
+        return (
+            <PublisherLayout session={session} onLogout={onLogout} title={PROFILE_TITLE} subtitle={PROFILE_SUBTITLE}>
+                {children}
+            </PublisherLayout>
+        );
+    }
+    return <SiteLayout session={session} onLogout={onLogout}>{children}</SiteLayout>;
+}
 
 export default function Profile({ session, onLogout, onSessionUpdate }) {
     const { articles } = useArticles();
@@ -74,13 +104,23 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
         }
     };
 
+    const isStaff = DASHBOARD_ROLES.includes(user.role) || PUBLISHER_ROLES.includes(user.role);
+
     return (
-        <SiteLayout session={session} onLogout={onLogout}>
-            <section className="s-page-intro">
-                <p className="s-eyebrow">Account</p>
-                <h1 className="s-h1">Update profile</h1>
-                <p className="s-sub">Keep your name and contact details up to date.</p>
-            </section>
+        <ProfileShell session={session} onLogout={onLogout}>
+            {isStaff ? (
+                <p className="s-profile-back">
+                    <Link to={HOME_BY_ROLE[user.role] || '/'} className="s-btn s-btn--small">
+                        &larr; Back to dashboard
+                    </Link>
+                </p>
+            ) : (
+                <section className="s-page-intro">
+                    <p className="s-eyebrow">Account</p>
+                    <h1 className="s-h1">Update profile</h1>
+                    <p className="s-sub">{PROFILE_SUBTITLE}</p>
+                </section>
+            )}
 
             <div className="s-profile-layout">
                 <section className="s-info-card s-profile-form-card">
@@ -167,6 +207,6 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
                     </section>
                 </aside>
             </div>
-        </SiteLayout>
+        </ProfileShell>
     );
 }
