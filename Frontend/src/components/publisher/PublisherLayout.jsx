@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import '../../style/Dashboard.css';
+import '../../style/dashboard.css';
 import './publisher.css';
 
 const linkClass = ({ isActive }) => `pub-link${isActive ? ' is-active' : ''}`;
@@ -11,9 +11,19 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                 <div className="dash__bar-inner">
                     <span className="dash__brand">News Platform</span>
                     <div className="dash__user">
-                        <span>{session.user.name}</span>
-                        <span className="dash__role">Publisher</span>
-                        <Link to="/" className="dbtn">View site</Link>
+                        {/* name + role badge open the signed-in user's profile */}
+                        <Link
+                            to="/profile"
+                            className="dash__profile"
+                            title="Open your profile"
+                            aria-label={`${session.user.name}, open your profile`}
+                        >
+                            <span className="dash__avatar" aria-hidden="true">
+                                {session.user.name.trim().charAt(0).toUpperCase()}
+                            </span>
+                            <span className="dash__name">{session.user.name}</span>
+                            <span className="dash__role">Publisher</span>
+                        </Link>
                         <button type="button" className="dbtn" onClick={onLogout}>Log out</button>
                     </div>
                 </div>
@@ -25,9 +35,6 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                         <NavLink to="/publisher" end className={linkClass}>Overview</NavLink>
                         <NavLink to="/publisher/write" className={linkClass}>Write story</NavLink>
                         <NavLink to="/publisher/stories" className={linkClass}>My stories</NavLink>
-                        {session.user.role === 'publisher' && (
-                            <NavLink to="/dashboard" className={linkClass}>Role requests</NavLink>
-                        )}
                     </nav>
                 </aside>
 

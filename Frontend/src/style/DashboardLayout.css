@@ -32,6 +32,40 @@
     font-weight: 600;
 }
 
+.dash__profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px 4px 4px;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    color: inherit;
+    text-decoration: none;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.dash__profile:hover,
+.dash__profile:focus-visible {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+}
+
+.dash__avatar {
+    display: grid;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #ff5a62);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+}
+
 .dash__role {
     padding: 5px 9px;
     border: 1px solid rgba(255, 255, 255, 0.22);
@@ -206,7 +240,8 @@
         gap: 6px;
     }
 
-    .dash__user > span:first-child,
+    /* keep only the avatar on phones so the profile link stays reachable */
+    .dash__name,
     .dash__role {
         display: none;
     }
@@ -228,4 +263,4 @@
         margin-top: -48px;
         padding-block: 0 52px;
     }
-}
+}
