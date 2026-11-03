@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
-import '../../style/dashboard.css';
+import '../../style/Dashboard.css';
 import './publisher.css';
 
 const linkClass = ({ isActive }) => `pub-link${isActive ? ' is-active' : ''}`;
