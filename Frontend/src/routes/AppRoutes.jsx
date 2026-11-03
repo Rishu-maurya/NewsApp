@@ -24,10 +24,8 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
     const toLanding = <Navigate to={HOME_BY_ROLE[role] || '/'} replace />;
     const denied = <Navigate to={session ? '/' : '/login'} replace />;
 
-    // only journalists use the story-writing panel (/publisher/...)
-    // publishers verify role requests, editors review stories, admin manages everything
-    const writesStories = role === 'journalist';
-    const journalistOnly = (page) => (writesStories ? page : denied);
+    const writesStories = role === 'journalist' || role === 'publisher';
+    const publisherWorkspace = (page) => (writesStories ? page : denied);
 
     let dashboard = denied;
     if (writesStories) dashboard = <Navigate to="/publisher" replace />;
@@ -47,10 +45,10 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
 
             <Route path="/dashboard" element={dashboard} />
 
-            <Route path="/publisher" element={journalistOnly(<Overview {...shared} />)} />
-            <Route path="/publisher/write" element={journalistOnly(<WriteStory {...shared} />)} />
-            <Route path="/publisher/write/:id" element={journalistOnly(<WriteStory {...shared} />)} />
-            <Route path="/publisher/stories" element={journalistOnly(<MyStories {...shared} />)} />
+            <Route path="/publisher" element={publisherWorkspace(<Overview {...shared} />)} />
+            <Route path="/publisher/write" element={publisherWorkspace(<WriteStory {...shared} />)} />
+            <Route path="/publisher/write/:id" element={publisherWorkspace(<WriteStory {...shared} />)} />
+            <Route path="/publisher/stories" element={publisherWorkspace(<MyStories {...shared} />)} />
 
             <Route path="/login" element={session ? toLanding : <Login onLoginSuccess={onLogin} />} />
             <Route path="/register" element={session ? toLanding : <Register />} />

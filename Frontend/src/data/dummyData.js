@@ -3,9 +3,12 @@ export const CATEGORIES = ['City', 'Sports', 'Tech', 'Business', 'Health', 'Cult
 export const STATUS_LABELS = {
     draft: 'Draft',
     submitted: 'In review',
+    under_review: 'In review',
     changes_requested: 'Changes requested',
+    approved: 'Approved',
     rejected: 'Rejected',
     published: 'Published',
+    archived: 'Archived',
 };
 
 export const INITIAL_ARTICLES = [

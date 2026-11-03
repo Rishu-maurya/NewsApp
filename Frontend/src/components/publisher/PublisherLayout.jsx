@@ -25,6 +25,9 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                         <NavLink to="/publisher" end className={linkClass}>Overview</NavLink>
                         <NavLink to="/publisher/write" className={linkClass}>Write story</NavLink>
                         <NavLink to="/publisher/stories" className={linkClass}>My stories</NavLink>
+                        {session.user.role === 'publisher' && (
+                            <NavLink to="/dashboard" className={linkClass}>Role requests</NavLink>
+                        )}
                     </nav>
                 </aside>
 
