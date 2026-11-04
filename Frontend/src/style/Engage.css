@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Engagement layer: category colours, keep-reading strip, rich story text.
+   Every rule is prefixed with .site so it wins over the older page styles.
+   ========================================================================== */
+.site [data-cat='City']     { --cat: #2563eb; }
+.site [data-cat='Sports']   { --cat: #15803d; }
+.site [data-cat='Tech']     { --cat: #7c3aed; }
+.site [data-cat='Business'] { --cat: #c2410c; }
+.site [data-cat='Health']   { --cat: #0f766e; }
+.site [data-cat='Culture']  { --cat: #be185d; }
+
+/* ---------- Story cards ---------- */
+.site .s-card[data-cat]::before {
+    background: var(--cat, var(--accent));
+}
+
+.site .s-card[data-cat] .s-cat,
+.site .s-cat[data-cat] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cat, var(--accent));
+}
+
+.site .s-card[data-cat] .s-cat::before,
+.site .s-cat[data-cat]::before {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--cat, var(--accent));
+    content: '';
+}
+
+.site .s-card--lead[data-cat] {
+    border-left-color: var(--cat, var(--accent));
+}
+
+.site .s-card[data-cat]:hover {
+    border-color: var(--cat, var(--line-strong));
+}
+
+.site .s-card[data-cat]:hover .s-card__title a {
+    color: var(--cat, var(--accent));
+}
+
+/* ---------- Category chips take their category's colour when chosen ---------- */
+.site .s-chip[data-cat]:not([data-cat='All'])::before {
+    background: var(--cat);
+}
+
+.site .s-chip[data-cat]:not([data-cat='All'])[aria-pressed='true'] {
+    border-color: var(--cat);
+    box-shadow: 4px 4px 0 var(--cat);
+}
+
+/* ---------- Story text written in the editor (formatted) ---------- */
+.site .s-article .s-article__body--rich {
+    white-space: normal;
+}
+
+.site .s-article .s-article__body--rich::first-letter {
+    float: none;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+}
+
+.site .s-article .s-article__body--rich > p:first-child::first-letter {
+    float: left;
+    margin: 6px 12px 0 0;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 4.6em;
+    font-weight: 900;
+    line-height: 0.8;
+}
+
+.site .s-article__body--rich p { margin: 0 0 1em; }
+.site .s-article__body--rich h1,
+.site .s-article__body--rich h2,
+.site .s-article__body--rich h3 {
+    margin: 1.2em 0 0.4em;
+    color: var(--ink);
+    font-family: var(--font-display);
+    line-height: 1.2;
+}
+.site .s-article__body--rich h1 { font-size: 1.8em; }
+.site .s-article__body--rich h2 { font-size: 1.45em; }
+.site .s-article__body--rich h3 { font-size: 1.2em; }
+.site .s-article__body--rich blockquote {
+    margin: 1.2em 0;
+    padding: 6px 0 6px 20px;
+    border-left: 4px solid var(--accent);
+    color: var(--ink-2);
+    font-size: 1.1em;
+    font-style: italic;
+}
+.site .s-article__body--rich ul,
+.site .s-article__body--rich ol { margin: 0 0 1em; padding-left: 1.5em; }
+.site .s-article__body--rich a { color: var(--accent-strong); text-decoration: underline; }
+
+/* ---------- Keep reading ---------- */
+.site .s-next {
+    width: min(100%, 1180px);
+    margin: 64px auto 0;
+    padding-top: 32px;
+    border-top: 2px solid var(--ink);
+}
+
+.site .s-next__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.site .s-next__card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--cat, var(--accent));
+    border-radius: 6px;
+    color: var(--ink);
+    background: #fff;
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    transition: transform 300ms var(--ease), box-shadow 300ms ease;
+}
+
+.site .s-next__card:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-6px);
+}
+
+.site .s-next__cat {
+    color: var(--cat, var(--accent));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.site .s-next__title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    line-height: 1.25;
+}
+
+.site .s-next__text {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.site .s-next__meta {
+    margin-top: auto;
+    color: var(--cat, var(--accent));
+    font-size: 12px;
+    font-weight: 800;
+    transition: letter-spacing 240ms ease;
+}
+
+.site .s-next__card:hover .s-next__meta {
+    letter-spacing: 0.06em;
+}
+
+@media (max-width: 860px) {
+    .site .s-next__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Home hero: shorter, so the ticker and first stories show without scrolling ---------- */
+.site .s-home-hero {
+    min-height: min(460px, calc(100svh - 300px));
+    padding-block: 48px 76px;
+}

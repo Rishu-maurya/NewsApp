@@ -65,4 +65,4 @@ export default function DashboardLayout({ session, onLogout, title, subtitle, ch
             </footer>
         </div>
     );
-}
+}

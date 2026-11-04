@@ -58,12 +58,17 @@ export function ArticlesProvider({ children }) {
 
     const deleteArticle = (id) => setArticles((prev) => prev.filter((a) => a.id !== id));
 
-    const reviewArticle = (id, decision, feedback = '') =>
+    // editors can fix wording while reviewing, so title/body edits travel with the decision
+    const updateArticleContent = (id, changes) =>
+        setArticles((prev) => prev.map((a) => (a.id === id ? { ...a, ...changes } : a)));
+
+    const reviewArticle = (id, decision, feedback = '', changes = {}) =>
         setArticles((prev) =>
             prev.map((a) =>
                 a.id === id
                     ? {
                         ...a,
+                        ...changes,
                         status: decision,
                         feedback,
                         date: decision === 'published' && a.publishDate ? a.publishDate : today(),
@@ -76,7 +81,7 @@ export function ArticlesProvider({ children }) {
 
     return (
         <ArticlesContext.Provider
-            value={{ articles, saveArticle, submitArticle, deleteArticle, reviewArticle, resetDemoData }}
+            value={{ articles, saveArticle, submitArticle, deleteArticle, reviewArticle, updateArticleContent, resetDemoData }}
         >
             {children}
         </ArticlesContext.Provider>

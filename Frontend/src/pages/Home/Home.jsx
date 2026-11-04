@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
 import LoginPrompt from '../../components/news/LoginPrompt';
+import BreakingTicker from '../../style/BreakingTicker';
+import { bodyToText } from '../../utils/richText';
 import { useArticles } from '../../context/ArticlesContext';
 import { CATEGORIES } from '../../data/dummyData';
 import { LIVE_STREAMS, startLabel } from '../../data/liveData';
@@ -27,7 +29,7 @@ export default function Home({ session, onLogout }) {
             if (category !== 'All' && a.category !== category) return false;
             if (!matchesDate(a.date, when)) return false;
             if (!q) return true;
-            return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
+            return `${a.title} ${bodyToText(a.body)} ${a.author}`.toLowerCase().includes(q);
         });
     }, [published, query, category, date, day]);
 
@@ -45,6 +47,11 @@ export default function Home({ session, onLogout }) {
                     <div><strong>{LIVE_STREAMS.length}</strong><span>Live streams</span></div>
                 </div>
             </section>
+
+            <BreakingTicker
+                as={Link}
+                items={published.slice(0, 5).map((a) => ({ id: a.id, title: a.title, to: `/article/${a.id}` }))}
+            />
 
             {session ? (
                 <section className="s-block">
@@ -79,6 +86,7 @@ export default function Home({ session, onLogout }) {
                             key={c}
                             type="button"
                             className="s-chip"
+                            data-cat={c}
                             aria-pressed={category === c}
                             onClick={() => setCategory(c)}
                         >

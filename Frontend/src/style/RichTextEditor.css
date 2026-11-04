@@ -1,0 +1,200 @@
+/* Word-style editor: toolbar + paper sheet */
+.rte {
+    --rte-text: var(--accent);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--panel-2);
+    overflow: hidden;
+}
+
+.rte__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line-strong);
+    background: #fff;
+}
+
+.rte__group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding-right: 8px;
+    margin-right: 4px;
+    border-right: 1px solid var(--line);
+}
+
+.rte__group:last-child {
+    border-right: 0;
+}
+
+.rte__btn,
+.rte__color {
+    display: inline-grid;
+    min-width: 32px;
+    height: 32px;
+    place-items: center;
+    padding: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--ink);
+    background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
+}
+
+.rte__btn:hover,
+.rte__color:hover {
+    background: var(--surface-2);
+    border-color: var(--line-strong);
+}
+
+.rte__btn.is-on {
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+}
+
+.rte__btn:focus-visible,
+.rte__select:focus-visible,
+.rte__color:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.rte__clear {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.rte__color {
+    position: relative;
+    font-weight: 800;
+}
+
+.rte__color span {
+    border-bottom: 3px solid var(--accent);
+    line-height: 1.1;
+}
+
+.rte__color--mark span {
+    padding: 0 3px;
+    border: 0;
+    background: #ffe066;
+    font-size: 12px;
+}
+
+.rte__color input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.rte__select {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    color: var(--ink);
+    background: #fff;
+    font-size: 13px;
+}
+
+.rte__select--size {
+    margin-left: 4px;
+}
+
+.rte__link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+}
+
+.rte__link label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.rte__link input {
+    min-width: 0;
+    flex: 1 1 220px;
+    padding: 8px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.rte__page-wrap {
+    max-height: 70vh;
+    min-height: 360px;
+    padding: clamp(12px, 3vw, 28px);
+    overflow-y: auto;
+}
+
+/* the sheet of paper */
+.rte__page {
+    max-width: 780px;
+    min-height: 420px;
+    margin: 0 auto;
+    padding: clamp(20px, 5vw, 56px);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    color: #1c1c22;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 14px 34px rgba(0, 0, 0, 0.08);
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.8;
+    outline: none;
+    overflow-wrap: anywhere;
+}
+
+.rte__page:focus {
+    border-color: var(--accent-line);
+    box-shadow: var(--ring), 0 14px 34px rgba(0, 0, 0, 0.08);
+}
+
+.rte__page p { margin: 0 0 1em; }
+.rte__page h1,
+.rte__page h2,
+.rte__page h3 {
+    margin: 1.1em 0 0.4em;
+    font-family: var(--font-display);
+    line-height: 1.2;
+}
+.rte__page h1 { font-size: 2em; }
+.rte__page h2 { font-size: 1.5em; }
+.rte__page h3 { font-size: 1.2em; }
+.rte__page blockquote {
+    margin: 1em 0;
+    padding: 4px 0 4px 18px;
+    border-left: 4px solid var(--accent);
+    color: var(--ink-2);
+    font-style: italic;
+}
+.rte__page ul,
+.rte__page ol { margin: 0 0 1em; padding-left: 1.6em; }
+.rte__page a { color: var(--accent-strong); text-decoration: underline; }
+
+.rte__status {
+    margin: 0;
+    padding: 7px 14px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    background: #fff;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+    .rte__group { border-right: 0; }
+}

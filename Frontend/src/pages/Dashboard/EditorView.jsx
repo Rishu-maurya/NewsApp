@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useArticles } from '../../context/ArticlesContext';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
+import StoryEditor from '../../components/dashboard/StoryEditor';
+import { bodyToText } from '../../utils/richText';
 import '../../style/EditorView.css';
 
 export default function EditorView() {
-    const { articles, reviewArticle } = useArticles();
-    const [openId, setOpenId] = useState(null);
-    const [feedback, setFeedback] = useState('');
-    const [error, setError] = useState('');
+    const { articles, reviewArticle, updateArticleContent } = useArticles();
+    const [editingId, setEditingId] = useState(null);
 
     const pending = articles.filter((a) => a.status === 'submitted');
     const decided = articles
@@ -16,21 +16,23 @@ export default function EditorView() {
         .slice(0, 5);
     const count = (status) => articles.filter((a) => a.status === status).length;
 
-    const toggle = (id) => {
-        setOpenId(openId === id ? null : id);
-        setFeedback('');
-        setError('');
-    };
+    const editing = articles.find((a) => a.id === editingId);
 
-    const decide = (id, decision) => {
-        if (decision !== 'published' && !feedback.trim()) {
-            return setError('Add feedback so the journalist knows what to fix.');
-        }
-        reviewArticle(id, decision, decision === 'published' ? '' : feedback.trim());
-        setOpenId(null);
-        setFeedback('');
-        setError('');
-    };
+    // While a story is open for editing, nothing else on the dashboard is shown.
+    if (editing) {
+        return (
+            <StoryEditor
+                key={editing.id}
+                article={editing}
+                onSave={updateArticleContent}
+                onDecide={(id, decision, feedback, changes) => {
+                    reviewArticle(id, decision, feedback, changes);
+                    setEditingId(null);
+                }}
+                onClose={() => setEditingId(null)}
+            />
+        );
+    }
 
     return (
         <>
@@ -61,45 +63,10 @@ export default function EditorView() {
                                 <span>Sent {a.date}</span>
                             </p>
 
-                            {openId === a.id ? (
-                                <>
-                                    <p className="item__body">{a.body}</p>
-
-                                    {error && <p className="derr" role="alert">{error}</p>}
-                                    <label htmlFor={`fb-${a.id}`} className="muted">
-                                        Feedback for the journalist (needed for changes or rejection)
-                                    </label>
-                                    <textarea
-                                        id={`fb-${a.id}`}
-                                        className="feedback-input"
-                                        value={feedback}
-                                        onChange={(e) => {
-                                            setFeedback(e.target.value);
-                                            setError('');
-                                        }}
-                                        placeholder="Explain what needs to change"
-                                    />
-
-                                    <div className="btn-row">
-                                        <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'published')}>
-                                            Approve and publish
-                                        </button>
-                                        <button type="button" className="dbtn" onClick={() => decide(a.id, 'changes_requested')}>
-                                            Request changes
-                                        </button>
-                                        <button type="button" className="dbtn dbtn--danger" onClick={() => decide(a.id, 'rejected')}>
-                                            Reject
-                                        </button>
-                                        <button type="button" className="dbtn" onClick={() => toggle(a.id)}>
-                                            Close
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <button type="button" className="dbtn dbtn--primary" onClick={() => toggle(a.id)}>
-                                    Read and review
-                                </button>
-                            )}
+                            <p className="item__body">{bodyToText(a.body).slice(0, 180)}{bodyToText(a.body).length > 180 ? '...' : ''}</p>
+                            <button type="button" className="dbtn dbtn--primary" onClick={() => setEditingId(a.id)}>
+                                Edit and review
+                            </button>
                         </article>
                     ))}
                 </div>

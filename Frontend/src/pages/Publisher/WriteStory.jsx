@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import PublisherLayout from '../../components/publisher/PublisherLayout';
 import { useArticles } from '../../context/ArticlesContext';
 import { CATEGORIES } from '../../data/dummyData';
+import { bodyToPlain } from '../../utils/richText';
 
 const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '' };
 const EDITABLE = ['draft', 'changes_requested'];
@@ -28,7 +29,7 @@ export default function WriteStory({ session, onLogout }) {
                 id: editing.id,
                 title: editing.title,
                 category: editing.category,
-                body: editing.body,
+                body: bodyToPlain(editing.body), // an editor may have saved formatted text
             });
         } else {
             setForm(EMPTY);

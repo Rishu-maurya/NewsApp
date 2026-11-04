@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useActivity } from '../../context/ActivityContext';
 import { dayName } from '../../utils/dateUtils';
+import { bodyToText, readMinutes } from '../../utils/richText';
 import '../../style/ArticleCard.css';
 
 export default function ArticleCard({ article, session, lead, removable }) {
@@ -12,7 +13,8 @@ export default function ArticleCard({ article, session, lead, removable }) {
     const isSaved = email ? (saved[key] || []).includes(email) : false;
     const likeCount = (likes[key] || []).length;
     const commentCount = comments.filter((c) => c.targetId === key).length;
-    const summary = article.body.length > 120 ? `${article.body.slice(0, 120)}...` : article.body;
+    const text = bodyToText(article.body);
+    const summary = text.length > 120 ? `${text.slice(0, 120)}...` : text;
 
     const handleSave = () => {
         if (!email) {
@@ -27,7 +29,7 @@ export default function ArticleCard({ article, session, lead, removable }) {
     const label = removable ? 'Remove' : isSaved ? 'Saved' : 'Save';
 
     return (
-        <article className={`s-card${lead ? ' s-card--lead' : ''}`}>
+        <article className={`s-card${lead ? ' s-card--lead' : ''}`} data-cat={article.category}>
             <p className="s-cat">{article.category}</p>
             <h2 className="s-card__title">
                 <Link to={`/article/${article.id}`}>{article.title}</Link>
@@ -39,6 +41,7 @@ export default function ArticleCard({ article, session, lead, removable }) {
             <p className="s-meta">
                 <span>{likeCount} likes</span>
                 <span>{commentCount} comments</span>
+                <span>{readMinutes(article.body)} min read</span>
             </p>
 
             <div className="s-card__foot">

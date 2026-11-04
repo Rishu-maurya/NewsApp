@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
+import { ROLE_LABELS } from '../../data/roles';
 import '../../style/dashboard.css';
 import './publisher.css';
 
@@ -22,7 +23,7 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                                 {session.user.name.trim().charAt(0).toUpperCase()}
                             </span>
                             <span className="dash__name">{session.user.name}</span>
-                            <span className="dash__role">Publisher</span>
+                            <span className="dash__role">{ROLE_LABELS[session.user.role] || session.user.role}</span>
                         </Link>
                         <button type="button" className="dbtn" onClick={onLogout}>Log out</button>
                     </div>
