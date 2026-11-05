@@ -11,10 +11,7 @@ function getErrorMessage(err, fallback) {
 }
 
 export async function sendRoleRequest({ requestedRole, organization, proofLink, message, token }) {
-  const body = {
-    requestedRole,
-    organization: typeof organization === "string" ? organization.trim() : "",
-  };
+  const body = { requestedRole };
   if (typeof proofLink === "string" && proofLink.trim()) body.proofLink = proofLink.trim();
   if (typeof message === "string" && message.trim()) body.message = message.trim();
 

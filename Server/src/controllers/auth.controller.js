@@ -8,7 +8,6 @@ const registerUser = async (req, res) => {
         const { fullName, email, password, phone, role = "reader", organization } = req.body || {};
         const cleanName = typeof fullName === "string" ? fullName.trim() : "";
         const cleanEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
-        const cleanOrganization = typeof organization === "string" ? organization.trim() : "";
         const requestedRoles = ["journalist", "editor", "publisher"];
 
         if (!cleanName || !cleanEmail || typeof password !== "string" || !password) {
@@ -29,12 +28,7 @@ const registerUser = async (req, res) => {
                 message: "Choose reader, journalist, editor or publisher",
             });
         }
-        if (role !== "reader" && !cleanOrganization) {
-            return res.status(400).json({
-                success: false,
-                message: "Organization is required for a role request",
-            });
-        }
+       
 
         const userExists = await User.findOne({ email: cleanEmail });
         if (userExists) {
@@ -59,8 +53,7 @@ const registerUser = async (req, res) => {
             try {
                 roleRequest = await RoleRequest.create({
                     user: newUser._id,
-                    requestedRole: role,
-                    organization: cleanOrganization,
+                    requestedRole: role,                    
                 });
             } catch (error) {
                 await User.deleteOne({ _id: newUser._id });

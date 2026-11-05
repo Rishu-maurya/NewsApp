@@ -1,4 +1,5 @@
 const Article = require("../models/article");
+const Review = require("../models/review");
 const mongoose = require("mongoose")
 const Category = require("../models/category")
 const generateUniqueSlug = require("../utils/gernerateUniqueSlug");
@@ -101,7 +102,7 @@ const createArticle = async (req, res) => {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
         }
-        
+
         console.error("Create Article Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
@@ -121,7 +122,7 @@ const getArticles = async (req, res) => {
         const role = req.user?.role;
         if (role === "admin") {
             if (status) filter.status = status;
-        } else if (role === "author") {
+        } else if (role === "journalist" || role === "publisher") {
             if (status === "draft") {
                 filter.status = "draft";
                 filter.author = req.user._id;
@@ -142,8 +143,9 @@ const getArticles = async (req, res) => {
 
         const [articles, total] = await Promise.all([
             Article.find(filter)
-                .select("-content")
+                .select("-body")
                 .populate("author", "fullName")
+                .populate("category", "name slug")
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
@@ -185,10 +187,16 @@ const getArticleById = async (req, res) => {
             });
         }
 
-        res.status(200).json({
-            success: true,
-            data: article,
-        });
+        const data = article.toObject();
+        if (
+            isOwnerOrAdmin(article, req.user) &&
+            ["changes_requested", "rejected"].includes(article.status)
+        ) {
+            const last = await Review.findOne({ article: article._id }).sort({ createdAt: -1 });
+            data.reviewNote = last?.feedback || "";
+        }
+
+        res.status(200).json({ success: true, data });
     } catch (error) {
         if (error.name === "CastError") {
             return res.status(400).json({
@@ -205,13 +213,24 @@ const getMyArticles = async (req, res) => {
     try {
         const articles = await Article.find({ author: req.user._id })
             .populate("category", "name slug")
-            .sort({ updatedAt: -1 });
+            .select("title summary category status createdAt updatedAt")
+            .sort({ updatedAt: -1 })
+            .lean();
 
-        return res.status(200).json({
-            success: true,
-            count: articles.length,
-            data: articles,
+        const needNote = articles
+            .filter((a) => ["changes_requested", "rejected"].includes(a.status))
+            .map((a) => a._id);
+
+        const reviews = await Review.find({ article: { $in: needNote } }).sort({ createdAt: -1 });
+        const notes = {};
+        reviews.forEach((r) => {
+            const key = r.article.toString();
+            if (!notes[key]) notes[key] = r.feedback;   // sabse naya feedback
         });
+
+        const data = articles.map((a) => ({ ...a, reviewNote: notes[a._id.toString()] || "" }));
+
+        return res.status(200).json({ success: true, count: data.length, data });
     } catch (error) {
         console.error("Get My Articles Error:", error);
         return res.status(500).json({ success: false, message: "Server error" });
@@ -250,6 +269,11 @@ const updateArticle = async (req, res) => {
                     success: false,
                     message: "Title must be at least 5 characters",
                 });
+            }
+
+            if (title.trim() !== article, title) {
+                article.title = title.trim();
+                article.slug = await generateUniqueSlug(title.trim())
             }
             article.title = title.trim();
             article.slug = await generateUniqueSlug(title.trim());
@@ -386,6 +410,32 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+const getReviewQueue = async (req, res) => {
+    try {
+        const [pending, decided, countRows] = await Promise.all([
+            Article.find({ status: "submitted" })
+                .populate("author", "fullName")
+                .populate("category", "name slug")
+                .sort({ updatedAt: 1 }),
+            Article.find({ status: { $in: ["approved", "published", "changes_requested", "rejected"] } })
+                .select("-body")
+                .populate("author", "fullName")
+                .populate("category", "name slug")
+                .sort({ updatedAt: -1 })
+                .limit(20),
+            Article.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+        ]);
+
+        const counts = {};
+        countRows.forEach((row) => { counts[row._id] = row.count; });
+
+        res.status(200).json({ success: true, data: { pending, decided, counts } });
+    } catch (error) {
+        console.error("Get Review Queue Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 module.exports = {
     createArticle,
     getArticles,
@@ -393,4 +443,5 @@ module.exports = {
     getArticleById,
     updateArticle,
     deleteArticle,
+    getReviewQueue,
 };

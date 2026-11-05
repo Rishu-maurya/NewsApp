@@ -11,7 +11,7 @@ const CAN_REVIEW = {
 
 const createRoleRequest = async (req, res) => {
     try {
-        const { requestedRole, organization, proofLink, message } = req.body;
+        const { requestedRole, proofLink, message } = req.body;
 
         if (!ALLOWED_ROLES.includes(requestedRole)) {
             return res.status(400).json({
@@ -20,12 +20,6 @@ const createRoleRequest = async (req, res) => {
             });
         }
 
-        if (typeof organization !== "string" || !organization.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Organization is required",
-            });
-        }
 
         if (proofLink !== undefined && (typeof proofLink !== "string" || !proofLink.startsWith("http"))) {
             return res.status(400).json({
@@ -45,7 +39,6 @@ const createRoleRequest = async (req, res) => {
         const request = await RoleRequest.create({
             user: req.user._id,
             requestedRole,
-            organization: organization.trim(),
             proofLink,
             message,
         });
@@ -75,7 +68,7 @@ const createRoleRequest = async (req, res) => {
 const getMyRoleRequests = async (req, res) => {
     try {
         const requests = await RoleRequest.find({ user: req.user._id })
-            .select("requestedRole organization status reviewNote createdAt")
+            .select("requestedRole status reviewNote createdAt")
             .sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -94,10 +87,10 @@ const getPendingRoleRequests = async (req, res) => {
     try {
         const requests = await RoleRequest.find({
             status: "pending",
-            requestedRole: { $in: CAN_REVIEW[req.user.role] },
+            requestedRole: { $in: CAN_REVIEW[req.user.role] || [] },
         })
             .populate("user", "fullName email")
-            .select("user requestedRole organization proofLink message createdAt")
+            .select("user requestedRole proofLink message createdAt")
             .sort({ createdAt: 1 });
 
         return res.status(200).json({
@@ -113,6 +106,8 @@ const getPendingRoleRequests = async (req, res) => {
 
 
 const reviewRoleRequest = async (req, res) => {
+    const session = await mongoose.startSession();
+
     try {
         const { id } = req.params;
         const { decision, reviewNote } = req.body;
@@ -121,7 +116,7 @@ const reviewRoleRequest = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "Invalid request ID",
-            })
+            });
         }
 
         if (!["approved", "rejected"].includes(decision)) {
@@ -131,66 +126,91 @@ const reviewRoleRequest = async (req, res) => {
             });
         }
 
-        if (decision === "rejected" && (typeof reviewNote !== "string" || !reviewNote.trim())) {
+        if (
+            decision === "rejected" &&
+            (typeof reviewNote !== "string" || !reviewNote.trim())
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Reason is required to reject a request",
-            })
-        }
-
-        const request = await RoleRequest.findById(id);
-        if (!request) {
-            return res.status(404).json({ success: false, message: "Request not found" });
-        }
-
-        if (!CAN_REVIEW[req.user.role].includes(request.requestedRole)) {
-            return res.status(403).json({
-                success: false,
-                message: "You cannot review this request",
+                message: "Reason is required for rejection",
             });
         }
 
-        const updated = await RoleRequest.findOneAndUpdate(
-            { _id: id, status: "pending" },
-            {
-                status: decision,
-                reviewedBy: req.user._id,
-                reviewNote: decision === "rejected" ? reviewNote.trim() : undefined,
-            },
-            { new: true }
-        );
+        let updatedRequest;
 
-        if (!updated) {
-            return res.status(409).json({
-                success: false,
-                message: "This request was already reviewed",
-            })
-        }
+        await session.withTransaction(async () => {
+            const request = await RoleRequest.findById(id).session(session);
 
-        if (decision === "approved") {
-            await User.findByIdAndUpdate(request.user, { role: request.requestedRole })
-        }
+            if (!request) {
+                const error = new Error("Request not found");
+                error.statusCode = 404;
+                throw error;
+            }
+
+            if (request.status !== "pending") {
+                const error = new Error("Request already reviewed");
+                error.statusCode = 409;
+                throw error;
+            }
+
+            const allowedRoles = CAN_REVIEW[req.user.role] || [];
+
+            if (!allowedRoles.includes(request.requestedRole)) {
+                const error = new Error("You cannot review this request");
+                error.statusCode = 403;
+                throw error;
+            }
+
+            // Update User role only when approved
+            if (decision === "approved") {
+                const user = await User.findByIdAndUpdate(
+                    request.user,
+                    { $set: { role: request.requestedRole } },
+                    {
+                        new: true,
+                        runValidators: true,
+                        session,
+                    }
+                );
+
+                if (!user) {
+                    const error = new Error("Requested user not found");
+                    error.statusCode = 404;
+                    throw error;
+                }
+            }
+
+            // Update RoleRequest
+            request.status = decision;
+            request.reviewedBy = req.user._id;
+            request.reviewNote =
+                decision === "rejected" ? reviewNote.trim() : "";
+
+            await request.save({ session });
+
+            updatedRequest = request;
+        });
 
         return res.status(200).json({
             success: true,
-            message: `Request ${decision}`,
-            data: updated,
-        })
-    } catch (error) {
-        if (error.name === "ValidationError") {
-            const message = Object.values(error.errors)[0].message;
-            return res.status(400).json({
-                success: false, message
-            })
-        }
+            message: `Request ${decision} successfully`,
+            data: updatedRequest,
+        });
 
-        console.error("Review Role Request Error:", error)
-        res.status(500).json({
+    } catch (error) {
+        console.error("Review Role Request Error:", error);
+
+        return res.status(error.statusCode || 500).json({
             success: false,
-            message: "Server error"
-        })
+            message: error.statusCode
+                ? error.message
+                : "Server error",
+        });
+
+    } finally {
+        await session.endSession();
     }
-}
+};
 
 
 module.exports = { createRoleRequest, getMyRoleRequests, getPendingRoleRequests, reviewRoleRequest };

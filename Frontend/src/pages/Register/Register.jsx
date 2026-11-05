@@ -23,7 +23,6 @@ export default function Register() {
         password: '',
         confirmPassword: '',
         role: DEFAULT_ROLE,
-        organization: '',
     });
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState('');
@@ -124,19 +123,7 @@ export default function Register() {
 
                 <RoleSelect value={form.role} onChange={handleChange} />
 
-                {form.role !== DEFAULT_ROLE && (
-                    <InputField
-                        id="organization"
-                        label="Organization"
-                        type="text"
-                        autoComplete="organization"
-                        placeholder="Your news organization"
-                        value={form.organization}
-                        onChange={handleChange}
-                        error={errors.organization}
-                    />
-                )}
-
+               
                 <PasswordField
                     id="password"
                     label="Password"

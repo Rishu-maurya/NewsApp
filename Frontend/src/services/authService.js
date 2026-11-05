@@ -47,7 +47,7 @@ export async function login({ email, password }) {
   }
 }
 
-export async function register({ name, email, phone = "", password, role = "reader", organization = "" }) {
+export async function register({ name, email, phone = "", password, role = "reader"}) {
   const body = {
     fullName: name.trim(),
     email: email.trim().toLowerCase(),
@@ -55,7 +55,6 @@ export async function register({ name, email, phone = "", password, role = "read
     role,
   };
   if (phone.trim()) body.phone = phone.trim();
-  if (role !== "reader") body.organization = organization.trim();
 
   try {
     const response = await api.post("/auth/register", body);

@@ -6,7 +6,7 @@ const Article = require("../models/article.js");
 //   draft -> pending_review -> approved | rejected | changes_requested
 //   approved -> published
 const ARTICLE_STATUS = {
-    PENDING: "pending_review",
+    PENDING: "submitted",
     APPROVED: "approved",
     REJECTED: "rejected",
     CHANGES_REQUESTED: "changes_requested",
@@ -90,11 +90,8 @@ const createReview = async (req, res) => {
         const { articleId } = req.params;
         const { decision, feedback } = req.body;
 
-        if (!decision || !feedback || !feedback.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Decision and feedback are required",
-            });
+        if (!decision) {
+            return res.status(400).json({ success: false, message: "Decision is required" });
         }
         if (!DECISION_TO_STATUS[decision]) {
             return res.status(400).json({
@@ -102,7 +99,14 @@ const createReview = async (req, res) => {
                 message: "Decision must be approved, rejected or changes_requested",
             });
         }
-        if (feedback.trim().length > 3000) {
+        const cleanFeedback = typeof feedback === "string" ? feedback.trim() : "";
+        if (decision !== "approved" && !cleanFeedback) {
+            return res.status(400).json({
+                success: false,
+                message: "Feedback is required for rejection or requested changes",
+            });
+        }
+        if (cleanFeedback.length > 3000) {
             return res.status(400).json({
                 success: false,
                 message: "Feedback cannot exceed 3000 characters",
@@ -137,7 +141,7 @@ const createReview = async (req, res) => {
             article: article._id,
             editor: req.user._id, // from the token, never from req.body
             decision,
-            feedback: feedback.trim(),
+            feedback: cleanFeedback || "Approved",
         });
 
         // Move the article to the state that matches the decision
@@ -208,6 +212,7 @@ const publishArticle = async (req, res) => {
         }
 
         article.status = ARTICLE_STATUS.PUBLISHED;
+        aricle.publishedAt = new Data();
         await article.save();
 
         res.status(200).json({

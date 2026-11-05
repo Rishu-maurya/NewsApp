@@ -12,12 +12,6 @@ const roleRequestSchema = new mongoose.Schema(
             enum: ["journalist", "editor", "publisher"],
             required: true,
         },
-        organization: {
-            type: String,
-            required: true, 
-            trim: true, 
-            maxlength: 100
-        },
         proofLink: { 
             type: String, 
             trim: true, 
