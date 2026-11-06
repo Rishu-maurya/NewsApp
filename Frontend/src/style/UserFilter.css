@@ -1,0 +1,108 @@
+/* Users table: role filter chips, search and clickable names */
+.uf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.uf__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.uf__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 99px;
+    color: var(--ink);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.uf__chip:hover {
+    border-color: var(--ink);
+}
+
+.uf__chip[aria-pressed='true'] {
+    border-color: var(--ink);
+    color: #fff;
+    background: var(--ink);
+}
+
+.uf__chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.uf__count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    color: var(--ink-2);
+    background: var(--panel-2);
+    font-size: 11px;
+    text-align: center;
+}
+
+.uf__chip[aria-pressed='true'] .uf__count {
+    color: var(--ink);
+    background: #fff;
+}
+
+.uf__search {
+    width: min(100%, 260px);
+    padding: 8px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.uf__search:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: var(--ring);
+}
+
+.uf__result {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.uf__name {
+    padding: 0;
+    border: 0;
+    color: var(--accent-strong);
+    background: none;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: text-decoration-color 150ms ease;
+}
+
+.uf__name:hover,
+.uf__name:focus-visible {
+    text-decoration-color: currentColor;
+    outline: none;
+}
+
+.uf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}

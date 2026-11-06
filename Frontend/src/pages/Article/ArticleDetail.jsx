@@ -2,42 +2,48 @@ import { Link, useParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
-import KeepReading from '../../components/news/KeepReading';
-import { bodyToHtml, hasMarkup, readMinutes } from '../../utils/richText';
 import { useArticles } from '../../context/ArticlesContext';
-import { isLive } from '../../utils/dateUtils';
+import { dayName, isLive } from '../../utils/dateUtils';
+import KeepReading from '../../components/news/KeepReading';
+import { bodyToHtml, bodyToText, readMinutes, wordCount } from '../../utils/richText';
 import '../../style/ArticleDetail.css';
+import '../../style/Newspaper.css';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
     const { articles } = useArticles();
     const article = articles.find((a) => String(a.id) === id && isLive(a));
-    const rich = article ? hasMarkup(article.body) : false;
+
+    // newspaper layout: longer stories get more columns
+    const words = article ? wordCount(article.body) : 0;
+    const columns = words >= 160 ? 3 : words >= 60 ? 2 : 1;
+    const dropCap = article ? /^[A-Za-z]/.test(bodyToText(article.body)) : false;
+
     return (
         <SiteLayout session={session} onLogout={onLogout}>
-            <div className="s-article">
-                <Link to="/" className="s-back">All stories</Link>
+            {article ? (
+                <>
+                    <article className="s-paper">
+                        <Link to="/" className="s-back">All stories</Link>
 
-                {article ? (
-                    <>
-                        <p className="s-cat" data-cat={article.category}>{article.category}</p>
-                        <h1 className="s-h1">{article.title}</h1>
-                        <p className="s-meta">
-                            <span>{article.author}</span>
-                            <span>{article.date}</span>
-                            <span>{readMinutes(article.body)} min read</span>
-                        </p>
+                        <header className="s-paper__head">
+                            <p className="s-paper__kicker" data-cat={article.category}>{article.category}</p>
+                            <h1 className="s-paper__title">{article.title}</h1>
+                            <p className="s-paper__byline">
+                                <span>By {article.author}</span>
+                                <span>{dayName(article.date)}, {article.date}</span>
+                                <span>{readMinutes(article.body)} min read</span>
+                            </p>
+                        </header>
 
-                        {rich ? (
-                            // body is sanitized when an editor saves it and again here
-                            <div
-                                className="s-article__body s-article__body--rich"
-                                dangerouslySetInnerHTML={{ __html: bodyToHtml(article.body) }}
-                            />
-                        ) : (
-                            <p className="s-article__body">{article.body}</p>
-                        )}
+                        {/* plain text becomes paragraphs; formatted text from the editor is sanitized */}
+                        <div
+                            className={`s-paper__body s-paper__body--cols-${columns}${dropCap ? ' s-paper__body--dropcap' : ''}`}
+                            dangerouslySetInnerHTML={{ __html: bodyToHtml(article.body) }}
+                        />
+                    </article>
 
+                    <div className="s-article">
                         <Link
                             to="/report"
                             state={{ articleId: article.id }}
@@ -47,16 +53,17 @@ export default function ArticleDetail({ session, onLogout }) {
                         </Link>
                         <ReactionBar articleId={article.id} session={session} />
                         <CommentSection targetId={article.id} session={session} />
-                    </>
-                ) : (
+                    </div>
+
+                    <KeepReading current={article} stories={articles.filter((a) => isLive(a))} />
+                </>
+            ) : (
+                <div className="s-article">
+                    <Link to="/" className="s-back">All stories</Link>
                     <div className="s-empty">
                         <p>This story could not be found. It may have been removed.</p>
                     </div>
-                )}
-            </div>
-
-            {article && (
-                <KeepReading current={article} stories={articles.filter((a) => isLive(a))} />
+                </div>
             )}
         </SiteLayout>
     );

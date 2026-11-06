@@ -13,7 +13,7 @@ export default function ArticleCard({ article, session, lead, removable }) {
     const isSaved = email ? (saved[key] || []).includes(email) : false;
     const likeCount = (likes[key] || []).length;
     const commentCount = comments.filter((c) => c.targetId === key).length;
-    const text = bodyToText(article.body);
+    const text = bodyToText(article.body); // body may hold formatted text from the editor
     const summary = text.length > 120 ? `${text.slice(0, 120)}...` : text;
 
     const handleSave = () => {

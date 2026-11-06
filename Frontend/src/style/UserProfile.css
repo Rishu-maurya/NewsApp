@@ -1,0 +1,238 @@
+.up {
+    display: grid;
+    gap: 18px;
+    padding: clamp(16px, 3vw, 28px);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(16, 37, 31, 0.14);
+}
+
+.up__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.up__you {
+    padding: 4px 12px;
+    border-radius: 99px;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.up__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
+}
+
+.up__col {
+    display: grid;
+    min-width: 0;
+    gap: 18px;
+}
+
+.up__card {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-2);
+}
+
+.up__hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.up__avatar {
+    display: grid;
+    flex: none;
+    width: 72px;
+    height: 72px;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #ff5a62);
+    box-shadow: 0 8px 20px rgba(215, 25, 32, 0.28);
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.up__who {
+    min-width: 0;
+}
+
+.up__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.up__email {
+    margin: 2px 0 10px;
+    color: var(--muted);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.up__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.up__role {
+    padding: 4px 12px;
+    border-radius: 99px;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.up__h3 {
+    margin: 0 0 12px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.up__details {
+    margin: 0;
+}
+
+.up__details > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.up__details dt {
+    color: var(--muted);
+}
+
+.up__details dd {
+    margin: 0;
+    font-weight: 600;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.up__about {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.up__note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.up__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.up__actions label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.up__actions select {
+    padding: 8px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.up__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 10px;
+}
+
+.up__stats > div {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--ink);
+    border-radius: 4px;
+    background: #fff;
+}
+
+.up__stats strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+.up__stats span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.up__list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.up__list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.up__list-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.up__date {
+    flex: none;
+    color: var(--faint);
+    font-size: 11px;
+}
+
+@media (max-width: 860px) {
+    .up__grid {
+        grid-template-columns: 1fr;
+    }
+}
