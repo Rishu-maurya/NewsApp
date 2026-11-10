@@ -1,40 +1,118 @@
-import { useNavigate } from 'react-router-dom';
-import { useActivity } from '../../context/ActivityContext';
-import '../../style/ReactionBar.css';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useActivity } from "../../context/ActivityContext";
+import {
+  addBookmark,
+  getBookmarkStatus,
+  getLikeInfo,
+  removeBookmark,
+  toggleLike,
+} from "../../services/engagementService";
+import "../../style/ReactionBar.css";
 
 export default function ReactionBar({ articleId, session }) {
-    const navigate = useNavigate();
-    const { likes, saved, comments, toggleLike, toggleSave } = useActivity();
+  const navigate = useNavigate();
+  const { comments } = useActivity();
 
-    const email = session?.user.email;
-    const key = String(articleId);
-    const likeList = likes[key] || [];
-    const commentCount = comments.filter((c) => c.targetId === key).length;
-    const isLiked = email ? likeList.includes(email) : false;
-    const isSaved = email ? (saved[key] || []).includes(email) : false;
+  const email = session?.user.email;
+  const key = String(articleId);
+  const commentCount = comments.filter((c) => c.targetId === key).length;
 
-    const goLogin = () =>
-        navigate('/login', { state: { message: 'Log in to like and save stories.' } });
+  const [likeCount, setLikeCount] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-    return (
-        <div className="s-row s-reaction-bar">
-            <button
-                type="button"
-                className="s-btn"
-                aria-pressed={isLiked}
-                onClick={() => (email ? toggleLike(articleId, email) : goLogin())}
-            >
-                {isLiked ? 'Liked' : 'Like'} ({likeList.length})
-            </button>
-            <button
-                type="button"
-                className="s-btn"
-                aria-pressed={isSaved}
-                onClick={() => (email ? toggleSave(articleId, email) : goLogin())}
-            >
-                {isSaved ? 'Saved' : 'Save'}
-            </button>
-            <a href="#comments" className="s-btn">Comment ({commentCount})</a>
-        </div>
-    );
+  useEffect(() => {
+    let cancelled = false;
+
+    getLikeInfo(articleId)
+      .then((info) => {
+        if (cancelled) return;
+        setLikeCount(info.likeCount);
+        setLiked(Boolean(info.liked));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [articleId]);
+
+  useEffect(() => {
+    if (!email) return;
+    let cancelled = false;
+
+    getBookmarkStatus(articleId)
+      .then((info) => {
+        if (cancelled) return;
+        setIsSaved(info.bookmarked);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [articleId, session]);
+
+  const goLogin = () =>
+    navigate("/login", {
+      state: { message: "Log in to like and save stories." },
+    });
+
+  const handleLike = async () => {
+    if (!session) return goLogin();
+
+    setBusy(true);
+    setError("");
+    try {
+      const result = await toggleLike(articleId);
+      setLiked(result.liked);
+      setLikeCount(result.likeCount);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleSave = async() => {
+    if (!session) return gologin();
+
+    setSaveBusy(true);
+    setError("");
+    try {
+        if (isSaved) {
+            await removeBookmark(articleId);
+            setIsSaved(false)
+        } else {
+            
+        }
+    } catch (err) {
+        setError(err.message);
+    }
+  }
+
+  return (
+    <div className="s-row s-reaction-bar">
+      <button
+        type="button"
+        className="s-btn"
+        aria-pressed={liked}
+        disabled={busy}
+        onClick={handleLike}
+      >
+        {liked ? "Liked" : "Like"} ({likeCount})
+      </button>
+      <button type="button" className="s-btn" aria-pressed={isSaved}>
+        {isSaved ? "Saved" : "Save"}
+      </button>
+      <a href="#comments" className="s-btn">
+        Comment ({commentCount})
+      </a>
+      {error && <p role="alert">{error}</p>}
+    </div>
+  );
 }
