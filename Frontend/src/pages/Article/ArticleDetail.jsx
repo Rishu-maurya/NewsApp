@@ -1,21 +1,48 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
-import { useArticles } from '../../context/ArticlesContext';
-import { isLive } from '../../utils/dateUtils';
+import { getPublishedArticle, isServerId } from '../../services/bookmarkService';
 import '../../style/ArticleDetail.css';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
-    const { articles } = useArticles();
-    const article = articles.find((a) => String(a.id) === id && isLive(a));
+    const [article, setArticle] = useState(null);
+    const [loading, setLoading] = useState(isServerId(id));
+
+    // Load the full story from the server (GET /api/articles/:id)
+    useEffect(() => {
+        if (!isServerId(id)) {
+            setArticle(null);
+            setLoading(false);
+            return;
+        }
+        let cancelled = false;
+        setLoading(true);
+        getPublishedArticle(id)
+            .then((story) => {
+                if (!cancelled) setArticle(story);
+            })
+            .catch(() => {
+                if (!cancelled) setArticle(null);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
+
     return (
         <SiteLayout session={session} onLogout={onLogout}>
             <div className="s-article">
                 <Link to="/" className="s-back">All stories</Link>
 
-                {article ? (
+                {loading ? (
+                    <p className="s-sub">Loading story...</p>
+                ) : article ? (
                     <>
                         <p className="s-cat">{article.category}</p>
                         <h1 className="s-h1">{article.title}</h1>

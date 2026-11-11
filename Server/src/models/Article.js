@@ -71,6 +71,19 @@ const articleSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Editor feedback when a story needs changes or is rejected
+    reviewNote: {
+      type: String,
+      default: "",
+      maxlength: 1000,
+    },
+
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     viewCount: {
       type: Number,
       default: 0,

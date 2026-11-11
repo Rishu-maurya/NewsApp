@@ -1,5 +1,7 @@
-const Bookmark = require("../models/bookmark.js");
-const Article = require("../models/article.js");
+const Bookmark = require("../models/Bookmark");
+const Article = require("../models/Article");
+require("../models/Category"); // registers the model used by populate below
+require("../models/users");
 const mongoose = require("mongoose");
 
 const invalidId = (res) =>
@@ -84,11 +86,10 @@ const getBookmarks = async (req, res) => {
             },
         ]);
 
-        const data = await Bookmark.populate(result.data, {
-            path: "article.author",
-            select: "fullName",
-            model: "User",
-        });
+        const data = await Bookmark.populate(result.data, [
+            { path: "article.author", select: "fullName", model: "User" },
+            { path: "article.category", select: "name slug", model: "Category" },
+        ]);
         const total = result.total[0]?.count || 0;
 
         res.status(200).json({

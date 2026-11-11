@@ -1,13 +1,11 @@
 import { Link } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
-import { CATEGORIES } from '../../data/dummyData';
-import { useArticles } from '../../context/ArticlesContext';
-import { isLive } from '../../utils/dateUtils';
+import { useNews } from '../../context/NewsContext';
 import '../../style/Categories.css';
 import '../../style/InfoCard.css';
 
 export default function Categories({ session, onLogout }) {
-    const { articles } = useArticles();
+    const { articles, categories } = useNews();
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
@@ -18,9 +16,9 @@ export default function Categories({ session, onLogout }) {
             </section>
 
             <div className="s-info-grid">
-                {CATEGORIES.map((category) => {
+                {categories.map((category) => {
                     const count = articles.filter(
-                        (article) => article.category === category && isLive(article)
+                        (article) => article.category === category
                     ).length;
 
                     return (

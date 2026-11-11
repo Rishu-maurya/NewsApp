@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { useArticles } from '../../context/ArticlesContext';
+import { useNews } from '../../context/NewsContext';
 import StatCard from '../../components/dashboard/StatCard';
 import '../../style/ReaderView.css';
 
 export default function ReaderView() {
-    const { articles } = useArticles();
+    const { articles: published } = useNews();
     const [openId, setOpenId] = useState(null);
-    const published = articles.filter((a) => a.status === 'published');
 
     return (
         <>

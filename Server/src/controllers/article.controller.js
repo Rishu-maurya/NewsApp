@@ -1,6 +1,6 @@
-const Article = require("../models/article");
+const Article = require("../models/Article");
 const mongoose = require("mongoose")
-const Category = require("../models/category")
+const Category = require("../models/Category")
 const generateUniqueSlug = require("../utils/gernerateUniqueSlug");
 
 
@@ -121,13 +121,6 @@ const getArticles = async (req, res) => {
         const role = req.user?.role;
         if (role === "admin") {
             if (status) filter.status = status;
-        } else if (role === "author") {
-            if (status === "draft") {
-                filter.status = "draft";
-                filter.author = req.user._id;
-            } else {
-                filter.status = "published";
-            }
         } else {
             filter.status = "published";
         }
@@ -142,9 +135,10 @@ const getArticles = async (req, res) => {
 
         const [articles, total] = await Promise.all([
             Article.find(filter)
-                .select("-content")
+                .select("-body")
                 .populate("author", "fullName")
-                .sort({ createdAt: -1 })
+                .populate("category", "name slug")
+                .sort({ publishedAt: -1, createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
             Article.countDocuments(filter),
@@ -176,7 +170,9 @@ const getArticles = async (req, res) => {
 // 3) GET ONE
 const getArticleById = async (req, res) => {
     try {
-        const article = await Article.findById(req.params.id).populate("author", "fullName");
+        const article = await Article.findById(req.params.id)
+            .populate("author", "fullName")
+            .populate("category", "name slug");
 
         if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
             return res.status(404).json({
@@ -302,6 +298,7 @@ const updateArticle = async (req, res) => {
                 });
             }
             article.status = status;
+            if (status === "submitted") article.reviewNote = ""; // new review round
         }
         if (tags !== undefined) {
             if (!Array.isArray(tags) || tags.some((tag) => typeof tag !== "string")) {
@@ -386,6 +383,97 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+// 5) EDITOR REVIEW QUEUE
+// GET /api/articles/review  (editor, admin)
+// Stories waiting for a decision, plus the most recent decisions.
+const getReviewQueue = async (req, res) => {
+    try {
+        const [pending, decided] = await Promise.all([
+            Article.find({ status: { $in: ["submitted", "under_review"] } })
+                .populate("author", "fullName")
+                .populate("category", "name slug")
+                .sort({ updatedAt: 1 }),
+            Article.find({ status: { $in: ["published", "changes_requested", "rejected"] } })
+                .select("-body")
+                .populate("author", "fullName")
+                .populate("category", "name slug")
+                .sort({ updatedAt: -1 })
+                .limit(50),
+        ]);
+
+        res.status(200).json({ success: true, data: { pending, decided } });
+    } catch (error) {
+        console.error("Get Review Queue Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// 6) EDITOR DECISION
+// PATCH /api/articles/:id/review   body: { decision, note }
+// decision: "published" | "changes_requested" | "rejected"
+const reviewArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { decision, note } = req.body || {};
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid article ID" });
+        }
+        if (!["published", "changes_requested", "rejected"].includes(decision)) {
+            return res.status(400).json({
+                success: false,
+                message: "Decision must be published, changes_requested or rejected",
+            });
+        }
+
+        const cleanNote = typeof note === "string" ? note.trim() : "";
+        if (decision !== "published" && !cleanNote) {
+            return res.status(400).json({
+                success: false,
+                message: "Add feedback so the journalist knows what to fix",
+            });
+        }
+        if (cleanNote.length > 1000) {
+            return res.status(400).json({
+                success: false,
+                message: "Feedback must be 1000 characters or fewer",
+            });
+        }
+
+        const article = await Article.findById(id);
+        if (!article) {
+            return res.status(404).json({ success: false, message: "Article not found" });
+        }
+        if (!["submitted", "under_review"].includes(article.status)) {
+            return res.status(409).json({
+                success: false,
+                message: "Only stories waiting for review can be decided",
+            });
+        }
+
+        article.status = decision;
+        article.reviewNote = decision === "published" ? "" : cleanNote;
+        article.reviewedBy = req.user._id;
+        if (decision === "published") article.publishedAt = new Date();
+
+        await article.save();
+
+        res.status(200).json({
+            success: true,
+            message:
+                decision === "published"
+                    ? "Story published"
+                    : decision === "rejected"
+                        ? "Story rejected"
+                        : "Changes requested",
+            data: article,
+        });
+    } catch (error) {
+        console.error("Review Article Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 module.exports = {
     createArticle,
     getArticles,
@@ -393,4 +481,6 @@ module.exports = {
     getArticleById,
     updateArticle,
     deleteArticle,
+    getReviewQueue,
+    reviewArticle,
 };

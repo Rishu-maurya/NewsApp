@@ -3,14 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
 import LoginPrompt from '../../components/news/LoginPrompt';
-import { useArticles } from '../../context/ArticlesContext';
-import { CATEGORIES } from '../../data/dummyData';
+import { useNews } from '../../context/NewsContext';
 import { LIVE_STREAMS, startLabel } from '../../data/liveData';
-import { isLive, matchesDate } from '../../utils/dateUtils';
+import { matchesDate } from '../../utils/dateUtils';
 import '../../style/Home.css';
 
 export default function Home({ session, onLogout }) {
-    const { articles } = useArticles();
+    const { articles, categories, loading, error } = useNews();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
     const [params, setParams] = useSearchParams();
@@ -18,7 +17,7 @@ export default function Home({ session, onLogout }) {
     const date = params.get('date') || '';
     const day = params.get('day') || 'any';
 
-    const published = useMemo(() => articles.filter((a) => isLive(a)), [articles]);
+    const published = articles;
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -41,7 +40,7 @@ export default function Home({ session, onLogout }) {
                 <p className="s-sub">Thoughtful local reporting, reviewed by editors and made for curious readers.</p>
                 <div className="s-hero-stats">
                     <div><strong>{published.length}</strong><span>Published stories</span></div>
-                    <div><strong>{CATEGORIES.length}</strong><span>Categories</span></div>
+                    <div><strong>{categories.length}</strong><span>Categories</span></div>
                     <div><strong>{LIVE_STREAMS.length}</strong><span>Live streams</span></div>
                 </div>
             </section>
@@ -74,7 +73,7 @@ export default function Home({ session, onLogout }) {
                 />
 
                 <div className="s-chips" role="group" aria-label="Categories">
-                    {['All', ...CATEGORIES].map((c) => (
+                    {['All', ...categories].map((c) => (
                         <button
                             key={c}
                             type="button"
@@ -92,7 +91,10 @@ export default function Home({ session, onLogout }) {
                 <h2 className="s-h2">
                     Latest stories <span className="s-pill">{results.length}</span>
                 </h2>
-                {results.length === 0 ? (
+                {error && <p className="s-err" role="alert">{error}</p>}
+                {loading && published.length === 0 ? (
+                    <p className="s-sub">Loading the latest stories...</p>
+                ) : results.length === 0 ? (
                     <div className="s-empty">
                         <p>No stories match your search. Try another word, category or date.</p>
                         <button

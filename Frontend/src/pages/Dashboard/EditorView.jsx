@@ -1,20 +1,39 @@
-import { useState } from 'react';
-import { useArticles } from '../../context/ArticlesContext';
+import { useCallback, useEffect, useState } from 'react';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
+import { useNews } from '../../context/NewsContext';
+import { decideArticle, getReviewQueue } from '../../services/newsService';
 import '../../style/EditorView.css';
 
 export default function EditorView() {
-    const { articles, reviewArticle } = useArticles();
+    const { refresh: refreshNews } = useNews();
+    const [pending, setPending] = useState([]);
+    const [decided, setDecided] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [busy, setBusy] = useState(false);
     const [openId, setOpenId] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [error, setError] = useState('');
 
-    const pending = articles.filter((a) => a.status === 'submitted');
-    const decided = articles
-        .filter((a) => ['published', 'changes_requested', 'rejected'].includes(a.status))
-        .slice(0, 5);
-    const count = (status) => articles.filter((a) => a.status === status).length;
+    // Load the review queue from the server (GET /api/articles/review)
+    const load = useCallback(async () => {
+        setError('');
+        try {
+            const queue = await getReviewQueue();
+            setPending(queue.pending);
+            setDecided(queue.decided);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        load();
+    }, [load]);
+
+    const count = (status) => decided.filter((a) => a.status === status).length;
 
     const toggle = (id) => {
         setOpenId(openId === id ? null : id);
@@ -22,15 +41,26 @@ export default function EditorView() {
         setError('');
     };
 
-    const decide = (id, decision) => {
+    const decide = async (id, decision) => {
         if (decision !== 'published' && !feedback.trim()) {
             return setError('Add feedback so the journalist knows what to fix.');
         }
-        reviewArticle(id, decision, decision === 'published' ? '' : feedback.trim());
-        setOpenId(null);
-        setFeedback('');
+        setBusy(true);
         setError('');
+        try {
+            await decideArticle(id, decision, decision === 'published' ? '' : feedback.trim());
+            setOpenId(null);
+            setFeedback('');
+            await load();
+            if (decision === 'published') refreshNews(); // readers see it straight away
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusy(false);
+        }
     };
+
+    if (loading) return <p className="empty-note">Loading the review queue...</p>;
 
     return (
         <>
@@ -40,6 +70,8 @@ export default function EditorView() {
                 <StatCard label="Changes requested" value={count('changes_requested')} />
                 <StatCard label="Rejected" value={count('rejected')} />
             </div>
+
+            {error && openId === null && <p className="derr" role="alert">{error}</p>}
 
             <h2 className="dash__h2">Review queue</h2>
             {pending.length === 0 ? (
@@ -81,16 +113,16 @@ export default function EditorView() {
                                     />
 
                                     <div className="btn-row">
-                                        <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'published')}>
+                                        <button type="button" className="dbtn dbtn--good" disabled={busy} onClick={() => decide(a.id, 'published')}>
                                             Approve and publish
                                         </button>
-                                        <button type="button" className="dbtn" onClick={() => decide(a.id, 'changes_requested')}>
+                                        <button type="button" className="dbtn" disabled={busy} onClick={() => decide(a.id, 'changes_requested')}>
                                             Request changes
                                         </button>
-                                        <button type="button" className="dbtn dbtn--danger" onClick={() => decide(a.id, 'rejected')}>
+                                        <button type="button" className="dbtn dbtn--danger" disabled={busy} onClick={() => decide(a.id, 'rejected')}>
                                             Reject
                                         </button>
-                                        <button type="button" className="dbtn" onClick={() => toggle(a.id)}>
+                                        <button type="button" className="dbtn" disabled={busy} onClick={() => toggle(a.id)}>
                                             Close
                                         </button>
                                     </div>
@@ -119,7 +151,7 @@ export default function EditorView() {
                             </tr>
                         </thead>
                         <tbody>
-                            {decided.map((a) => (
+                            {decided.slice(0, 10).map((a) => (
                                 <tr key={a.id}>
                                     <td>{a.title}</td>
                                     <td>{a.author}</td>

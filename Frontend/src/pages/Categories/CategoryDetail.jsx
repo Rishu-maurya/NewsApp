@@ -1,22 +1,27 @@
 import { Link, useParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
-import { useArticles } from '../../context/ArticlesContext';
-import { CATEGORIES } from '../../data/dummyData';
-import { isLive } from '../../utils/dateUtils';
+import { useNews } from '../../context/NewsContext';
 import NotFound from '../NotFound/NotFound';
 import '../../style/CategoryDetail.css';
 
 export default function CategoryDetail({ session, onLogout }) {
     const { category: categoryParam } = useParams();
-    const category = CATEGORIES.find(
+    const { articles, categories, loading } = useNews();
+    const category = categories.find(
         (item) => item.toLowerCase() === categoryParam?.toLowerCase()
     );
-    const { articles } = useArticles();
 
+    if (loading && !category) {
+        return (
+            <SiteLayout session={session} onLogout={onLogout}>
+                <p className="s-sub">Loading...</p>
+            </SiteLayout>
+        );
+    }
     if (!category) return <NotFound session={session} onLogout={onLogout} />;
 
-    const stories = articles.filter((article) => article.category === category && isLive(article));
+    const stories = articles.filter((article) => article.category === category);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>

@@ -1,27 +1,37 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useActivity } from '../../context/ActivityContext';
+import { useBookmarks } from '../../context/BookmarksContext';
+import { isServerId } from '../../services/bookmarkService';
 import { dayName } from '../../utils/dateUtils';
 import '../../style/ArticleCard.css';
 
 export default function ArticleCard({ article, session, lead, removable }) {
     const navigate = useNavigate();
     const { likes, saved, comments, toggleSave } = useActivity();
+    const { ids, toggle } = useBookmarks();
 
     const key = String(article.id);
     const email = session?.user.email;
-    const isSaved = email ? (saved[key] || []).includes(email) : false;
+    // real stories are saved on the server; old demo stories are still saved in the browser
+    const onServer = isServerId(article.id);
+    const isSaved = !email ? false : onServer ? ids.has(key) : (saved[key] || []).includes(email);
     const likeCount = (likes[key] || []).length;
     const commentCount = comments.filter((c) => c.targetId === key).length;
     const summary = article.body.length > 120 ? `${article.body.slice(0, 120)}...` : article.body;
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!email) {
             navigate('/login', {
                 state: { message: 'Log in to save stories to your bookmarks.' },
             });
             return;
         }
-        toggleSave(article.id, email);
+        if (!onServer) {
+            toggleSave(article.id, email);
+            return;
+        }
+        const problem = await toggle(article.id);
+        if (problem) window.alert(problem);
     };
 
     const label = removable ? 'Remove' : isSaved ? 'Saved' : 'Save';
