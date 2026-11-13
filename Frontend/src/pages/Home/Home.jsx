@@ -20,6 +20,11 @@ export default function Home({ session, onLogout }) {
 
     const published = useMemo(() => articles.filter((a) => isLive(a)), [articles]);
 
+    const headlines = useMemo(
+        () => [...published].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
+        [published]
+    );
+
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         const when = { range: date ? 'date' : 'all', date, weekday: day };
@@ -28,7 +33,7 @@ export default function Home({ session, onLogout }) {
             if (!matchesDate(a.date, when)) return false;
             if (!q) return true;
             return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
-        });
+        }).sort((a, b) => Number(!!b.important) - Number(!!a.important));
     }, [published, query, category, date, day]);
 
     return (
@@ -44,6 +49,25 @@ export default function Home({ session, onLogout }) {
                     <div><strong>{CATEGORIES.length}</strong><span>Categories</span></div>
                     <div><strong>{LIVE_STREAMS.length}</strong><span>Live streams</span></div>
                 </div>
+
+                {headlines.length > 0 && (
+                    <aside className="s-hero__side" aria-label="Top headlines">
+                        <p className="s-hero__label">Top headlines</p>
+                        <ol className="s-hero__list">
+                            {headlines.map((a, i) => (
+                                <li key={a.id}>
+                                    <Link to={`/article/${a.id}`} className={a.important ? 'is-important' : ''}>
+                                        <span className="s-hero__no">{String(i + 1).padStart(2, '0')}</span>
+                                        <span className="s-hero__txt">
+                                            <small>{a.category}{a.important ? ' · Important' : ''}</small>
+                                            <strong>{a.title}</strong>
+                                        </span>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ol>
+                    </aside>
+                )}
             </section>
 
             {session ? (
@@ -92,6 +116,12 @@ export default function Home({ session, onLogout }) {
                 <h2 className="s-h2">
                     Latest stories <span className="s-pill">{results.length}</span>
                 </h2>
+                {results.some((a) => a.important) && (
+                    <p className="s-legend">
+                        <span className="s-legend__dot" aria-hidden="true" />
+                        Yellow cards are the most important stories.
+                    </p>
+                )}
                 {results.length === 0 ? (
                     <div className="s-empty">
                         <p>No stories match your search. Try another word, category or date.</p>
@@ -109,12 +139,11 @@ export default function Home({ session, onLogout }) {
                     </div>
                 ) : (
                     <div className="s-grid">
-                        {results.map((a, i) => (
+                        {results.map((a) => (
                             <ArticleCard
                                 key={a.id}
                                 article={a}
                                 session={session}
-                                lead={i === 0 && results.length > 2}
                             />
                         ))}
                     </div>

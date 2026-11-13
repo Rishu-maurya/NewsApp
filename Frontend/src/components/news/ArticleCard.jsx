@@ -3,7 +3,7 @@ import { useActivity } from '../../context/ActivityContext';
 import { dayName } from '../../utils/dateUtils';
 import '../../style/ArticleCard.css';
 
-export default function ArticleCard({ article, session, lead, removable }) {
+export default function ArticleCard({ article, session, removable }) {
     const navigate = useNavigate();
     const { likes, saved, comments, toggleSave } = useActivity();
 
@@ -27,8 +27,11 @@ export default function ArticleCard({ article, session, lead, removable }) {
     const label = removable ? 'Remove' : isSaved ? 'Saved' : 'Save';
 
     return (
-        <article className={`s-card${lead ? ' s-card--lead' : ''}`}>
-            <p className="s-cat">{article.category}</p>
+        <article className={`s-card${article.important ? ' s-card--important' : ''}`}>
+            <div className="s-card__top">
+                <p className="s-cat">{article.category}</p>
+                {article.important && <span className="s-flag">Important</span>}
+            </div>
             <h2 className="s-card__title">
                 <Link to={`/article/${article.id}`}>{article.title}</Link>
             </h2>

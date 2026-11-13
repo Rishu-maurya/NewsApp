@@ -1,5 +1,5 @@
 .s-navdate {
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     min-height: 46px;
     display: flex;
     align-items: center;
@@ -35,7 +35,7 @@
 
 @media (max-width: 640px) {
     .s-navdate {
-        width: min(100% - 32px, 1180px);
+        width: calc(100% - 2 * clamp(16px, 3vw, 48px));
         flex-wrap: wrap;
         gap: 6px;
         padding-block: 7px;

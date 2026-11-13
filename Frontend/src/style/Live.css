@@ -49,7 +49,7 @@ button.s-live-pick {
 .s-live-pick[aria-pressed='true'] {
     border-color: var(--accent);
     background: var(--accent-soft);
-    box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.15), var(--shadow-card);
+    box-shadow: 0 0 0 3px rgba(14, 131, 136, 0.15), var(--shadow-card);
 }
 
 .s-live-badge {
@@ -59,7 +59,7 @@ button.s-live-pick {
     padding: 5px 11px;
     border-radius: 3px;
     color: #fff;
-    background: var(--accent);
+    background: var(--alert);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -102,8 +102,8 @@ button.s-live-pick {
     color: #fff;
     text-align: center;
     background:
-        radial-gradient(60% 70% at 80% 100%, rgba(215, 25, 32, 0.4), transparent 60%),
-        linear-gradient(135deg, #111114, #1d1d25);
+        radial-gradient(60% 70% at 80% 100%, rgba(217, 54, 30, 0.4), transparent 60%),
+        linear-gradient(135deg, #071b34, #1d1d25);
 }
 
 .s-player__title {

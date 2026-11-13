@@ -90,7 +90,7 @@
     place-items: center;
     border-radius: 50%;
     color: #fff;
-    background: linear-gradient(135deg, var(--accent), #ff5a62);
+    background: linear-gradient(135deg, var(--accent), #3dbdb3);
     font-family: var(--font-display);
     font-size: 19px;
     font-weight: 800;
@@ -197,7 +197,7 @@
 }
 
 .rr-card__review textarea:hover {
-    border-color: #9c9ca6;
+    border-color: #9aa5b4;
 }
 
 .rr-card__review textarea:focus-visible {

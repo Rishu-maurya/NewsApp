@@ -6,7 +6,7 @@ import StatusBadge from '../../components/dashboard/StatusBadge';
 import { todayStr } from '../../utils/dateUtils';
 import '../../style/JournalistView.css';
 
-const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '', publishDate: '', publishTime: '' };
+const EMPTY = { id: null, title: '', category: CATEGORIES[0], body: '', publishDate: '', publishTime: '', important: false };
 export default function JournalistView({ session }) {
     const { articles, saveArticle, submitArticle, deleteArticle } = useArticles();
     const { name, email } = session.user;
@@ -19,7 +19,8 @@ export default function JournalistView({ session }) {
     const [message, setMessage] = useState('');
 
     const handleChange = (e) => {
-        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setForm((prev) => ({ ...prev, [e.target.name]: value }));
         setError('');
         setMessage('');
     };
@@ -53,7 +54,8 @@ export default function JournalistView({ session }) {
             category: a.category,
             body: a.body,
             publishDate: a.publishDate,
-            publishTime: a.publishTime
+            publishTime: a.publishTime,
+            important: !!a.important,
         });
         setError('');
         setMessage('');
@@ -126,6 +128,19 @@ export default function JournalistView({ session }) {
                         value={form.publishTime}
                         onChange={handleChange}
                     />
+                </div>
+
+                <div className="dfield dfield--check">
+                    <label htmlFor="important">
+                        <input
+                            id="important"
+                            name="important"
+                            type="checkbox"
+                            checked={form.important}
+                            onChange={handleChange}
+                        />
+                        Mark as an important story (shown in yellow on the home page)
+                    </label>
                 </div>
 
                 <div className="btn-row">

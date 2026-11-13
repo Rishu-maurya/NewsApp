@@ -1,5 +1,5 @@
 .pub {
-    max-width: 1080px;
+    max-width: none;
     margin: 0 auto;
     padding: 36px 24px 64px;
     display: grid;

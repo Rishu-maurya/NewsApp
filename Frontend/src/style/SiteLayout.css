@@ -19,7 +19,7 @@
 
 .s-nav__inner,
 .s-links {
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     margin-inline: auto;
 }
 
@@ -157,7 +157,7 @@
 /* ---------- Page area (re-animates on every route change) ---------- */
 .s-main {
     flex: 1;
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     margin-inline: auto;
     padding-block: 44px 80px;
     animation: fade-in 450ms ease backwards;
@@ -340,7 +340,7 @@
     border-color: var(--accent-strong);
     color: #fff;
     background: var(--accent-strong);
-    box-shadow: 0 8px 20px rgba(215, 25, 32, 0.35);
+    box-shadow: 0 8px 20px rgba(14, 131, 136, 0.35);
 }
 
 .s-btn--small {
@@ -366,7 +366,7 @@
 .s-input:hover,
 .s-select:hover,
 .s-textarea:hover {
-    border-color: #9c9ca6;
+    border-color: #9aa5b4;
 }
 
 .s-input:focus,
@@ -495,7 +495,7 @@
     .s-nav__inner,
     .s-links,
     .s-main {
-        width: min(100% - 32px, 1180px);
+        width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     }
 
     .s-nav__inner {

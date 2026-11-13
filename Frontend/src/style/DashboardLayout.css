@@ -1,14 +1,24 @@
+/* ---------- top bar ---------- */
 .dash__bar {
     position: sticky;
     top: 0;
     z-index: 5;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    color: #f7f4eb;
-    background: var(--forest);
+    color: #fff;
+    background: var(--brand-darker);
+    box-shadow: 0 2px 14px rgba(0, 20, 40, 0.25);
+}
+
+/* newspaper masthead jaisi patli crimson line */
+.dash__bar::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--alert) 0 120px, var(--accent) 120px 100%);
 }
 
 .dash__bar-inner {
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     min-height: 68px;
     display: flex;
     align-items: center;
@@ -24,13 +34,7 @@
     letter-spacing: -0.03em;
 }
 
-.dash__user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 600;
-}
+.dash__user { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
 
 .dash__profile {
     display: inline-flex;
@@ -41,7 +45,7 @@
     border-radius: 99px;
     color: inherit;
     text-decoration: none;
-    transition: background 160ms ease, border-color 160ms ease;
+    transition: background 160ms ease, border-color 160ms ease, transform 200ms var(--ease);
 }
 
 .dash__profile:hover,
@@ -50,6 +54,7 @@
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
     outline: none;
+    transform: translateY(-1px);
 }
 
 .dash__avatar {
@@ -60,7 +65,7 @@
     place-items: center;
     border-radius: 50%;
     color: #fff;
-    background: linear-gradient(135deg, var(--accent), #ff5a62);
+    background: linear-gradient(135deg, var(--accent), #3dbdb3);
     font-family: var(--font-display);
     font-size: 14px;
     font-weight: 800;
@@ -70,7 +75,7 @@
     padding: 5px 9px;
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 99px;
-    color: #e1e9de;
+    color: #dbe9f2;
     font-size: 10px;
     font-weight: 700;
     text-transform: capitalize;
@@ -84,28 +89,29 @@
     font-size: 11px;
 }
 
-.dash__bar .dbtn:hover {
-    border-color: #fff;
-    background: rgba(255, 255, 255, 0.1);
-}
+.dash__bar .dbtn:hover { border-color: #fff; background: rgba(255, 255, 255, 0.1); }
 
+/* ---------- hero ---------- */
 .dash__hero {
     position: relative;
     overflow: hidden;
-    color: #f7f4eb;
+    color: #fff;
     background:
-        radial-gradient(circle at 85% -20%, rgba(198, 79, 55, 0.38), transparent 46%),
-        linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+        radial-gradient(circle at 88% -10%, rgba(61, 189, 179, 0.45), transparent 46%),
+        radial-gradient(circle at 0% 120%, rgba(217, 54, 30, 0.22), transparent 42%),
+        linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-darker) 100%);
+    background-size: 140% 140%, 140% 140%, 100% 100%;
+    animation: hero-drift 16s ease-in-out infinite alternate;
 }
 
 .dash__hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
     background-size: 22px 22px;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 75%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 75%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 80%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 80%);
     pointer-events: none;
 }
 
@@ -118,23 +124,31 @@
     height: 360px;
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 50%;
-    box-shadow:
-        0 0 0 38px rgba(255, 255, 255, 0.03),
-        0 0 0 76px rgba(255, 255, 255, 0.02);
+    box-shadow: 0 0 0 38px rgba(255, 255, 255, 0.03), 0 0 0 76px rgba(255, 255, 255, 0.02);
     pointer-events: none;
+    animation: ring-breathe 7s ease-in-out infinite;
 }
+
+@keyframes hero-drift { from { background-position: 0% 0%, 100% 100%, 0 0; } to { background-position: 100% 60%, 0% 40%, 0 0; } }
+@keyframes ring-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
 .dash__hero-inner {
     position: relative;
     z-index: 1;
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     margin-inline: auto;
-    padding-block: 46px 100px;
+    padding-block: 46px 104px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
 }
+
+.dash__hero-text { min-width: 0; animation: dash-rise 700ms var(--ease) both; }
 
 .dash__eyebrow {
     margin: 0 0 10px;
-    color: #f0b9aa;
+    color: #8edcc6;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.14em;
@@ -150,16 +164,8 @@
     letter-spacing: -0.04em;
 }
 
-.dash__sub {
-    margin: 0 0 22px;
-    color: var(--muted);
-    font-size: 14px;
-}
-
-.dash__hero .dash__sub {
-    color: #cdd9d1;
-    font-size: 15px;
-}
+.dash__sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+.dash__hero .dash__sub { color: #d3efe7; font-size: 15px; }
 
 .dash__hint {
     display: flex;
@@ -167,7 +173,7 @@
     align-items: center;
     gap: 8px 12px;
     margin: 0;
-    color: #b9c8bf;
+    color: #c4dcd6;
     font-size: 13px;
 }
 
@@ -182,25 +188,94 @@
     text-transform: capitalize;
 }
 
-.dash__date {
-    margin-left: auto;
-    color: #f0b9aa;
-    font-size: 12px;
-    font-weight: 600;
+.dash__date { margin-left: auto; color: #8edcc6; font-size: 12px; font-weight: 600; }
+
+/* live clock card (hero ki khali right side bharta hai) */
+.dash__clock {
+    flex: none;
+    min-width: 210px;
+    padding: 18px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    animation: dash-rise 800ms var(--ease) 150ms both, clock-float 6s ease-in-out 1s infinite;
 }
 
-.dash__main {
+.dash__live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: var(--alert);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dash__live i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    animation: live-blink 1.4s ease-in-out infinite;
+}
+
+.dash__time {
+    margin: 12px 0 2px;
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash__time b { display: inline-block; margin-inline: 2px; animation: colon 1s steps(1) infinite; }
+.dash__time small { margin-left: 6px; color: #8edcc6; font-family: var(--font-body); font-size: 15px; font-weight: 600; }
+.dash__greet { margin: 0; color: #d3efe7; font-size: 13px; font-weight: 600; }
+
+@keyframes colon { 50% { opacity: 0.2; } }
+@keyframes live-blink { 50% { opacity: 0.25; transform: scale(0.7); } }
+@keyframes clock-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes dash-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+/* ---------- content grid: left main + right side ---------- */
+.dash__grid {
     position: relative;
     z-index: 2;
     flex: 1;
-    width: min(100% - 48px, 1180px);
-    margin: -58px auto 0;
-    padding-block: 0 72px;
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
+    margin: -62px auto 0;
+    padding-bottom: 72px;
+}
+
+.dash__grid--split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px;
+    align-items: start;
+}
+
+.dash__main { min-width: 0; }
+
+.dash__side {
+    position: sticky;
+    top: 88px;
+    display: grid;
+    gap: 16px;
+    margin-top: 62px;
+    align-self: start;
 }
 
 .dash__h2 {
     margin: 38px 0 16px;
-    color: var(--forest);
+    color: var(--ink);
     font-family: var(--font-display);
     font-size: 29px;
     font-weight: 600;
@@ -211,56 +286,35 @@
     padding: 22px 24px;
     border-top: 1px solid var(--line);
     color: var(--muted);
-    background: rgba(255, 254, 250, 0.7);
+    background: rgba(255, 255, 255, 0.8);
     font-size: 12px;
     text-align: center;
 }
+.dash__foot p { margin: 0; }
 
-.dash__foot p {
-    margin: 0;
+/* ---------- responsive ---------- */
+@media (max-width: 1080px) {
+    .dash__grid--split { grid-template-columns: minmax(0, 1fr); }
+    .dash__side { position: static; margin-top: 8px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+
+@media (max-width: 820px) {
+    .dash__clock { display: none; }
 }
 
 @media (max-width: 640px) {
-    .dash__bar-inner,
-    .dash__hero-inner,
-    .dash__main {
-        width: min(100% - 32px, 1180px);
-    }
+    .dash__bar-inner, .dash__hero-inner, .dash__grid { width: calc(100% - 2 * clamp(16px, 3vw, 48px)); }
+    .dash__bar-inner { min-height: 62px; gap: 8px; }
+    .dash__brand { font-size: 20px; }
+    .dash__user { gap: 6px; }
+    .dash__name, .dash__role { display: none; }
+    .dash__bar .dbtn { min-height: 32px; padding: 6px 8px; }
+    .dash__hero-inner { padding-block: 32px 84px; }
+    .dash__date { margin-left: 0; }
+    .dash__grid { margin-top: -48px; padding-bottom: 52px; }
+}
 
-    .dash__bar-inner {
-        min-height: 62px;
-        gap: 8px;
-    }
-
-    .dash__brand {
-        font-size: 20px;
-    }
-
-    .dash__user {
-        gap: 6px;
-    }
-
-    /* keep only the avatar on phones so the profile link stays reachable */
-    .dash__name,
-    .dash__role {
-        display: none;
-    }
-
-    .dash__bar .dbtn {
-        min-height: 32px;
-        padding: 6px 8px;
-    }
-
-    .dash__hero-inner {
-        padding-block: 32px 84px;
-    }
-
-    .dash__date {
-        margin-left: 0;
-    }
-
-    .dash__main {
-        margin-top: -48px;
-        padding-block: 0 52px;
-    }
-}
+@media (prefers-reduced-motion: reduce) {
+    .dash__hero, .dash__hero::after, .dash__hero-text, .dash__clock,
+    .dash__live i, .dash__time b { animation: none; }
+}
