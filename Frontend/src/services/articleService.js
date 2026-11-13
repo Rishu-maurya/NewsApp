@@ -7,7 +7,7 @@ function getErrorMessage(err, fallback) {
   return err?.message || fallback;
 }
 
-function normalizeArticle(article) {
+export function normalizeArticle(article) {
   const when = article.publishedAt || article.createdAt;
   return {
     ...article,

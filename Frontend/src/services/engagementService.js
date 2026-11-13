@@ -1,4 +1,5 @@
 import api from "./axiosInstance"
+import { normalizeArticle } from "./articleService"
 
 export async function toggleLike(articleId) {
     try {
@@ -19,9 +20,9 @@ export async function getLikeInfo(articleId) {
 }
 
 
-export async function getBookmarkStatus(articleId) {
+export async function getBookmarkStatus(article) {
     try {
-        const response = await api.get(`/bookmarks/${articleId}/status`)
+        const response = await api.get(`/bookmarks/${article}/status`)
         return response.data.data
     } catch (err) {
         throw new Error(err.response?.data?.message || "Could not load saved state.")
@@ -41,5 +42,14 @@ export async function removeBookmark(articleId) {
         await api.delete(`/bookmarks/${articleId}`)
     } catch (err) {
         throw new Error(err.response?.data?.message || "Could not remove this story.")
+    }
+}
+
+export async function getBookmark() {
+    try {
+        const response = await api.get("/bookmarks")
+        return response.data.data.map ((item) => normalizeArticle(item.articleId))
+    } catch (err) {
+        throw new Error(err.response?.data?.message || "Could not load saved stories.")
     }
 }

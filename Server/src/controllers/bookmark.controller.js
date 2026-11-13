@@ -77,35 +77,34 @@ const getBookmarks = async (req, res) => {
                     data: [
                         { $skip: (page - 1) * limit },
                         { $limit: limit },
-                        { $project: { "article.content": 0 } },
+                        { $project: { "article.body": 0 } },
                     ],
                     total: [{ $count: "count" }],
                 },
             },
         ]);
 
-        const data = await Bookmark.populate(result.data, {
-            path: "article.author",
-            select: "fullName",
-            model: "User",
-        });
-        const total = result.total[0]?.count || 0;
+        const data = await Bookmark.populate(result.data, [
+            { path: "article.author", select: "fullName", model: "User" },
+            { path: "article.category", select: "name slug", model: "Category"},
+        ]);
+    const total = result.total[0]?.count || 0;
 
-        res.status(200).json({
-            success: true,
-            count: data.length,
-            pagination: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-            data,
-        });
-    } catch (error) {
-        console.error("Get Bookmarks Error:", error);
-        res.status(500).json({ success: false, message: "Server error" });
-    }
+    res.status(200).json({
+        success: true,
+        count: data.length,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+        data,
+    });
+} catch (error) {
+    console.error("Get Bookmarks Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+}
 };
 
 

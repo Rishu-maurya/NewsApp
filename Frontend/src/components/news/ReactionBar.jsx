@@ -78,22 +78,25 @@ export default function ReactionBar({ articleId, session }) {
     }
   };
 
-  const handleSave = async() => {
-    if (!session) return gologin();
+  const handleSave = async () => {
+    if (!session) return goLogin();
 
     setSaveBusy(true);
     setError("");
     try {
-        if (isSaved) {
-            await removeBookmark(articleId);
-            setIsSaved(false)
-        } else {
-            
-        }
+      if (isSaved) {
+        await removeBookmark(articleId);
+        setIsSaved(false);
+      } else {
+        await addBookmark(articleId);
+        setIsSaved(true);
+      }
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
+    } finally {
+      setSaveBusy(false);
     }
-  }
+  };
 
   return (
     <div className="s-row s-reaction-bar">
@@ -106,7 +109,14 @@ export default function ReactionBar({ articleId, session }) {
       >
         {liked ? "Liked" : "Like"} ({likeCount})
       </button>
-      <button type="button" className="s-btn" aria-pressed={isSaved}>
+
+      <button
+        type="button"
+        className="s-btn"
+        aria-pressed={isSaved}
+        disabled={saveBusy}
+        onClick={handleSave}
+      >
         {isSaved ? "Saved" : "Save"}
       </button>
       <a href="#comments" className="s-btn">
