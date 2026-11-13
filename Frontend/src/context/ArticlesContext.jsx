@@ -7,7 +7,11 @@ const ArticlesContext = createContext(null);
 function load() {
     try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        return Array.isArray(saved) ? saved : INITIAL_ARTICLES;
+        if (!Array.isArray(saved)) return INITIAL_ARTICLES;
+        // older saved data has no `important` flag: take it from the starter stories
+        return saved.map((a) => (a.important === undefined
+            ? { ...a, important: !!INITIAL_ARTICLES.find((i) => i.id === a.id)?.important }
+            : a));
     } catch {
         return INITIAL_ARTICLES;
     }
@@ -24,7 +28,7 @@ export function ArticlesProvider({ children }) {
 
     const saveArticle = ({
         id, title, category, body, status, author, authorEmail,
-        publishDate = '', publishTime = '',
+        publishDate = '', publishTime = '', important = false,
     }) => {
         setArticles((prev) => {
             if (id) {
@@ -33,7 +37,7 @@ export function ArticlesProvider({ children }) {
                         ? {
                             ...a,
                             title, category, body, status,
-                            publishDate, publishTime,
+                            publishDate, publishTime, important,
                             feedback: status === 'submitted' ? '' : a.feedback,
                             date: today(),
                         }
@@ -44,7 +48,7 @@ export function ArticlesProvider({ children }) {
             return [
                 {
                     id: nextId, title, category, body, status, author, authorEmail,
-                    publishDate, publishTime, feedback: '', date: today(),
+                    publishDate, publishTime, important, feedback: '', date: today(),
                 },
                 ...prev,
             ];
@@ -58,7 +62,7 @@ export function ArticlesProvider({ children }) {
 
     const deleteArticle = (id) => setArticles((prev) => prev.filter((a) => a.id !== id));
 
-    const reviewArticle = (id, decision, feedback = '') =>
+    const reviewArticle = (id, decision, feedback = '', important) =>
         setArticles((prev) =>
             prev.map((a) =>
                 a.id === id
@@ -66,6 +70,7 @@ export function ArticlesProvider({ children }) {
                         ...a,
                         status: decision,
                         feedback,
+                        important: important === undefined ? !!a.important : important,
                         date: decision === 'published' && a.publishDate ? a.publishDate : today(),
                     }
                     : a

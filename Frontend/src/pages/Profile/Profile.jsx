@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import PublisherLayout from '../../components/publisher/PublisherLayout';
@@ -44,6 +44,7 @@ function ProfileShell({ session, onLogout, children }) {
 export default function Profile({ session, onLogout, onSessionUpdate }) {
     const { articles } = useArticles();
     const { feedback, comments, saved } = useActivity();
+    const navigate = useNavigate();
     const user = session?.user;
 
     const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '' });
@@ -102,6 +103,11 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleLogout = () => {
+        onLogout();
+        navigate('/login');
     };
 
     const isStaff = DASHBOARD_ROLES.includes(user.role) || PUBLISHER_ROLES.includes(user.role);
@@ -195,6 +201,14 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
                             <p className="s-profile-email">{user.email}</p>
                             <span className="s-role-pill">{ROLE_LABELS[user.role] || user.role}</span>
                         </div>
+                    </section>
+
+                    <section className="s-info-card s-profile-signout">
+                        <h2 className="s-h2">Sign out</h2>
+                        <p className="s-hint">You are signed in as {user.email}. Log out to end your session on this device.</p>
+                        <button type="button" className="s-btn s-btn--logout" onClick={handleLogout}>
+                            Log out
+                        </button>
                     </section>
 
                     <section className="s-info-card">

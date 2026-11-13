@@ -4,11 +4,14 @@ import { ArticlesProvider } from './context/ArticlesContext';
 import { ActivityProvider } from './context/ActivityContext';
 import { getSession, clearSession } from './services/authService';
 import useSessionCheck from './hooks/useSessionCheck';
+import useRoleAlerts from './hooks/useRoleAlerts';
+import { AlertProvider } from './context/AlertContext';
 
-export default function App() {
+function AppContent() {
   const [session, setSession] = useState(getSession());
 
   useSessionCheck(session, setSession);
+  useRoleAlerts(session);
 
   const handleLogout = () => {
     clearSession();
@@ -21,5 +24,13 @@ export default function App() {
         <AppRoutes session={session} onLogin={setSession} onLogout={handleLogout} />
       </ActivityProvider>
     </ArticlesProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AlertProvider>
+      <AppContent />
+    </AlertProvider>
   );
 }

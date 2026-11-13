@@ -4,7 +4,7 @@
 .s-ticker {
     display: flex;
     align-items: stretch;
-    width: min(100% - 48px, 1180px);
+    width: calc(100% - 2 * clamp(16px, 3vw, 48px));
     margin: 18px auto 0;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -21,7 +21,7 @@
     gap: 9px;
     padding: 0 20px;
     color: #fff;
-    background: var(--accent);
+    background: var(--alert);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.16em;
@@ -80,7 +80,7 @@
     width: 6px;
     height: 6px;
     margin-right: 14px;
-    background: var(--accent);
+    background: var(--alert);
     content: '';
     vertical-align: middle;
 }
@@ -95,7 +95,7 @@
 
 @media (max-width: 640px) {
     .s-ticker {
-        width: min(100% - 32px, 1180px);
+        width: calc(100% - 2 * clamp(16px, 3vw, 48px));
         margin-top: 12px;
     }
 

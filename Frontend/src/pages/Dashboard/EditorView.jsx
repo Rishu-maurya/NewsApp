@@ -9,6 +9,7 @@ export default function EditorView() {
     const [openId, setOpenId] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [error, setError] = useState('');
+    const [important, setImportant] = useState(false);
 
     const pending = articles.filter((a) => a.status === 'submitted');
     const decided = articles
@@ -17,6 +18,8 @@ export default function EditorView() {
     const count = (status) => articles.filter((a) => a.status === status).length;
 
     const toggle = (id) => {
+        const story = articles.find((a) => a.id === id);
+        setImportant(!!story?.important);
         setOpenId(openId === id ? null : id);
         setFeedback('');
         setError('');
@@ -26,7 +29,7 @@ export default function EditorView() {
         if (decision !== 'published' && !feedback.trim()) {
             return setError('Add feedback so the journalist knows what to fix.');
         }
-        reviewArticle(id, decision, decision === 'published' ? '' : feedback.trim());
+        reviewArticle(id, decision, decision === 'published' ? '' : feedback.trim(), important);
         setOpenId(null);
         setFeedback('');
         setError('');
@@ -79,6 +82,16 @@ export default function EditorView() {
                                         }}
                                         placeholder="Explain what needs to change"
                                     />
+
+                                    <label className="dfield--check dfield--inline" htmlFor={`imp-${a.id}`}>
+                                        <input
+                                            id={`imp-${a.id}`}
+                                            type="checkbox"
+                                            checked={important}
+                                            onChange={(e) => setImportant(e.target.checked)}
+                                        />
+                                        Mark as an important story (shown in yellow)
+                                    </label>
 
                                     <div className="btn-row">
                                         <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'published')}>

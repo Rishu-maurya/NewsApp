@@ -8,7 +8,7 @@
     position: relative;
     padding: 22px 24px;
     border: 1px solid var(--line);
-    border-top: 4px solid var(--ink);
+    border-top: 4px solid var(--accent);
     border-radius: 6px;
     background: #fff;
     box-shadow: var(--shadow-card);
@@ -16,7 +16,7 @@
 }
 
 .stat:hover {
-    border-top-color: var(--accent);
+    border-top-color: var(--alert);
     box-shadow: var(--shadow-lift);
     transform: translateY(-5px);
 }

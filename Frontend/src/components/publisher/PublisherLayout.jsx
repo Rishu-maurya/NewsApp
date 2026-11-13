@@ -4,7 +4,7 @@ import './publisher.css';
 
 const linkClass = ({ isActive }) => `pub-link${isActive ? ' is-active' : ''}`;
 
-export default function PublisherLayout({ session, onLogout, title, subtitle, children }) {
+export default function PublisherLayout({ session, title, subtitle, children }) {
     return (
         <div className="dash">
             <header className="dash__bar">
@@ -24,7 +24,6 @@ export default function PublisherLayout({ session, onLogout, title, subtitle, ch
                             <span className="dash__name">{session.user.name}</span>
                             <span className="dash__role">Publisher</span>
                         </Link>
-                        <button type="button" className="dbtn" onClick={onLogout}>Log out</button>
                     </div>
                 </div>
             </header>

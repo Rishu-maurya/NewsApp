@@ -20,6 +20,7 @@ export const INITIAL_ARTICLES = [
         author: 'Neha Kulkarni',
         authorEmail: 'neha@news.com',
         status: 'published',
+        important: true,
         feedback: '',
         date: '2026-10-22',
     },

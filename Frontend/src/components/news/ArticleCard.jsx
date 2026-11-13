@@ -3,9 +3,9 @@ import { useActivity } from "../../context/ActivityContext";
 import { dayName } from "../../utils/dateUtils";
 import "../../style/ArticleCard.css";
 
-export default function ArticleCard({ article, session, lead, removable }) {
-  const navigate = useNavigate();
-  const { likes, saved, comments, toggleSave } = useActivity();
+export default function ArticleCard({ article, session, removable }) {
+    const navigate = useNavigate();
+    const { likes, saved, comments, toggleSave } = useActivity();
 
   const key = String(article.id);
   const email = session?.user.email;
@@ -27,23 +27,23 @@ export default function ArticleCard({ article, session, lead, removable }) {
 
   const label = removable ? "Remove" : isSaved ? "Saved" : "Save";
 
-  return (
-    <article className={`s-card${lead ? " s-card--lead" : ""}`}>
-      <p className="s-cat">{article.category}</p>
-      <h2 className="s-card__title">
-        <Link to={`/article/${article.id}`}>{article.title}</Link>
-      </h2>
-      <p className="s-card__text">{summary}</p>
-      <p className="s-meta">
-        <span>{article.author}</span>
-        <span>
-          {dayName(article.date)}, {article.date}
-        </span>{" "}
-      </p>
-      <p className="s-meta">
-        <span>{likeCount} likes</span>
-        <span>{commentCount} comments</span>
-      </p>
+    return (
+        <article className={`s-card${article.important ? ' s-card--important' : ''}`}>
+            <div className="s-card__top">
+                <p className="s-cat">{article.category}</p>
+                {article.important && <span className="s-flag">Important</span>}
+            </div>
+            <h2 className="s-card__title">
+                <Link to={`/article/${article.id}`}>{article.title}</Link>
+            </h2>
+            <p className="s-card__text">{summary}</p>
+            <p className="s-meta">
+                <span>{article.author}</span>
+                <span>{dayName(article.date)}, {article.date}</span>            </p>
+            <p className="s-meta">
+                <span>{likeCount} likes</span>
+                <span>{commentCount} comments</span>
+            </p>
 
       <div className="s-card__foot">
         <Link to={`/article/${article.id}`} className="s-btn">

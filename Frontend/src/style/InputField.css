@@ -32,7 +32,7 @@
 }
 
 .field input:hover {
-    border-color: #9c9ca6;
+    border-color: #9aa5b4;
 }
 
 .field input:focus,
@@ -52,7 +52,7 @@
 }
 
 .field--error input:focus {
-    box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.18);
+    box-shadow: 0 0 0 3px rgba(217, 54, 30, 0.18);
 }
 
 .field__error {
