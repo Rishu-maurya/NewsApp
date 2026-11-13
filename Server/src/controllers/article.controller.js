@@ -1,4 +1,4 @@
-const Article = require("../models/Article");
+const Article = require("../models/article");
 const mongoose = require("mongoose")
 const Category = require("../models/Category")
 const generateUniqueSlug = require("../utils/gernerateUniqueSlug");

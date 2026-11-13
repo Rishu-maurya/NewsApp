@@ -1,5 +1,5 @@
 const Bookmark = require("../models/Bookmark");
-const Article = require("../models/Article");
+const Article = require("../models/article");
 require("../models/Category"); // registers the model used by populate below
 require("../models/users");
 const mongoose = require("mongoose");
