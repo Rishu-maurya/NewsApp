@@ -34,4 +34,4 @@ const categorySchema = new mongoose.Schema(
 );
 
 module.exports =
-  mongoose.models.category || mongoose.model("Category", categorySchema);
+  mongoose.models.category || mongoose.model("category", categorySchema);

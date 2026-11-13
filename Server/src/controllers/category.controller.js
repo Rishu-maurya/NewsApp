@@ -1,4 +1,4 @@
-const Category = require("../models/category.js")
+const Category = require("../models/category")
 const slugify = require("../utils/slugify")
 const mongoose = require("mongoose");
 const Article = require("../models/article.js");
