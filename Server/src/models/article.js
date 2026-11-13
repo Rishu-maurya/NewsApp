@@ -71,6 +71,19 @@ const articleSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Editor feedback when a story needs changes or is rejected
+    reviewNote: {
+      type: String,
+      default: "",
+      maxlength: 1000,
+    },
+
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     viewCount: {
       type: Number,
       default: 0,
@@ -89,4 +102,5 @@ articleSchema.index({
 articleSchema.index({ category: 1, status: 1 });
 articleSchema.index({ author: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Article", articleSchema);
+module.exports =
+  mongoose.models.Article || mongoose.model("Article", articleSchema);

@@ -1,7 +1,6 @@
-const Article = require("../models/article");
-const Review = require("../models/review");
+const Article = require("../models/Article");
 const mongoose = require("mongoose")
-const Category = require("../models/category")
+const Category = require("../models/Category")
 const generateUniqueSlug = require("../utils/gernerateUniqueSlug");
 
 
@@ -102,7 +101,7 @@ const createArticle = async (req, res) => {
             const message = Object.values(error.errors)[0].message;
             return res.status(400).json({ success: false, message });
         }
-
+        
         console.error("Create Article Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
@@ -122,13 +121,6 @@ const getArticles = async (req, res) => {
         const role = req.user?.role;
         if (role === "admin") {
             if (status) filter.status = status;
-        } else if (role === "journalist" || role === "publisher") {
-            if (status === "draft") {
-                filter.status = "draft";
-                filter.author = req.user._id;
-            } else {
-                filter.status = "published";
-            }
         } else {
             filter.status = "published";
         }
@@ -179,8 +171,8 @@ const getArticles = async (req, res) => {
 const getArticleById = async (req, res) => {
     try {
         const article = await Article.findById(req.params.id)
-        .populate("author", "fullName")
-        .populate("category", "names slug");
+            .populate("author", "fullName")
+            .populate("category", "name slug");
 
         if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
             return res.status(404).json({
@@ -189,16 +181,10 @@ const getArticleById = async (req, res) => {
             });
         }
 
-        const data = article.toObject();
-        if (
-            isOwnerOrAdmin(article, req.user) &&
-            ["changes_requested", "rejected"].includes(article.status)
-        ) {
-            const last = await Review.findOne({ article: article._id }).sort({ createdAt: -1 });
-            data.reviewNote = last?.feedback || "";
-        }
-
-        res.status(200).json({ success: true, data });
+        res.status(200).json({
+            success: true,
+            data: article,
+        });
     } catch (error) {
         if (error.name === "CastError") {
             return res.status(400).json({
@@ -215,24 +201,13 @@ const getMyArticles = async (req, res) => {
     try {
         const articles = await Article.find({ author: req.user._id })
             .populate("category", "name slug")
-            .select("title summary category status createdAt updatedAt")
-            .sort({ updatedAt: -1 })
-            .lean();
+            .sort({ updatedAt: -1 });
 
-        const needNote = articles
-            .filter((a) => ["changes_requested", "rejected"].includes(a.status))
-            .map((a) => a._id);
-
-        const reviews = await Review.find({ article: { $in: needNote } }).sort({ createdAt: -1 });
-        const notes = {};
-        reviews.forEach((r) => {
-            const key = r.article.toString();
-            if (!notes[key]) notes[key] = r.feedback;   // sabse naya feedback
+        return res.status(200).json({
+            success: true,
+            count: articles.length,
+            data: articles,
         });
-
-        const data = articles.map((a) => ({ ...a, reviewNote: notes[a._id.toString()] || "" }));
-
-        return res.status(200).json({ success: true, count: data.length, data });
     } catch (error) {
         console.error("Get My Articles Error:", error);
         return res.status(500).json({ success: false, message: "Server error" });
@@ -271,11 +246,6 @@ const updateArticle = async (req, res) => {
                     success: false,
                     message: "Title must be at least 5 characters",
                 });
-            }
-
-            if (title.trim() !== article, title) {
-                article.title = title.trim();
-                article.slug = await generateUniqueSlug(title.trim())
             }
             article.title = title.trim();
             article.slug = await generateUniqueSlug(title.trim());
@@ -328,6 +298,7 @@ const updateArticle = async (req, res) => {
                 });
             }
             article.status = status;
+            if (status === "submitted") article.reviewNote = ""; // new review round
         }
         if (tags !== undefined) {
             if (!Array.isArray(tags) || tags.some((tag) => typeof tag !== "string")) {
@@ -412,28 +383,93 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+// 5) EDITOR REVIEW QUEUE
+// GET /api/articles/review  (editor, admin)
+// Stories waiting for a decision, plus the most recent decisions.
 const getReviewQueue = async (req, res) => {
     try {
-        const [pending, decided, countRows] = await Promise.all([
-            Article.find({ status: "submitted" })
+        const [pending, decided] = await Promise.all([
+            Article.find({ status: { $in: ["submitted", "under_review"] } })
                 .populate("author", "fullName")
                 .populate("category", "name slug")
                 .sort({ updatedAt: 1 }),
-            Article.find({ status: { $in: ["approved", "published", "changes_requested", "rejected"] } })
+            Article.find({ status: { $in: ["published", "changes_requested", "rejected"] } })
                 .select("-body")
                 .populate("author", "fullName")
                 .populate("category", "name slug")
                 .sort({ updatedAt: -1 })
-                .limit(20),
-            Article.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+                .limit(50),
         ]);
 
-        const counts = {};
-        countRows.forEach((row) => { counts[row._id] = row.count; });
-
-        res.status(200).json({ success: true, data: { pending, decided, counts } });
+        res.status(200).json({ success: true, data: { pending, decided } });
     } catch (error) {
         console.error("Get Review Queue Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// 6) EDITOR DECISION
+// PATCH /api/articles/:id/review   body: { decision, note }
+// decision: "published" | "changes_requested" | "rejected"
+const reviewArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { decision, note } = req.body || {};
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ success: false, message: "Invalid article ID" });
+        }
+        if (!["published", "changes_requested", "rejected"].includes(decision)) {
+            return res.status(400).json({
+                success: false,
+                message: "Decision must be published, changes_requested or rejected",
+            });
+        }
+
+        const cleanNote = typeof note === "string" ? note.trim() : "";
+        if (decision !== "published" && !cleanNote) {
+            return res.status(400).json({
+                success: false,
+                message: "Add feedback so the journalist knows what to fix",
+            });
+        }
+        if (cleanNote.length > 1000) {
+            return res.status(400).json({
+                success: false,
+                message: "Feedback must be 1000 characters or fewer",
+            });
+        }
+
+        const article = await Article.findById(id);
+        if (!article) {
+            return res.status(404).json({ success: false, message: "Article not found" });
+        }
+        if (!["submitted", "under_review"].includes(article.status)) {
+            return res.status(409).json({
+                success: false,
+                message: "Only stories waiting for review can be decided",
+            });
+        }
+
+        article.status = decision;
+        article.reviewNote = decision === "published" ? "" : cleanNote;
+        article.reviewedBy = req.user._id;
+        if (decision === "published") article.publishedAt = new Date();
+
+        await article.save();
+
+        res.status(200).json({
+            success: true,
+            message:
+                decision === "published"
+                    ? "Story published"
+                    : decision === "rejected"
+                        ? "Story rejected"
+                        : "Changes requested",
+            data: article,
+        });
+    } catch (error) {
+        console.error("Review Article Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
@@ -446,4 +482,5 @@ module.exports = {
     updateArticle,
     deleteArticle,
     getReviewQueue,
+    reviewArticle,
 };

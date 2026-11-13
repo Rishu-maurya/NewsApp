@@ -1,18 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
 import LoginPrompt from '../../components/news/LoginPrompt';
-import { getCategories, getPublishedArticles } from '../../services/articleService';
+import { useNews } from '../../context/NewsContext';
 import { LIVE_STREAMS, startLabel } from '../../data/liveData';
 import { matchesDate } from '../../utils/dateUtils';
 import '../../style/Home.css';
 
 export default function Home({ session, onLogout }) {
-    const [articles, setArticles] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const { articles, categories, loading, error } = useNews();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
     const [params, setParams] = useSearchParams();
@@ -20,40 +17,18 @@ export default function Home({ session, onLogout }) {
     const date = params.get('date') || '';
     const day = params.get('day') || 'any';
 
-    useEffect(() => {
-        let cancelled = false;
-        Promise.all([getPublishedArticles(), getCategories()])
-            .then(([articleList, categoryList]) => {
-                if (cancelled) return;
-                setArticles(articleList);
-                setCategories(categoryList);
-            })
-            .catch((err) => {
-                if (!cancelled) setError(err.message);
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const headlines = useMemo(
-        () => [...articles].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
-        [articles]
-    );
+    const published = articles;
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         const when = { range: date ? 'date' : 'all', date, weekday: day };
-        return articles.filter((a) => {
+        return published.filter((a) => {
             if (category !== 'All' && a.category !== category) return false;
             if (!matchesDate(a.date, when)) return false;
             if (!q) return true;
             return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
-        }).sort((a, b) => Number(!!b.important) - Number(!!a.important));
-    }, [articles, query, category, date, day]);
+        });
+    }, [published, query, category, date, day]);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
@@ -64,29 +39,10 @@ export default function Home({ session, onLogout }) {
                 </h1>
                 <p className="s-sub">Thoughtful local reporting, reviewed by editors and made for curious readers.</p>
                 <div className="s-hero-stats">
-                    <div><strong>{loading ? '-' : articles.length}</strong><span>Published stories</span></div>
-                    <div><strong>{loading ? '-' : categories.length}</strong><span>Categories</span></div>
+                    <div><strong>{published.length}</strong><span>Published stories</span></div>
+                    <div><strong>{categories.length}</strong><span>Categories</span></div>
                     <div><strong>{LIVE_STREAMS.length}</strong><span>Live streams</span></div>
                 </div>
-
-                {headlines.length > 0 && (
-                    <aside className="s-hero__side" aria-label="Top headlines">
-                        <p className="s-hero__label">Top headlines</p>
-                        <ol className="s-hero__list">
-                            {headlines.map((a, i) => (
-                                <li key={a.id}>
-                                    <Link to={`/article/${a.id}`} className={a.important ? 'is-important' : ''}>
-                                        <span className="s-hero__no">{String(i + 1).padStart(2, '0')}</span>
-                                        <span className="s-hero__txt">
-                                            <small>{a.category}{a.important ? ' · Important' : ''}</small>
-                                            <strong>{a.title}</strong>
-                                        </span>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ol>
-                    </aside>
-                )}
             </section>
 
             {session ? (
@@ -117,7 +73,7 @@ export default function Home({ session, onLogout }) {
                 />
 
                 <div className="s-chips" role="group" aria-label="Categories">
-                    {['All', ...categories.map((c) => c.name)].map((c) => (
+                    {['All', ...categories].map((c) => (
                         <button
                             key={c}
                             type="button"
@@ -133,15 +89,12 @@ export default function Home({ session, onLogout }) {
 
             <section className="s-block s-stories">
                 <h2 className="s-h2">
-                    Latest stories <span className="s-pill">{loading ? '-' : results.length}</span>
+                    Latest stories <span className="s-pill">{results.length}</span>
                 </h2>
-                {results.some((a) => a.important) && (
-                    <p className="s-legend">
-                        <span className="s-legend__dot" aria-hidden="true" />
-                        Yellow cards are the most important stories.
-                    </p>
-                )}
-                {results.length === 0 ? (
+                {error && <p className="s-err" role="alert">{error}</p>}
+                {loading && published.length === 0 ? (
+                    <p className="s-sub">Loading the latest stories...</p>
+                ) : results.length === 0 ? (
                     <div className="s-empty">
                         <p>No stories match your search. Try another word, category or date.</p>
                         <button
@@ -158,11 +111,12 @@ export default function Home({ session, onLogout }) {
                     </div>
                 ) : (
                     <div className="s-grid">
-                        {results.map((a) => (
+                        {results.map((a, i) => (
                             <ArticleCard
                                 key={a.id}
                                 article={a}
                                 session={session}
+                                lead={i === 0 && results.length > 2}
                             />
                         ))}
                     </div>

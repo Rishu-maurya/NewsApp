@@ -3,9 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import { useActivity } from '../../context/ActivityContext';
-import { useArticles } from '../../context/ArticlesContext';
+import { useNews } from '../../context/NewsContext';
 import { LIVE_STREAMS } from '../../data/liveData';
-import { isLive } from '../../utils/dateUtils';
 import '../../style/Report.css';
 import '../../style/ArticleDetail.css';
 
@@ -13,7 +12,7 @@ const REASONS = ['Misleading or inaccurate', 'Spam or scam', 'Abusive or harmful
 
 export default function Report({ session, onLogout }) {
     const location = useLocation();
-    const { articles } = useArticles();
+    const { articles } = useNews();
     const { comments, addReport } = useActivity();
     const initialCommentId = location.state?.commentId ? String(location.state.commentId) : '';
     const initialTargetId = String(location.state?.articleId || '');
@@ -25,7 +24,7 @@ export default function Report({ session, onLogout }) {
     const [submitted, setSubmitted] = useState(false);
 
     const targets = [
-        ...articles.filter(isLive).map((article) => ({
+        ...articles.map((article) => ({
             id: String(article.id),
             title: article.title,
             type: 'story',

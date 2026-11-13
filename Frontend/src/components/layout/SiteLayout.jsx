@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { useArticles } from '../../context/ArticlesContext';
-import { useActivity } from '../../context/ActivityContext';
-import { isLive } from '../../utils/dateUtils';
+import { useBookmarks } from '../../context/BookmarksContext';
 import NavDateFilter from './NavDateFilter';
 import '../../style/SiteLayout.css';
 import '../../style/Navbar.css';
@@ -14,8 +12,7 @@ const topClass = ({ isActive }) => `s-top__link${isActive ? ' is-active' : ''}`;
 
 export default function SiteLayout({ session, children }) {
     const user = session?.user;
-    const { articles } = useArticles();
-    const { saved } = useActivity();
+    const { ids: serverSaved } = useBookmarks();
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -25,11 +22,7 @@ export default function SiteLayout({ session, children }) {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const bookmarkCount = user
-        ? articles.filter(
-            (a) => isLive(a) && (saved[String(a.id)] || []).includes(user.email)
-        ).length
-        : 0;
+    const bookmarkCount = user ? serverSaved.size : 0;
 
     return (
         <div className="site">

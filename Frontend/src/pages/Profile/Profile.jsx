@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import PublisherLayout from '../../components/publisher/PublisherLayout';
 import LoginPrompt from '../../components/news/LoginPrompt';
 import { useActivity } from '../../context/ActivityContext';
-import { useArticles } from '../../context/ArticlesContext';
+import { useBookmarks } from '../../context/BookmarksContext';
 import { HOME_BY_ROLE, ROLE_LABELS } from '../../data/roles';
-import { updateProfile, updateStoredSession } from '../../services/authService';
+import { getMe, updateProfile, updateStoredSession } from '../../services/authService';
 import { validateName, validatePhone } from '../../utils/validators';
-import { isLive } from '../../utils/dateUtils';
 import '../../style/Profile.css';
 import '../../style/InfoCard.css';
 
-const DASHBOARD_ROLES = ['admin', 'editor'];
-const PUBLISHER_ROLES = ['publisher', 'journalist'];
+// publisher, editor and admin all use the dashboard navbar; journalists use the writer workspace
+const DASHBOARD_ROLES = ['admin', 'editor', 'publisher'];
+const PUBLISHER_ROLES = ['journalist'];
 
 const PROFILE_TITLE = 'Your profile';
 const PROFILE_SUBTITLE = 'Keep your name and contact details up to date.';
@@ -42,15 +42,40 @@ function ProfileShell({ session, onLogout, children }) {
 }
 
 export default function Profile({ session, onLogout, onSessionUpdate }) {
-    const { articles } = useArticles();
-    const { feedback, comments, saved } = useActivity();
-    const navigate = useNavigate();
+    const { feedback, comments } = useActivity();
+    const { ids: serverSaved } = useBookmarks();
     const user = session?.user;
 
     const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '' });
     const [errors, setErrors] = useState({});
     const [status, setStatus] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    // Load the latest profile from the server (GET /api/auth/me) when the page opens,
+    // so the form shows what is really saved in the database.
+    useEffect(() => {
+        if (!session?.user) return;
+        let cancelled = false;
+        getMe()
+            .then((me) => {
+                if (cancelled) return;
+                const fresh = { name: me.name || '', phone: me.phone || '' };
+                setForm(fresh);
+                if (fresh.name !== session.user.name || fresh.phone !== (session.user.phone || '')) {
+                    const updated = { ...session, user: { ...session.user, ...fresh } };
+                    updateStoredSession(updated);
+                    onSessionUpdate?.(updated);
+                }
+            })
+            .catch(() => {
+                // server unreachable: keep showing the saved session data
+            });
+        return () => {
+            cancelled = true;
+        };
+        // run once when the profile page opens
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (!user) {
         return (
@@ -64,9 +89,7 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
 
     const commentCount = comments.filter((comment) => comment.email === user.email).length;
     const feedbackCount = feedback.filter((item) => item.email === user.email).length;
-    const bookmarkCount = articles.filter(
-        (article) => isLive(article) && (saved[String(article.id)] || []).includes(user.email)
-    ).length;
+    const bookmarkCount = serverSaved.size;
 
     const unchanged =
         form.name.trim() === user.name && form.phone.trim() === (user.phone || '');
@@ -103,11 +126,6 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
         } finally {
             setSaving(false);
         }
-    };
-
-    const handleLogout = () => {
-        onLogout();
-        navigate('/login');
     };
 
     const isStaff = DASHBOARD_ROLES.includes(user.role) || PUBLISHER_ROLES.includes(user.role);
@@ -201,14 +219,6 @@ export default function Profile({ session, onLogout, onSessionUpdate }) {
                             <p className="s-profile-email">{user.email}</p>
                             <span className="s-role-pill">{ROLE_LABELS[user.role] || user.role}</span>
                         </div>
-                    </section>
-
-                    <section className="s-info-card s-profile-signout">
-                        <h2 className="s-h2">Sign out</h2>
-                        <p className="s-hint">You are signed in as {user.email}. Log out to end your session on this device.</p>
-                        <button type="button" className="s-btn s-btn--logout" onClick={handleLogout}>
-                            Log out
-                        </button>
                     </section>
 
                     <section className="s-info-card">
