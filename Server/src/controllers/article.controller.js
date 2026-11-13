@@ -1,6 +1,6 @@
 const Article = require("../models/article");
 const mongoose = require("mongoose")
-const Category = require("../models/Category")
+const Category = require("../models/category")
 const generateUniqueSlug = require("../utils/gernerateUniqueSlug");
 
 
