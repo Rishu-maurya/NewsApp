@@ -1,30 +1,31 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useActivity } from '../../context/ActivityContext';
-import { dayName } from '../../utils/dateUtils';
-import '../../style/ArticleCard.css';
+import { Link, useNavigate } from "react-router-dom";
+import { useActivity } from "../../context/ActivityContext";
+import { dayName } from "../../utils/dateUtils";
+import "../../style/ArticleCard.css";
 
 export default function ArticleCard({ article, session, removable }) {
     const navigate = useNavigate();
     const { likes, saved, comments, toggleSave } = useActivity();
 
-    const key = String(article.id);
-    const email = session?.user.email;
-    const isSaved = email ? (saved[key] || []).includes(email) : false;
-    const likeCount = (likes[key] || []).length;
-    const commentCount = comments.filter((c) => c.targetId === key).length;
-    const summary = article.body.length > 120 ? `${article.body.slice(0, 120)}...` : article.body;
+  const key = String(article.id);
+  const email = session?.user.email;
+  const isSaved = email ? (saved[key] || []).includes(email) : false;
+  const likeCount = (likes[key] || []).length;
+  const commentCount = comments.filter((c) => c.targetId === key).length;
+  const text = article.summary || article.body || "";
+  const summary = text.length > 120 ? `${text.slice(0, 120)}...` : text;
 
-    const handleSave = () => {
-        if (!email) {
-            navigate('/login', {
-                state: { message: 'Log in to save stories to your bookmarks.' },
-            });
-            return;
-        }
-        toggleSave(article.id, email);
-    };
+  const handleSave = () => {
+    if (!email) {
+      navigate("/login", {
+        state: { message: "Log in to save stories to your bookmarks." },
+      });
+      return;
+    }
+    toggleSave(article.id, email);
+  };
 
-    const label = removable ? 'Remove' : isSaved ? 'Saved' : 'Save';
+  const label = removable ? "Remove" : isSaved ? "Saved" : "Save";
 
     return (
         <article className={`s-card${article.important ? ' s-card--important' : ''}`}>
@@ -44,15 +45,22 @@ export default function ArticleCard({ article, session, removable }) {
                 <span>{commentCount} comments</span>
             </p>
 
-            <div className="s-card__foot">
-                <Link to={`/article/${article.id}`} className="s-btn">Read</Link>
-                <Link to={`/article/${article.id}#comments`} className="s-btn">
-                    Comment{commentCount > 0 ? ` (${commentCount})` : ''}
-                </Link>
-                <button type="button" className="s-btn" aria-pressed={isSaved} onClick={handleSave}>
-                    {label}
-                </button>
-            </div>
-        </article>
-    );
+      <div className="s-card__foot">
+        <Link to={`/article/${article.id}`} className="s-btn">
+          Read
+        </Link>
+        <Link to={`/article/${article.id}#comments`} className="s-btn">
+          Comment{commentCount > 0 ? ` (${commentCount})` : ""}
+        </Link>
+        <button
+          type="button"
+          className="s-btn"
+          aria-pressed={isSaved}
+          onClick={handleSave}
+        >
+          {label}
+        </button>
+      </div>
+    </article>
+  );
 }

@@ -77,36 +77,61 @@ const getBookmarks = async (req, res) => {
                     data: [
                         { $skip: (page - 1) * limit },
                         { $limit: limit },
-                        { $project: { "article.content": 0 } },
+                        { $project: { "article.body": 0 } },
                     ],
                     total: [{ $count: "count" }],
                 },
             },
         ]);
 
-        const data = await Bookmark.populate(result.data, {
-            path: "article.author",
-            select: "fullName",
-            model: "User",
-        });
-        const total = result.total[0]?.count || 0;
+        const data = await Bookmark.populate(result.data, [
+            { path: "article.author", select: "fullName", model: "User" },
+            { path: "article.category", select: "name slug", model: "Category"},
+        ]);
+    const total = result.total[0]?.count || 0;
+
+    res.status(200).json({
+        success: true,
+        count: data.length,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        },
+        data,
+    });
+} catch (error) {
+    console.error("Get Bookmarks Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+}
+};
+
+
+const getBookmarkStatus = async (req, res) => {
+    try {
+        const { articleId } = req.params;
+
+        if (!mongoose.isValidObjectId(articleId))
+            return invalidId(res);
+
+        const found = await Bookmark.exists({
+            article: articleId,
+            user: req.user._id
+        })
 
         res.status(200).json({
             success: true,
-            count: data.length,
-            pagination: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
-            data,
-        });
-    } catch (error) {
-        console.error("Get Bookmarks Error:", error);
-        res.status(500).json({ success: false, message: "Server error" });
+            data: { bookmarked: Boolean(found) }
+        })
+    } catch (err) {
+        console.error("Get Bookmark Staus Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        })
     }
-};
+}
 
 // ---------- 3) REMOVE BOOKMARK ----------
 // DELETE /api/bookmarks/:articleId
@@ -139,4 +164,4 @@ const removeBookmark = async (req, res) => {
     }
 };
 
-module.exports = { addBookmark, getBookmarks, removeBookmark };
+module.exports = { addBookmark, getBookmarks, getBookmarkStatus, removeBookmark };

@@ -146,7 +146,7 @@ const getArticles = async (req, res) => {
                 .select("-body")
                 .populate("author", "fullName")
                 .populate("category", "name slug")
-                .sort({ createdAt: -1 })
+                .sort({ publishedAt: -1, createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
             Article.countDocuments(filter),
@@ -178,7 +178,9 @@ const getArticles = async (req, res) => {
 // 3) GET ONE
 const getArticleById = async (req, res) => {
     try {
-        const article = await Article.findById(req.params.id).populate("author", "fullName");
+        const article = await Article.findById(req.params.id)
+        .populate("author", "fullName")
+        .populate("category", "names slug");
 
         if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
             return res.status(404).json({

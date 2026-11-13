@@ -1,21 +1,47 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
-import { useArticles } from '../../context/ArticlesContext';
-import { isLive } from '../../utils/dateUtils';
+import { getPublishedArticle } from '../../services/articleService';
 import '../../style/ArticleDetail.css';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
-    const { articles } = useArticles();
-    const article = articles.find((a) => String(a.id) === id && isLive(a));
+    const [article, setArticle] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError('');
+        getPublishedArticle(id)
+            .then((result) => {
+                if (!cancelled) setArticle(result);
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    setArticle(null);
+                    setError(err.message);
+                }
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
+
     return (
         <SiteLayout session={session} onLogout={onLogout}>
             <div className="s-article">
                 <Link to="/" className="s-back">All stories</Link>
 
-                {article ? (
+                {loading ? (
+                    <p className="s-muted">Loading story...</p>
+                ) : article ? (
                     <>
                         <p className="s-cat">{article.category}</p>
                         <h1 className="s-h1">{article.title}</h1>
@@ -24,7 +50,9 @@ export default function ArticleDetail({ session, onLogout }) {
                             <span>{article.date}</span>
                         </p>
 
-                        <p className="s-article__body">{article.body}</p>
+                        <p className="s-article__body" style={{ whiteSpace: 'pre-line' }}>
+                            {article.body}
+                        </p>
 
                         <Link
                             to="/report"
@@ -38,7 +66,7 @@ export default function ArticleDetail({ session, onLogout }) {
                     </>
                 ) : (
                     <div className="s-empty">
-                        <p>This story could not be found. It may have been removed.</p>
+                        <p>{error || 'This story could not be found.'}</p>
                     </div>
                 )}
             </div>
