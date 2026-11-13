@@ -140,4 +140,35 @@ const removeBookmark = async (req, res) => {
     }
 };
 
-module.exports = { addBookmark, getBookmarks, removeBookmark };
+// ---------- 4) GET BOOKMARK STATUS ----------
+// GET /api/bookmarks/:articleId/status
+const getBookmarkStatus = async (req, res) => {
+    try {
+        const { articleId } = req.params;
+
+        if (!mongoose.isValidObjectId(articleId)) return invalidId(res);
+
+        const article = await Article.findById(articleId).select("status");
+        if (!article || article.status !== "published") {
+            return res.status(404).json({
+                success: false,
+                message: "Article not found",
+            });
+        }
+
+        const bookmark = await Bookmark.exists({
+            article: article._id,
+            user: req.user._id,
+        });
+
+        res.status(200).json({
+            success: true,
+            data: { bookmarked: !!bookmark },
+        });
+    } catch (error) {
+        console.error("Get Bookmark Status Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+module.exports = { addBookmark, getBookmarks, removeBookmark, getBookmarkStatus };
