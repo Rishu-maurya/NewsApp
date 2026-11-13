@@ -40,8 +40,8 @@ export default function Home({ session, onLogout }) {
     }, []);
 
     const headlines = useMemo(
-        () => [...published].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
-        [published]
+        () => [...articles].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
+        [articles]
     );
 
     const results = useMemo(() => {
@@ -53,7 +53,7 @@ export default function Home({ session, onLogout }) {
             if (!q) return true;
             return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
         }).sort((a, b) => Number(!!b.important) - Number(!!a.important));
-    }, [published, query, category, date, day]);
+    }, [articles, query, category, date, day]);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
