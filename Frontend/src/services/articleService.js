@@ -15,7 +15,7 @@ export function normalizeArticle(article) {
     category: article.category?.name || "",
     author: article.author?.fullName || "",
     date: when ? toDateStr(new Date(when)) : "",
-    body: article.body || "", // list API body nahi bhejta
+    body: article.body || article.summary || "", // list API body nahi bhejta
   };
 }
 
