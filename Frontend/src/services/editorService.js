@@ -31,9 +31,9 @@ export async function getReviewQueue() {
   }
 }
 
-export async function reviewArticle(id, decision, feedback = "") {
+export async function reviewArticle(id, decision, feedback = "", important) {
   try {
-    await api.post(`/articles/${id}/reviews`, { decision, feedback: feedback.trim() });
+    await api.post(`/articles/${id}/reviews`, { decision, feedback: feedback.trim(), important });
   } catch (err) {
     throw new Error(getErrorMessage(err, "Could not submit your review."));
   }

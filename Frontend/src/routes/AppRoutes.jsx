@@ -31,11 +31,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
   const writesStories = role === "journalist" || role === "publisher";
   const publisherWorkspace = (page) => (writesStories ? page : denied);
 
-  let dashboard = denied;
-  if (writesStories) dashboard = <Navigate to="/publisher" replace />;
-  if (role === "publisher" || role === "editor" || role === "admin") {
-    dashboard = <Dashboard {...shared} />;
-  }
+  const dashboard = session ? <Dashboard {...shared} /> : denied;
 
   return (
     <Routes>
@@ -54,7 +50,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
 
       <Route
         path="/publisher"
-        element={publisherWorkspace(<Overview {...shared} />)}
+        element={role === "journalist" ? <Navigate to="/dashboard" replace /> : publisherWorkspace(<Overview {...shared} />)}
       />
       <Route
         path="/publisher/write"

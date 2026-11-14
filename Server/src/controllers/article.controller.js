@@ -22,6 +22,9 @@ const createArticle = async (req, res) => {
             category,
             tags,
             featuredImage,
+            publishDate = "",
+            publishTime = "",
+            important = false,
             status = "draft",
         } = req.body || {};
 
@@ -54,6 +57,18 @@ const createArticle = async (req, res) => {
                 message: "Write at least 30 characters before sending for review",
             });
         }
+        if (typeof publishDate !== "string" || (publishDate && !/^\d{4}-\d{2}-\d{2}$/.test(publishDate))) {
+            return res.status(400).json({ success: false, message: "Invalid publish date" });
+        }
+        if (typeof publishTime !== "string" || (publishTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(publishTime))) {
+            return res.status(400).json({ success: false, message: "Invalid publish time" });
+        }
+        if (publishTime && !publishDate) {
+            return res.status(400).json({ success: false, message: "Publish date is required when a time is set" });
+        }
+        if (typeof important !== "boolean") {
+            return res.status(400).json({ success: false, message: "Important must be true or false" });
+        }
 
         const validCategory = await Category.findOne({ _id: category, isActive: true })
 
@@ -80,6 +95,9 @@ const createArticle = async (req, res) => {
             category: validCategory._id,
             tags: Array.isArray(tags) ? tags : [],
             featuredImage: featuredImage || "",
+            publishDate,
+            publishTime,
+            important,
             author: req.user._id,
             status,
         });
@@ -180,7 +198,7 @@ const getArticleById = async (req, res) => {
     try {
         const article = await Article.findById(req.params.id)
         .populate("author", "fullName")
-        .populate("category", "names slug");
+        .populate("category", "name slug");
 
         if (!article || (article.status !== "published" && !isOwnerOrAdmin(article, req.user))) {
             return res.status(404).json({
@@ -215,7 +233,7 @@ const getMyArticles = async (req, res) => {
     try {
         const articles = await Article.find({ author: req.user._id })
             .populate("category", "name slug")
-            .select("title summary category status createdAt updatedAt")
+            .select("title summary body category status publishDate publishTime important createdAt updatedAt")
             .sort({ updatedAt: -1 })
             .lean();
 
@@ -263,7 +281,18 @@ const updateArticle = async (req, res) => {
             });
         }
 
-        const { title, body, summary, category, tags, featuredImage, status } = req.body || {};
+        const {
+            title,
+            body,
+            summary,
+            category,
+            tags,
+            featuredImage,
+            publishDate,
+            publishTime,
+            important,
+            status,
+        } = req.body || {};
 
         if (title !== undefined) {
             if (typeof title !== "string" || title.trim().length < 5) {
@@ -339,6 +368,28 @@ const updateArticle = async (req, res) => {
             article.tags = tags;
         }
         if (featuredImage !== undefined) article.featuredImage = featuredImage;
+        if (publishDate !== undefined) {
+            if (typeof publishDate !== "string" || (publishDate && !/^\d{4}-\d{2}-\d{2}$/.test(publishDate))) {
+                return res.status(400).json({ success: false, message: "Invalid publish date" });
+            }
+            article.publishDate = publishDate;
+            if (!publishDate) article.publishTime = "";
+        }
+        if (publishTime !== undefined) {
+            if (typeof publishTime !== "string" || (publishTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(publishTime))) {
+                return res.status(400).json({ success: false, message: "Invalid publish time" });
+            }
+            if (publishTime && !(publishDate ?? article.publishDate)) {
+                return res.status(400).json({ success: false, message: "Publish date is required when a time is set" });
+            }
+            article.publishTime = publishTime;
+        }
+        if (important !== undefined) {
+            if (typeof important !== "boolean") {
+                return res.status(400).json({ success: false, message: "Important must be true or false" });
+            }
+            article.important = important;
+        }
         // author is never updatable
 
         const updatedArticle = await article.save();
@@ -438,6 +489,20 @@ const getReviewQueue = async (req, res) => {
     }
 };
 
+const getPublishQueue = async (req, res) => {
+    try {
+        const articles = await Article.find({ status: "approved" })
+            .populate("author", "fullName")
+            .populate("category", "name slug")
+            .sort({ updatedAt: 1 });
+
+        res.status(200).json({ success: true, count: articles.length, data: articles });
+    } catch (error) {
+        console.error("Get Publish Queue Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 module.exports = {
     createArticle,
     getArticles,
@@ -446,4 +511,5 @@ module.exports = {
     updateArticle,
     deleteArticle,
     getReviewQueue,
+    getPublishQueue,
 };

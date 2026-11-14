@@ -18,11 +18,10 @@ function saveSeen(set) {
     try {
         localStorage.setItem(SEEN_KEY, JSON.stringify([...set].slice(-200)));
     } catch {
-        /* storage full / blocked - ignore */
+        
     }
 }
 
-// Sirf admin aur publisher ke liye alerts.
 export default function useRoleAlerts(session) {
     const { showAlert } = useAlert();
     const role = session?.user?.role;
@@ -35,7 +34,6 @@ export default function useRoleAlerts(session) {
         if (!enabled) return undefined;
 
         const seen = loadSeen();
-        // Purane events ka spam nahi: sirf ab ke baad ke dikhao
         let since = new Date().toISOString();
         let stopped = false;
 
@@ -55,7 +53,6 @@ export default function useRoleAlerts(session) {
                 });
                 if (fresh.length) saveSeen(seen);
             } catch {
-                // backend band / network error: agle tick me dobara try
             }
         };
 

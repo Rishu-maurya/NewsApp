@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { getMe, clearSession, updateStoredSession } from '../services/authService';
 
-// Page open hote hi backend se poochta hai: token abhi bhi sahi hai?
-// - 401 / 403 (token galat, expired, ya user blocked) -> logout
-// - role ya naam badla ho (jaise role request approve hui) -> session refresh
-// - backend band ho (koi status nahi) -> kuch mat karo, user ko logout nahi karna
+
 export default function useSessionCheck(session, setSession) {
   useEffect(() => {
     if (!session) return;
 
-    getMe()
+    let cancelled = false;
+    const refreshSession = () => {
+      getMe()
       .then((me) => {
+        if (cancelled) return;
         const changed =
           me.role !== session.user.role ||
           me.name !== session.user.name ||
@@ -25,12 +25,19 @@ export default function useSessionCheck(session, setSession) {
         setSession(updated);
       })
       .catch((err) => {
+        if (cancelled) return;
         if ([401, 403].includes(err.response?.status)) {
           clearSession();
           setSession(null);
         }
       });
-    // sirf page khulte waqt ek baar
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+
+    refreshSession();
+    window.addEventListener('focus', refreshSession);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', refreshSession);
+    };
+  }, [session, setSession]);
 }

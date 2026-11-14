@@ -3,20 +3,39 @@ import { Link } from 'react-router-dom';
 import PublisherLayout from '../../components/publisher/PublisherLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
-import { getMyArticles } from '../../services/publisherService';
+import RoleRequestsPanel from '../../components/dashboard/RoleRequestsPanel';
+import { getMyArticles, getPublishQueue, publishApprovedArticle } from '../../services/publisherService';
 
-const STATUSES = ['draft', 'submitted', 'changes_requested', 'published', 'rejected'];
+const STATUSES = ['draft', 'submitted', 'changes_requested', 'approved', 'published', 'rejected'];
 
 export default function Overview({ session, onLogout }) {
     const [mine, setMine] = useState([]);
+    const [publishQueue, setPublishQueue] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [busyId, setBusyId] = useState('');
+    const isPublisher = session.user.role === 'publisher';
+
+    const refresh = async () => {
+        const [articles, approvedStories] = await Promise.all([
+            getMyArticles(),
+            isPublisher ? getPublishQueue() : Promise.resolve([]),
+        ]);
+        setMine(articles);
+        setPublishQueue(approvedStories);
+    };
 
     useEffect(() => {
         let cancelled = false;
-        getMyArticles()
-            .then((articles) => {
-                if (!cancelled) setMine(articles);
+        Promise.all([
+            getMyArticles(),
+            isPublisher ? getPublishQueue() : Promise.resolve([]),
+        ])
+            .then(([articles, approvedStories]) => {
+                if (!cancelled) {
+                    setMine(articles);
+                    setPublishQueue(approvedStories);
+                }
             })
             .catch((err) => {
                 if (!cancelled) setError(err.message);
@@ -27,7 +46,20 @@ export default function Overview({ session, onLogout }) {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [isPublisher]);
+
+    const publishStory = async (id) => {
+        setBusyId(id);
+        setError('');
+        try {
+            await publishApprovedArticle(id);
+            await refresh();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusyId('');
+        }
+    };
 
     const count = (status) => mine.filter((article) => article.status === status).length;
     const attention = mine.filter((article) => article.status === 'changes_requested');
@@ -41,6 +73,7 @@ export default function Overview({ session, onLogout }) {
             subtitle="Track your stories and see what needs your attention."
         >
             {error && <p className="derr" role="alert">{error}</p>}
+            {isPublisher && <RoleRequestsPanel />}
             {loading ? (
                 <p className="empty-note">Loading your stories...</p>
             ) : (
@@ -53,6 +86,7 @@ export default function Overview({ session, onLogout }) {
                                     draft: 'Drafts',
                                     submitted: 'In review',
                                     changes_requested: 'Changes requested',
+                                    approved: 'Approved for publishing',
                                     published: 'Published',
                                     rejected: 'Rejected',
                                 }[status]}
@@ -60,6 +94,41 @@ export default function Overview({ session, onLogout }) {
                             />
                         ))}
                     </div>
+
+                    {isPublisher && (
+                        <>
+                            <h2 className="dash__h2">Approved for publishing</h2>
+                            {publishQueue.length === 0 ? (
+                                <p className="empty-note">No editor-approved stories are waiting to be published.</p>
+                            ) : (
+                                <div className="list">
+                                    {publishQueue.map((article) => (
+                                        <article key={article.id} className="item">
+                                            <div className="item__top">
+                                                <div>
+                                                    <p className="item__cat">{article.category}</p>
+                                                    <h3 className="item__title">{article.title}</h3>
+                                                </div>
+                                                <StatusBadge status={article.status} />
+                                            </div>
+                                            <p className="item__meta"><span>By {article.author}</span></p>
+                                            <p className="item__body">{article.body}</p>
+                                            <div className="btn-row">
+                                                <button
+                                                    type="button"
+                                                    className="dbtn dbtn--good"
+                                                    onClick={() => publishStory(article.id)}
+                                                    disabled={Boolean(busyId)}
+                                                >
+                                                    {busyId === article.id ? 'Publishing...' : 'Publish for readers'}
+                                                </button>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
 
                     {mine.length === 0 ? (
                         <section className="panel" style={{ marginTop: 28 }}>

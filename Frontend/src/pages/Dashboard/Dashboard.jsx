@@ -10,7 +10,7 @@ import '../../style/Dashboard.css';
 const VIEWS = {
     reader: { title: 'Your dashboard', subtitle: 'Read the latest published stories.', View: ReaderView },
     journalist: { title: 'Journalist dashboard', subtitle: 'Write stories and track their review.', View: JournalistView },
-    publisher: { title: 'Publisher dashboard', subtitle: 'Verify journalist and editor role requests.', View: PublisherView },
+    publisher: { title: 'Publisher dashboard', subtitle: 'Publish editor-approved stories and manage role requests.', View: PublisherView },
     editor: { title: 'Editor dashboard', subtitle: 'Review stories waiting for a decision.', View: EditorView },
     admin: { title: 'Admin dashboard', subtitle: 'Manage users and handle reports.', View: AdminView },
 };

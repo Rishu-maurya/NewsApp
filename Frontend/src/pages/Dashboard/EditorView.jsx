@@ -1,38 +1,77 @@
-import { useState } from 'react';
-import { useArticles } from '../../context/ArticlesContext';
+import { useEffect, useState } from 'react';
+import { getReviewQueue, reviewArticle } from '../../services/editorService';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
 import '../../style/EditorView.css';
 
 export default function EditorView() {
-    const { articles, reviewArticle } = useArticles();
+    const [pending, setPending] = useState([]);
+    const [decided, setDecided] = useState([]);
+    const [counts, setCounts] = useState({});
     const [openId, setOpenId] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [error, setError] = useState('');
     const [important, setImportant] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [busyId, setBusyId] = useState('');
 
-    const pending = articles.filter((a) => a.status === 'submitted');
-    const decided = articles
-        .filter((a) => ['published', 'changes_requested', 'rejected'].includes(a.status))
-        .slice(0, 5);
-    const count = (status) => articles.filter((a) => a.status === status).length;
+    const refreshQueue = async () => {
+        const queue = await getReviewQueue();
+        setPending(queue.pending);
+        setDecided(queue.decided);
+        setCounts(queue.counts);
+    };
 
-    const toggle = (id) => {
-        const story = articles.find((a) => a.id === id);
+    useEffect(() => {
+        let cancelled = false;
+        getReviewQueue()
+            .then((queue) => {
+                if (cancelled) return;
+                setPending(queue.pending);
+                setDecided(queue.decided);
+                setCounts(queue.counts);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err.message);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const count = (status) => counts[status] || 0;
+
+    const toggle = (story) => {
         setImportant(!!story?.important);
-        setOpenId(openId === id ? null : id);
+        setOpenId(openId === story.id ? null : story.id);
         setFeedback('');
         setError('');
     };
 
-    const decide = (id, decision) => {
-        if (decision !== 'published' && !feedback.trim()) {
+    const decide = async (id, decision) => {
+        if (decision !== 'approved' && !feedback.trim()) {
             return setError('Add feedback so the journalist knows what to fix.');
         }
-        reviewArticle(id, decision, decision === 'published' ? '' : feedback.trim(), important);
-        setOpenId(null);
-        setFeedback('');
+        setBusyId(id);
         setError('');
+        try {
+            await reviewArticle(id, decision, decision === 'approved' ? '' : feedback.trim(), important);
+            await refreshQueue();
+            setOpenId(null);
+            setFeedback('');
+        } catch (err) {
+            setError(err.message);
+            try {
+                await refreshQueue();
+            } catch {
+                // Keep the original action error visible.
+            }
+        } finally {
+            setBusyId('');
+        }
     };
 
     return (
@@ -43,9 +82,12 @@ export default function EditorView() {
                 <StatCard label="Changes requested" value={count('changes_requested')} />
                 <StatCard label="Rejected" value={count('rejected')} />
             </div>
+            {error && <p className="derr" role="alert">{error}</p>}
 
             <h2 className="dash__h2">Review queue</h2>
-            {pending.length === 0 ? (
+            {loading ? (
+                <p className="empty-note">Loading review queue...</p>
+            ) : pending.length === 0 ? (
                 <p className="empty-note">No stories are waiting. New submissions will appear here.</p>
             ) : (
                 <div className="list">
@@ -68,7 +110,6 @@ export default function EditorView() {
                                 <>
                                     <p className="item__body">{a.body}</p>
 
-                                    {error && <p className="derr" role="alert">{error}</p>}
                                     <label htmlFor={`fb-${a.id}`} className="muted">
                                         Feedback for the journalist (needed for changes or rejection)
                                     </label>
@@ -78,7 +119,6 @@ export default function EditorView() {
                                         value={feedback}
                                         onChange={(e) => {
                                             setFeedback(e.target.value);
-                                            setError('');
                                         }}
                                         placeholder="Explain what needs to change"
                                     />
@@ -94,22 +134,22 @@ export default function EditorView() {
                                     </label>
 
                                     <div className="btn-row">
-                                        <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'published')}>
-                                            Approve and publish
+                                        <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'approved')} disabled={Boolean(busyId)}>
+                                            {busyId === a.id ? 'Approving...' : 'Approve for publisher'}
                                         </button>
-                                        <button type="button" className="dbtn" onClick={() => decide(a.id, 'changes_requested')}>
+                                        <button type="button" className="dbtn" onClick={() => decide(a.id, 'changes_requested')} disabled={Boolean(busyId)}>
                                             Request changes
                                         </button>
-                                        <button type="button" className="dbtn dbtn--danger" onClick={() => decide(a.id, 'rejected')}>
+                                        <button type="button" className="dbtn dbtn--danger" onClick={() => decide(a.id, 'rejected')} disabled={Boolean(busyId)}>
                                             Reject
                                         </button>
-                                        <button type="button" className="dbtn" onClick={() => toggle(a.id)}>
+                                        <button type="button" className="dbtn" onClick={() => toggle(a)} disabled={Boolean(busyId)}>
                                             Close
                                         </button>
                                     </div>
                                 </>
                             ) : (
-                                <button type="button" className="dbtn dbtn--primary" onClick={() => toggle(a.id)}>
+                                <button type="button" className="dbtn dbtn--primary" onClick={() => toggle(a)}>
                                     Read and review
                                 </button>
                             )}
@@ -119,7 +159,7 @@ export default function EditorView() {
             )}
 
             <h2 className="dash__h2">Recent decisions</h2>
-            {decided.length === 0 ? (
+            {loading ? null : decided.length === 0 ? (
                 <p className="empty-note">No decisions yet.</p>
             ) : (
                 <div className="table-wrap">

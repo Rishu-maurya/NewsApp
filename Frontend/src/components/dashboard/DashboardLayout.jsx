@@ -18,7 +18,6 @@ const greeting = (d) => {
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 };
 
-// Alag component taaki sirf clock har second re-render ho, poora dashboard nahi
 function HeroClock() {
     const [now, setNow] = useState(() => new Date());
     useEffect(() => {

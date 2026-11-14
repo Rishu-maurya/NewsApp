@@ -1,7 +1,7 @@
 const User = require("../models/users.js");
 
 // ---------- constants (must match the schema) ----------
-const ROLES = ["user", "journalist", "editor", "admin"];
+const ROLES = ["user", "journalist", "editor", "publisher", "admin"];
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
 // ---------- 1) GET ALL USERS ----------

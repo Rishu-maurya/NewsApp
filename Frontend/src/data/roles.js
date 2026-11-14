@@ -23,7 +23,7 @@ export const ROLE_OPTIONS = [
         value: 'publisher',
         isDefault: false,
         label: 'Publisher',
-        description: 'Verify journalist and editor requests.',
+        description: 'Publish editor-approved stories and verify role requests.',
     },
 ];
 
@@ -39,8 +39,9 @@ export const ROLE_LABELS = {
 
 export const HOME_BY_ROLE = {
     reader: '/',
-    publisher: '/dashboard',
-    journalist: '/publisher',
+    publisher: '/publisher',
+    journalist: '/dashboard',
+
     editor: '/dashboard',
     admin: '/dashboard',
 };

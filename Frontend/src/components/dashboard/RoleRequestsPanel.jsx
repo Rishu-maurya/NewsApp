@@ -5,13 +5,13 @@ import "../../style/RoleRequests.css";
 
 const NOTE_LIMIT = 300;
 
-// The API may send the requester as a populated object (fullName / name) or
-// flat on the request itself, so read every shape instead of showing "Unknown user".
+
 function getRequester(request) {
     const user = request.user && typeof request.user === "object" ? request.user : {};
+    const email = user.email || request.email || "";
     return {
-        name: user.fullName || user.name || request.fullName || request.name || "Unknown user",
-        email: user.email || request.email || "",
+        name: user.fullName || user.name || request.fullName || request.name || email,
+        email,
     };
 }
 
@@ -32,7 +32,11 @@ export default function RoleRequestsPanel() {
 
     const loadRequests = useCallback(async () => {
         try {
-            setRequests(await getPendingRequests());
+            const pendingRequests = await getPendingRequests();
+            setRequests(pendingRequests.filter((request) => {
+                const user = request.user && typeof request.user === "object" ? request.user : null;
+                return Boolean(user && (user.fullName?.trim() || user.email?.trim()));
+            }));
         } catch (err) {
             setError(err.message);
         } finally {

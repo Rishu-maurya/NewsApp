@@ -88,7 +88,11 @@ const getReviews = async (req, res) => {
 const createReview = async (req, res) => {
     try {
         const { articleId } = req.params;
-        const { decision, feedback } = req.body;
+        const { decision, feedback, important } = req.body;
+
+        if (important !== undefined && typeof important !== "boolean") {
+            return res.status(400).json({ success: false, message: "Important must be true or false" });
+        }
 
         if (!decision) {
             return res.status(400).json({ success: false, message: "Decision is required" });
@@ -146,6 +150,7 @@ const createReview = async (req, res) => {
 
         // Move the article to the state that matches the decision
         article.status = DECISION_TO_STATUS[decision];
+        if (important !== undefined) article.important = important;
         await article.save();
 
         await review.populate("editor", "fullName");
@@ -212,7 +217,7 @@ const publishArticle = async (req, res) => {
         }
 
         article.status = ARTICLE_STATUS.PUBLISHED;
-        aricle.publishedAt = new Data();
+        article.publishedAt = new Date();
         await article.save();
 
         res.status(200).json({

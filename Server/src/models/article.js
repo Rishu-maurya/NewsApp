@@ -51,6 +51,10 @@ const articleSchema = new mongoose.Schema(
       default: [],
     },
 
+    publishDate: { type: String, default: "" },
+    publishTime: { type: String, default: "" },
+    important: { type: Boolean, default: false },
+
     status: {
       type: String,
       enum: [

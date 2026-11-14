@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useArticles } from '../../../context/ArticlesContext';
-import { useActivity } from '../../../context/ActivityContext';
 import { CATEGORIES, STATUS_LABELS } from '../../../data/dummyData';
-import { getMyArticles } from '../../../services/publisherService';
+import { getMyArticles, getPublishQueue } from '../../../services/publisherService';
+import { getReviewQueue } from '../../../services/editorService';
+import { getAdminUsers } from '../../../services/adminService';
 import { Widget, BarList, Ring, QuickLinks, Checklist, Feed, TipRotator, Steps } from './Widgets';
 
 const TONE_BY_STATUS = {
@@ -19,25 +20,36 @@ const categoryRows = (list) =>
     CATEGORIES.map((c) => ({ label: c, value: list.filter((a) => a.category === c).length })).filter((r) => r.value > 0);
 
 function AdminSide() {
-    const { articles } = useArticles();
-    const { reports } = useActivity();
-    const handled = reports.filter((r) => r.status !== 'open').length;
+    const [queue, setQueue] = useState({ pending: [], decided: [], counts: {} });
+    const [userTotal, setUserTotal] = useState(0);
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all([getReviewQueue(), getAdminUsers(1, 1)])
+            .then(([reviewQueue, userResult]) => {
+                if (cancelled) return;
+                setQueue(reviewQueue);
+                setUserTotal(userResult.pagination.total);
+            })
+            .catch(() => {});
+        return () => { cancelled = true; };
+    }, []);
+    const { counts } = queue;
     return (
         <>
             <Widget title="Content pipeline" icon="chart">
                 <BarList rows={[
-                    { label: 'Published', value: byStatus(articles, 'published'), tone: 'green' },
-                    { label: 'In review', value: byStatus(articles, 'submitted'), tone: 'amber' },
-                    { label: 'Changes', value: byStatus(articles, 'changes_requested'), tone: 'blue' },
-                    { label: 'Rejected', value: byStatus(articles, 'rejected'), tone: 'red' },
-                    { label: 'Drafts', value: byStatus(articles, 'draft'), tone: 'grey' },
+                    { label: 'Published', value: counts.published || 0, tone: 'green' },
+                    { label: 'In review', value: counts.submitted || 0, tone: 'amber' },
+                    { label: 'Approved', value: counts.approved || 0, tone: 'blue' },
+                    { label: 'Changes', value: counts.changes_requested || 0, tone: 'amber' },
+                    { label: 'Rejected', value: counts.rejected || 0, tone: 'red' },
                 ]} />
             </Widget>
-            <Widget title="Report resolution" icon="flag">
-                <Ring value={handled} total={reports.length} label="Reports handled" tone="green" />
+            <Widget title="Platform accounts" icon="user">
+                <Steps steps={[{ label: 'Registered users', value: userTotal }]} />
             </Widget>
             <Widget title="Latest stories" icon="clock">
-                <Feed items={feedFrom(articles.slice(0, 4))} />
+                <Feed items={feedFrom(queue.decided.slice(0, 4))} empty="No reviewed stories yet." />
             </Widget>
             <Widget title="Quick actions" icon="spark">
                 <QuickLinks links={[
@@ -51,10 +63,18 @@ function AdminSide() {
 }
 
 function EditorSide() {
-    const { articles } = useArticles();
-    const pending = articles.filter((a) => a.status === 'submitted');
-    const decided = articles.filter((a) => ['published', 'changes_requested', 'rejected'].includes(a.status)).length;
-    const approved = byStatus(articles, 'published');
+    const [queue, setQueue] = useState({ pending: [], decided: [], counts: {} });
+    useEffect(() => {
+        let cancelled = false;
+        getReviewQueue().then((result) => {
+            if (!cancelled) setQueue(result);
+        }).catch(() => {});
+        return () => { cancelled = true; };
+    }, []);
+    const { pending, counts } = queue;
+    const decided = ['approved', 'published', 'changes_requested', 'rejected']
+        .reduce((total, status) => total + (counts[status] || 0), 0);
+    const approved = (counts.approved || 0) + (counts.published || 0);
     return (
         <>
             <Widget title="Review progress" icon="check">
@@ -80,8 +100,14 @@ function EditorSide() {
 }
 
 function JournalistSide({ session }) {
-    const { articles } = useArticles();
-    const mine = articles.filter((a) => a.authorEmail === session.user.email);
+    const [mine, setMine] = useState([]);
+    useEffect(() => {
+        let cancelled = false;
+        getMyArticles().then((result) => {
+            if (!cancelled) setMine(result);
+        }).catch(() => {});
+        return () => { cancelled = true; };
+    }, []);
     const upcoming = mine.filter((a) => a.publishDate).sort((a, b) => a.publishDate.localeCompare(b.publishDate)).slice(0, 3);
     return (
         <>
@@ -115,10 +141,17 @@ function JournalistSide({ session }) {
 
 function PublisherSide() {
     const [mine, setMine] = useState([]);
+    const [publishQueue, setPublishQueue] = useState([]);
     useEffect(() => {
-        let off = false;
-        getMyArticles().then((r) => { if (!off) setMine(r); }).catch(() => {});
-        return () => { off = true; };
+        let cancelled = false;
+        Promise.all([getMyArticles(), getPublishQueue()])
+            .then(([stories, approvedStories]) => {
+                if (cancelled) return;
+                setMine(stories);
+                setPublishQueue(approvedStories);
+            })
+            .catch(() => {});
+        return () => { cancelled = true; };
     }, []);
     return (
         <>
@@ -134,6 +167,7 @@ function PublisherSide() {
                     { label: 'Published', value: byStatus(mine, 'published'), tone: 'green' },
                     { label: 'In review', value: byStatus(mine, 'submitted'), tone: 'amber' },
                     { label: 'Changes', value: byStatus(mine, 'changes_requested'), tone: 'blue' },
+                    { label: 'Ready to publish', value: publishQueue.length, tone: 'blue' },
                     { label: 'Drafts', value: byStatus(mine, 'draft'), tone: 'grey' },
                     { label: 'Rejected', value: byStatus(mine, 'rejected'), tone: 'red' },
                 ]} />

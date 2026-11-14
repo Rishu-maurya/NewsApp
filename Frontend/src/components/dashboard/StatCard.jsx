@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import '../../style/StatCard.css';
 
-// Number 0 se ginti karte hue aata hai
 function useCountUp(target, ms = 700) {
     const [shown, setShown] = useState(0);
     const from = useRef(0);
