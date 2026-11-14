@@ -3,29 +3,35 @@ import { Link, useParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ReactionBar from '../../components/news/ReactionBar';
 import CommentSection from '../../components/news/CommentSection';
-import { getPublishedArticle, isServerId } from '../../services/bookmarkService';
+import { getPublishedArticle } from '../../services/articleService';
+import { isServerId } from '../../services/bookmarkService';
 import '../../style/ArticleDetail.css';
 
 export default function ArticleDetail({ session, onLogout }) {
     const { id } = useParams();
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(isServerId(id));
+    const [error, setError] = useState('');
 
     // Load the full story from the server (GET /api/articles/:id)
     useEffect(() => {
         if (!isServerId(id)) {
             setArticle(null);
+            setError('This story could not be found. It may have been removed.');
             setLoading(false);
             return;
         }
         let cancelled = false;
         setLoading(true);
+        setError('');
         getPublishedArticle(id)
             .then((story) => {
                 if (!cancelled) setArticle(story);
             })
-            .catch(() => {
-                if (!cancelled) setArticle(null);
+            .catch((err) => {
+                if (cancelled) return;
+                setArticle(null);
+                setError(err.message);
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
@@ -65,7 +71,7 @@ export default function ArticleDetail({ session, onLogout }) {
                     </>
                 ) : (
                     <div className="s-empty">
-                        <p>This story could not be found. It may have been removed.</p>
+                        <p>{error || 'This story could not be found. It may have been removed.'}</p>
                     </div>
                 )}
             </div>

@@ -56,9 +56,6 @@ export default function Register() {
             phone: validatePhone(form.phone),
             password: validatePassword(form.password),
             confirmPassword: validateConfirmPassword(form.password, form.confirmPassword),
-            organization: form.role !== DEFAULT_ROLE && !form.organization.trim()
-                ? 'Enter your organization for a role request.'
-                : '',
         };
         setErrors(nextErrors);
         if (Object.values(nextErrors).some(Boolean)) return;

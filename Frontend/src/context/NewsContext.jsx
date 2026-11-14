@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { getNewsCategories, getPublishedArticles } from '../services/newsService';
+import { getCategories, getPublishedArticles } from '../services/articleService';
 
 const NewsContext = createContext({
     articles: [],
@@ -20,9 +20,9 @@ export function NewsProvider({ children }) {
         setLoading(true);
         setError('');
         try {
-            const [stories, names] = await Promise.all([getPublishedArticles(), getNewsCategories()]);
+            const [stories, list] = await Promise.all([getPublishedArticles(), getCategories()]);
             setArticles(stories);
-            setCategories(names);
+            setCategories(list.map((category) => category.name));
         } catch (err) {
             setError(err.message);
         } finally {
