@@ -39,7 +39,7 @@ export const ROLE_LABELS = {
 
 export const HOME_BY_ROLE = {
     reader: '/',
-    publisher: '/publisher',
+    publisher: '/dashboard',
     journalist: '/dashboard',
 
     editor: '/dashboard',

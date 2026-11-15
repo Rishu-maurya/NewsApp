@@ -12,7 +12,7 @@ import { todayStr } from '../../utils/dateUtils';
 import '../../style/JournalistView.css';
 
 const EMPTY = { id: null, title: '', category: '', body: '', publishDate: '', publishTime: '', important: false };
-export default function JournalistView() {
+export default function JournalistView({ deskLabel = 'Reporter desk' }) {
     const [articles, setArticles] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -137,7 +137,7 @@ export default function JournalistView() {
 
             <header className="journalist-desk__section-head">
                 <div>
-                    <p className="journalist-desk__eyebrow">Reporter desk</p>
+                    <p className="journalist-desk__eyebrow">{deskLabel}</p>
                     <h2 className="dash__h2">{form.id ? 'Edit story' : 'Write a story'}</h2>
                 </div>
                 <span className="journalist-desk__mode">{form.id ? 'Editing' : 'New draft'}</span>

@@ -46,12 +46,33 @@ export async function getPublishQueue() {
   }
 }
 
+export async function getPublisherArticles({ page = 1, status = "all", search = "" } = {}) {
+  try {
+    const response = await api.get("/articles/publisher-all", {
+      params: { page, limit: 12, status, search },
+    });
+    const { articles, counts, pagination } = response.data.data;
+    return { articles: articles.map(normalizeArticle), counts, pagination };
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not load newsroom stories."));
+  }
+}
+
 export async function publishApprovedArticle(id) {
   try {
     const response = await api.patch(`/articles/${id}/publish`);
     return normalizeArticle(response.data.data);
   } catch (err) {
     throw new Error(getErrorMessage(err, "Could not publish this story."));
+  }
+}
+
+export async function returnArticleForReview(id, note) {
+  try {
+    const response = await api.patch(`/articles/${id}/return-to-review`, { note });
+    return normalizeArticle(response.data.data);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not send this story back for review."));
   }
 }
 

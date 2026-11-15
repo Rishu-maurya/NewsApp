@@ -150,6 +150,7 @@ const createReview = async (req, res) => {
 
         // Move the article to the state that matches the decision
         article.status = DECISION_TO_STATUS[decision];
+        article.publisherNote = "";
         if (important !== undefined) article.important = important;
         await article.save();
 
@@ -198,24 +199,6 @@ const publishArticle = async (req, res) => {
                 message: "Article is already published",
             });
         }
-        if (article.status !== ARTICLE_STATUS.APPROVED) {
-            return res.status(400).json({
-                success: false,
-                message: "Only approved articles can be published",
-            });
-        }
-
-        // Safety check: the most recent review must be an approval
-        const latestReview = await Review.findOne({ article: article._id }).sort({
-            createdAt: -1,
-        });
-        if (!latestReview || latestReview.decision !== "approved") {
-            return res.status(400).json({
-                success: false,
-                message: "Article has no approving review",
-            });
-        }
-
         article.status = ARTICLE_STATUS.PUBLISHED;
         article.publishedAt = new Date();
         await article.save();

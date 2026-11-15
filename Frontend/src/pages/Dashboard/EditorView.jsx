@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getReviewQueue, reviewArticle } from '../../services/editorService';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
+import JournalistView from './JournalistView';
 import '../../style/EditorView.css';
 
 export default function EditorView() {
@@ -14,6 +15,7 @@ export default function EditorView() {
     const [important, setImportant] = useState(false);
     const [loading, setLoading] = useState(true);
     const [busyId, setBusyId] = useState('');
+    const [mode, setMode] = useState('review');
 
     const refreshQueue = async () => {
         const queue = await getReviewQueue();
@@ -76,6 +78,28 @@ export default function EditorView() {
 
     return (
         <>
+            <div className="btn-row" role="group" aria-label="Editor workspace">
+                <button
+                    type="button"
+                    className={`dbtn${mode === 'review' ? ' dbtn--primary' : ''}`}
+                    aria-pressed={mode === 'review'}
+                    onClick={() => {
+                        setMode('review');
+                        refreshQueue().catch((err) => setError(err.message));
+                    }}
+                >
+                    Review queue
+                </button>
+                <button
+                    type="button"
+                    className={`dbtn${mode === 'write' ? ' dbtn--primary' : ''}`}
+                    aria-pressed={mode === 'write'}
+                    onClick={() => setMode('write')}
+                >
+                    Write a story
+                </button>
+            </div>
+            {mode === 'write' ? <JournalistView deskLabel="Editor desk" /> : <>
             <div className="stats">
                 <StatCard label="Waiting for review" value={pending.length} />
                 <StatCard label="Published" value={count('published')} />
@@ -105,6 +129,11 @@ export default function EditorView() {
                                 <span>By {a.author}</span>
                                 <span>Sent {a.date}</span>
                             </p>
+                            {a.publisherNote && (
+                                <p className="editor-view__publisher-note">
+                                    Publisher note: {a.publisherNote}
+                                </p>
+                            )}
 
                             {openId === a.id ? (
                                 <>
@@ -183,6 +212,7 @@ export default function EditorView() {
                     </table>
                 </div>
             )}
+            </>}
         </>
     );
 }

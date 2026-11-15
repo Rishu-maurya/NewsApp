@@ -70,6 +70,12 @@ const articleSchema = new mongoose.Schema(
       default: "draft",
     },
 
+    publisherNote: {
+      type: String,
+      default: "",
+      maxlength: 3000,
+    },
+
     publishedAt: {
       type: Date,
       default: null,

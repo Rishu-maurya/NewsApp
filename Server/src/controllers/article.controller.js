@@ -432,13 +432,14 @@ const deleteArticle = async (req, res) => {
                 message: "Article not found",
             });
         }
-        if (!isOwnerOrAdmin(article, req.user)) {
+        const canManageAllArticles = ["publisher", "admin"].includes(req.user.role);
+        if (!canManageAllArticles && !isOwnerOrAdmin(article, req.user)) {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to delete this article",
             });
         }
-        if (!["draft", "rejected"].includes(article.status)) {
+        if (!canManageAllArticles && !["draft", "rejected"].includes(article.status)) {
             return res.status(409).json({
                 success: false,
                 message: "Only drafts or rejected stories can be deleted",
@@ -460,6 +461,93 @@ const deleteArticle = async (req, res) => {
         }
         console.error("Delete Article Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+const getPublisherArticles = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 12, 1), 50);
+        const { status, search } = req.query;
+        const allowedStatuses = ["draft", "submitted", "under_review", "changes_requested", "approved", "rejected", "published", "archived"];
+        const filter = {};
+
+        if (status && status !== "all") {
+            if (!allowedStatuses.includes(status)) {
+                return res.status(400).json({ success: false, message: "Invalid article status" });
+            }
+            filter.status = status;
+        }
+        if (typeof search === "string" && search.trim()) {
+            const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            filter.$or = [
+                { title: { $regex: escaped, $options: "i" } },
+                { summary: { $regex: escaped, $options: "i" } },
+            ];
+        }
+
+        const [articles, total, statusRows] = await Promise.all([
+            Article.find(filter)
+                .populate("author", "fullName")
+                .populate("category", "name slug")
+                .sort({ updatedAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            Article.countDocuments(filter),
+            Article.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+        ]);
+
+        const counts = { total: 0 };
+        statusRows.forEach(({ _id, count }) => {
+            counts[_id] = count;
+            counts.total += count;
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                articles,
+                counts,
+                pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+            },
+        });
+    } catch (error) {
+        console.error("Get Publisher Articles Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+const returnArticleToReview = async (req, res) => {
+    try {
+        const { articleId } = req.params;
+        const note = typeof req.body?.note === "string" ? req.body.note.trim() : "";
+
+        if (!mongoose.isValidObjectId(articleId)) {
+            return res.status(400).json({ success: false, message: "Invalid article ID" });
+        }
+        if (!note || note.length > 3000) {
+            return res.status(400).json({ success: false, message: "Add a note of up to 3000 characters" });
+        }
+
+        const article = await Article.findById(articleId);
+        if (!article) {
+            return res.status(404).json({ success: false, message: "Article not found" });
+        }
+        if (["submitted", "under_review"].includes(article.status)) {
+            return res.status(409).json({ success: false, message: "This story is already in the review queue" });
+        }
+
+        article.status = "submitted";
+        article.publisherNote = note;
+        article.publishedAt = null;
+        await article.save();
+        await article.populate("author", "fullName");
+        await article.populate("category", "name slug");
+
+        return res.status(200).json({ success: true, message: "Story sent back to the editor review queue", data: article });
+    } catch (error) {
+        console.error("Return Article To Review Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
@@ -507,9 +595,11 @@ module.exports = {
     createArticle,
     getArticles,
     getMyArticles,
+    getPublisherArticles,
     getArticleById,
     updateArticle,
     deleteArticle,
     getReviewQueue,
     getPublishQueue,
+    returnArticleToReview,
 };
