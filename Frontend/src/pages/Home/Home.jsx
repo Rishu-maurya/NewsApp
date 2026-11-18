@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
@@ -9,7 +9,7 @@ import { matchesDate } from '../../utils/dateUtils';
 import '../../style/Home.css';
 
 export default function Home({ session, onLogout }) {
-    const { articles, categories, loading, error } = useNews();
+    const { articles = [], categories = [], loading, error } = useNews();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('All');
     const [params, setParams] = useSearchParams();
@@ -17,40 +17,24 @@ export default function Home({ session, onLogout }) {
     const date = params.get('date') || '';
     const day = params.get('day') || 'any';
 
-    useEffect(() => {
-        let cancelled = false;
-        Promise.all([getPublishedArticles(), getCategories()])
-            .then(([articleList, categoryList]) => {
-                if (cancelled) return;
-                setArticles(articleList);
-                setCategories(categoryList);
-            })
-            .catch((err) => {
-                if (!cancelled) setError(err.message);
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const headlines = useMemo(
-        () => [...articles].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
+    // Agar articles mein 'status' ya 'published' field hai to filter karein, warna saare articles lein
+    const published = useMemo(
+        () => articles.filter((a) => a.published !== false && a.status !== 'draft'),
         [articles]
     );
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
         const when = { range: date ? 'date' : 'all', date, weekday: day };
-        return published.filter((a) => {
-            if (category !== 'All' && a.category !== category) return false;
-            if (!matchesDate(a.date, when)) return false;
-            if (!q) return true;
-            return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
-        }).sort((a, b) => Number(!!b.important) - Number(!!a.important));
-    }, [articles, query, category, date, day]);
+        return published
+            .filter((a) => {
+                if (category !== 'All' && a.category !== category) return false;
+                if (!matchesDate(a.date, when)) return false;
+                if (!q) return true;
+                return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
+            })
+            .sort((a, b) => Number(!!b.important) - Number(!!a.important));
+    }, [published, query, category, date, day]);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
