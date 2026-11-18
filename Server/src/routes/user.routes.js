@@ -1,28 +1,19 @@
 const express = require("express");
+const {
+	getUsers,
+	updateProfile,
+	updateUserRole,
+	updateUserStatus,
+} = require("../controllers/user.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
-const adminOnly = require("../middlewares/admin.middleware.js");
+const roleCheck = require("../middlewares/rolecheck.middleware");
 
 const router = express.Router();
+const adminOnly = roleCheck("admin");
 
-const {
-    getUsers,
-    getUserById,
-    updateProfile,
-    updateUserRole,
-    updateUserStatus,
-} = require("../controllers/user.controller.js");
-
-// Every user route needs a logged-in, active user
-router.use(authMiddleware);
-
-
-// Admin only
-router.get("/", adminOnly, getUsers);
-router.patch("/:id/role", adminOnly, updateUserRole);
-router.patch("/:id/status", adminOnly, updateUserStatus);
-
-// Admin, or the user themselves (checked inside the controller)
-router.get("/:id", getUserById);
-
+router.get("/", authMiddleware, adminOnly, getUsers);
+router.put("/profile", authMiddleware, updateProfile);
+router.patch("/:id/role", authMiddleware, adminOnly, updateUserRole);
+router.patch("/:id/status", authMiddleware, adminOnly, updateUserStatus);
 
 module.exports = router;

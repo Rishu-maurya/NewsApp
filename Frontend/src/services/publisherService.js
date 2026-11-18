@@ -37,6 +37,45 @@ export async function getMyArticles() {
   }
 }
 
+export async function getPublishQueue() {
+  try {
+    const response = await api.get("/articles/publish-queue");
+    return response.data.data.map(normalizeArticle);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not load approved stories."));
+  }
+}
+
+export async function getPublisherArticles({ page = 1, status = "all", search = "" } = {}) {
+  try {
+    const response = await api.get("/articles/publisher-all", {
+      params: { page, limit: 12, status, search },
+    });
+    const { articles, counts, pagination } = response.data.data;
+    return { articles: articles.map(normalizeArticle), counts, pagination };
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not load newsroom stories."));
+  }
+}
+
+export async function publishApprovedArticle(id) {
+  try {
+    const response = await api.patch(`/articles/${id}/publish`);
+    return normalizeArticle(response.data.data);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not publish this story."));
+  }
+}
+
+export async function returnArticleForReview(id, note) {
+  try {
+    const response = await api.patch(`/articles/${id}/return-to-review`, { note });
+    return normalizeArticle(response.data.data);
+  } catch (err) {
+    throw new Error(getErrorMessage(err, "Could not send this story back for review."));
+  }
+}
+
 export async function getMyArticle(id) {
   try {
     const response = await api.get(`/articles/${id}`);
@@ -52,6 +91,9 @@ export async function saveMyArticle(article, status) {
     body: article.body.trim(),
     summary: article.body.trim().slice(0, 500),
     category: article.category,
+    publishDate: article.publishDate,
+    publishTime: article.publishTime,
+    important: article.important,
     status,
   };
 

@@ -1,62 +1,78 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getReviewQueue, reviewArticle } from '../../services/editorService';
 import StatCard from '../../components/dashboard/StatCard';
 import StatusBadge from '../../components/dashboard/StatusBadge';
-import { useNews } from '../../context/NewsContext';
-import { decideArticle, getReviewQueue } from '../../services/newsService';
+import JournalistView from './JournalistView';
 import '../../style/EditorView.css';
 
 export default function EditorView() {
-    const { refresh: refreshNews } = useNews();
     const [pending, setPending] = useState([]);
     const [decided, setDecided] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [busy, setBusy] = useState(false);
+    const [counts, setCounts] = useState({});
     const [openId, setOpenId] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [error, setError] = useState('');
+    const [important, setImportant] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [busyId, setBusyId] = useState('');
+    const [mode, setMode] = useState('review');
 
-    // Load the review queue from the server (GET /api/articles/review)
-    const load = useCallback(async () => {
-        setError('');
-        try {
-            const queue = await getReviewQueue();
-            setPending(queue.pending);
-            setDecided(queue.decided);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const refreshQueue = async () => {
+        const queue = await getReviewQueue();
+        setPending(queue.pending);
+        setDecided(queue.decided);
+        setCounts(queue.counts);
+    };
 
     useEffect(() => {
-        load();
-    }, [load]);
+        let cancelled = false;
+        getReviewQueue()
+            .then((queue) => {
+                if (cancelled) return;
+                setPending(queue.pending);
+                setDecided(queue.decided);
+                setCounts(queue.counts);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err.message);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
-    const count = (status) => decided.filter((a) => a.status === status).length;
+    const count = (status) => counts[status] || 0;
 
-    const toggle = (id) => {
-        setOpenId(openId === id ? null : id);
+    const toggle = (story) => {
+        setImportant(!!story?.important);
+        setOpenId(openId === story.id ? null : story.id);
         setFeedback('');
         setError('');
     };
 
     const decide = async (id, decision) => {
-        if (decision !== 'published' && !feedback.trim()) {
+        if (decision !== 'approved' && !feedback.trim()) {
             return setError('Add feedback so the journalist knows what to fix.');
         }
-        setBusy(true);
+        setBusyId(id);
         setError('');
         try {
-            await decideArticle(id, decision, decision === 'published' ? '' : feedback.trim());
+            await reviewArticle(id, decision, decision === 'approved' ? '' : feedback.trim(), important);
+            await refreshQueue();
             setOpenId(null);
             setFeedback('');
-            await load();
-            if (decision === 'published') refreshNews(); // readers see it straight away
         } catch (err) {
             setError(err.message);
+            try {
+                await refreshQueue();
+            } catch {
+                // Keep the original action error visible.
+            }
         } finally {
-            setBusy(false);
+            setBusyId('');
         }
     };
 
@@ -64,17 +80,42 @@ export default function EditorView() {
 
     return (
         <>
+            <div className="btn-row" role="group" aria-label="Editor workspace">
+                <button
+                    type="button"
+                    className={`dbtn${mode === 'review' ? ' dbtn--primary' : ''}`}
+                    aria-pressed={mode === 'review'}
+                    onClick={() => {
+                        setMode('review');
+                        refreshQueue().catch((err) => setError(err.message));
+                    }}
+                >
+                    Review queue
+                </button>
+                <button
+                    type="button"
+                    className={`dbtn${mode === 'write' ? ' dbtn--primary' : ''}`}
+                    aria-pressed={mode === 'write'}
+                    onClick={() => setMode('write')}
+                >
+                    Write a story
+                </button>
+            </div>
+            {mode === 'write' ? <JournalistView deskLabel="Editor desk" /> : <>
             <div className="stats">
                 <StatCard label="Waiting for review" value={pending.length} />
                 <StatCard label="Published" value={count('published')} />
                 <StatCard label="Changes requested" value={count('changes_requested')} />
                 <StatCard label="Rejected" value={count('rejected')} />
             </div>
+            {error && <p className="derr" role="alert">{error}</p>}
 
             {error && openId === null && <p className="derr" role="alert">{error}</p>}
 
             <h2 className="dash__h2">Review queue</h2>
-            {pending.length === 0 ? (
+            {loading ? (
+                <p className="empty-note">Loading review queue...</p>
+            ) : pending.length === 0 ? (
                 <p className="empty-note">No stories are waiting. New submissions will appear here.</p>
             ) : (
                 <div className="list">
@@ -92,12 +133,16 @@ export default function EditorView() {
                                 <span>By {a.author}</span>
                                 <span>Sent {a.date}</span>
                             </p>
+                            {a.publisherNote && (
+                                <p className="editor-view__publisher-note">
+                                    Publisher note: {a.publisherNote}
+                                </p>
+                            )}
 
                             {openId === a.id ? (
                                 <>
                                     <p className="item__body">{a.body}</p>
 
-                                    {error && <p className="derr" role="alert">{error}</p>}
                                     <label htmlFor={`fb-${a.id}`} className="muted">
                                         Feedback for the journalist (needed for changes or rejection)
                                     </label>
@@ -107,28 +152,27 @@ export default function EditorView() {
                                         value={feedback}
                                         onChange={(e) => {
                                             setFeedback(e.target.value);
-                                            setError('');
                                         }}
                                         placeholder="Explain what needs to change"
                                     />
 
                                     <div className="btn-row">
-                                        <button type="button" className="dbtn dbtn--good" disabled={busy} onClick={() => decide(a.id, 'published')}>
-                                            Approve and publish
+                                        <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'approved')} disabled={Boolean(busyId)}>
+                                            {busyId === a.id ? 'Approving...' : 'Approve for publisher'}
                                         </button>
-                                        <button type="button" className="dbtn" disabled={busy} onClick={() => decide(a.id, 'changes_requested')}>
+                                        <button type="button" className="dbtn" onClick={() => decide(a.id, 'changes_requested')} disabled={Boolean(busyId)}>
                                             Request changes
                                         </button>
-                                        <button type="button" className="dbtn dbtn--danger" disabled={busy} onClick={() => decide(a.id, 'rejected')}>
+                                        <button type="button" className="dbtn dbtn--danger" onClick={() => decide(a.id, 'rejected')} disabled={Boolean(busyId)}>
                                             Reject
                                         </button>
-                                        <button type="button" className="dbtn" disabled={busy} onClick={() => toggle(a.id)}>
+                                        <button type="button" className="dbtn" onClick={() => toggle(a)} disabled={Boolean(busyId)}>
                                             Close
                                         </button>
                                     </div>
                                 </>
                             ) : (
-                                <button type="button" className="dbtn dbtn--primary" onClick={() => toggle(a.id)}>
+                                <button type="button" className="dbtn dbtn--primary" onClick={() => toggle(a)}>
                                     Read and review
                                 </button>
                             )}
@@ -138,7 +182,7 @@ export default function EditorView() {
             )}
 
             <h2 className="dash__h2">Recent decisions</h2>
-            {decided.length === 0 ? (
+            {loading ? null : decided.length === 0 ? (
                 <p className="empty-note">No decisions yet.</p>
             ) : (
                 <div className="table-wrap">
@@ -162,6 +206,7 @@ export default function EditorView() {
                     </table>
                 </div>
             )}
+            </>}
         </>
     );
 }

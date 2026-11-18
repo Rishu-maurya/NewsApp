@@ -198,3 +198,172 @@
     margin: 8px 0 12px;
     resize: vertical;
 }
+
+.journalist-desk {
+    --desk-ink: #122b45;
+    --desk-teal: #087c78;
+    --desk-sun: #d7a928;
+    --desk-paper: #fbfcfa;
+}
+
+.journalist-desk__stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.journalist-desk__stats .stat {
+    display: flex;
+    min-height: 82px;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-top: 1px solid var(--line);
+    border-left: 4px solid var(--desk-teal);
+    border-radius: 6px;
+    box-shadow: 0 5px 16px rgba(18, 43, 69, 0.06);
+}
+
+.journalist-desk__stats .stat:nth-child(2) { border-left-color: #d7a928; }
+.journalist-desk__stats .stat:nth-child(3) { border-left-color: #c7523f; }
+.journalist-desk__stats .stat:nth-child(4) { border-left-color: #477a99; }
+
+.journalist-desk__stats .stat__value {
+    flex: none;
+    color: var(--desk-ink);
+    font-size: 32px;
+}
+
+.journalist-desk__stats .stat__label {
+    margin: 0;
+    color: #647487;
+    font-size: 10px;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+}
+
+.journalist-desk__section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 32px 0 14px;
+}
+
+.journalist-desk__eyebrow {
+    margin: 0 0 5px;
+    color: var(--desk-teal);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dash .journalist-desk .journalist-desk__section-head .dash__h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.dash .journalist-desk .journalist-desk__section-head .dash__h2::before {
+    width: 4px;
+    height: 21px;
+    background: var(--desk-sun);
+}
+
+.journalist-desk__mode {
+    flex: none;
+    padding: 7px 10px;
+    border: 1px solid #d6e2de;
+    border-radius: 4px;
+    color: #536879;
+    background: #f5f8f6;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.journalist-desk__compose {
+    padding: 0 clamp(18px, 2.5vw, 30px) 26px;
+    overflow: hidden;
+    border-top: 3px solid var(--desk-sun);
+    background: var(--desk-paper);
+    box-shadow: 0 12px 30px rgba(18, 43, 69, 0.08);
+}
+
+.journalist-desk__compose-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 -30px 22px;
+    padding: 13px 30px;
+    border-bottom: 1px solid #e4e9e5;
+    color: var(--desk-ink);
+    background: #f4f7f3;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.journalist-desk__compose-head span:last-child {
+    color: #647487;
+    font-variant-numeric: tabular-nums;
+}
+
+.journalist-desk__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(220px, 0.75fr);
+    gap: 0 18px;
+}
+
+.journalist-desk__category select { min-height: 44px; }
+.journalist-desk__story textarea { min-height: 220px; background: #fff; }
+.journalist-desk__schedule { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.journalist-desk__important {
+    margin: 2px 0 22px;
+    padding: 13px 15px;
+    border: 1px solid #e3e7df;
+    border-radius: 5px;
+    background: #f5f7f0;
+}
+
+.journalist-desk__important label {
+    margin: 0;
+    color: #34495c;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.journalist-desk__compose .btn-row { align-items: center; gap: 10px; }
+.journalist-desk__compose .dbtn { min-height: 42px; padding-inline: 18px; }
+.journalist-desk__compose .dbtn--primary { min-width: 154px; }
+
+.journalist-desk__stories-head { margin-top: 40px; }
+.journalist-desk .list { display: grid; gap: 12px; }
+.journalist-desk .item { padding: 20px 22px; background: #fff; }
+.journalist-desk .item__meta { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+
+@media (max-width: 760px) {
+    .journalist-desk__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .journalist-desk__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .journalist-desk__stats .stat { min-height: 72px; gap: 10px; padding: 12px; }
+    .journalist-desk__stats .stat__value { font-size: 27px; }
+    .journalist-desk__stats .stat__label { font-size: 9px; }
+    .journalist-desk__section-head { align-items: center; }
+    .dash .journalist-desk .journalist-desk__section-head .dash__h2 { font-size: 21px; }
+    .journalist-desk__mode { padding: 6px 8px; font-size: 9px; }
+    .journalist-desk__compose { padding-inline: 16px; }
+    .journalist-desk__compose-head { margin-inline: -16px; padding-inline: 16px; }
+    .journalist-desk__schedule { grid-template-columns: minmax(0, 1fr); }
+    .journalist-desk__compose .btn-row { align-items: stretch; }
+    .journalist-desk__compose .dbtn { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .journalist-desk__stats .stat,
+    .journalist-desk .item { transition: none; }
+}

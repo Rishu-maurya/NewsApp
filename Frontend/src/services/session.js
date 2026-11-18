@@ -1,6 +1,8 @@
 const SESSION_KEY = 'news_session';
 
 export function saveSession(session, remember) {
+  localStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem(SESSION_KEY, JSON.stringify(session));
 }

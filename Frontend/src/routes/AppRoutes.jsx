@@ -7,7 +7,6 @@ import Feedback from "../pages/Feedback/Feedback";
 import Profile from "../pages/Profile/Profile";
 import Contact from "../pages/Contact/Contact";
 import Dashboard from "../pages/Dashboard/Dashboard";
-import Overview from "../pages/Publisher/Overview";
 import WriteStory from "../pages/Publisher/WriteStory";
 import MyStories from "../pages/Publisher/Mystories";
 import Login from "../pages/Login/Login";
@@ -31,11 +30,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
   const writesStories = role === "journalist" || role === "publisher";
   const publisherWorkspace = (page) => (writesStories ? page : denied);
 
-  let dashboard = denied;
-  if (writesStories) dashboard = <Navigate to="/publisher" replace />;
-  if (role === "publisher" || role === "editor" || role === "admin") {
-    dashboard = <Dashboard {...shared} />;
-  }
+  const dashboard = session ? <Dashboard {...shared} /> : denied;
 
   return (
     <Routes>
@@ -54,7 +49,7 @@ export default function AppRoutes({ session, onLogin, onLogout }) {
 
       <Route
         path="/publisher"
-        element={publisherWorkspace(<Overview {...shared} />)}
+        element={role === "publisher" || role === "journalist" ? <Navigate to="/dashboard" replace /> : denied}
       />
       <Route
         path="/publisher/write"

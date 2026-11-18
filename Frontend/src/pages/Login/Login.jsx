@@ -5,6 +5,7 @@ import InputField from '../../components/common/InputField';
 import PasswordField from '../../components/common/PasswordField';
 import { validateEmail, validatePassword } from '../../utils/validators';
 import { login, saveSession, isDemoMode } from '../../services/authService';
+import { HOME_BY_ROLE } from '../../data/roles';
 import '../../style/Login.css';
 
 export default function Login({ onLoginSuccess }) {
@@ -38,7 +39,7 @@ export default function Login({ onLoginSuccess }) {
       const session = await login(form);
       saveSession(session, form.remember);
       onLoginSuccess(session);
-      navigate('/dashboard', { replace: true });
+      navigate(HOME_BY_ROLE[session.user.role] || '/', { replace: true });
     } catch (err) {
       setFormError(err.message);
     } finally {

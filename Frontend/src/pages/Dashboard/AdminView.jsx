@@ -1,137 +1,158 @@
-import { useState } from 'react';
-import { useArticles } from '../../context/ArticlesContext';
-import { INITIAL_USERS } from '../../data/dummyData';
+import { useEffect, useState } from 'react';
 import StatCard from '../../components/dashboard/StatCard';
-import { useActivity } from '../../context/ActivityContext';
-import FeedbackPanel from '../../components/dashboard/FeedbackPanel';
 import RoleRequestsPanel from '../../components/dashboard/RoleRequestsPanel';
+import { getReviewQueue } from '../../services/editorService';
+import { getAdminUsers, updateAdminUserRole, updateAdminUserStatus } from '../../services/adminService';
 import '../../style/AdminView.css';
 
-const ROLES = ['reader', 'publisher', 'journalist', 'editor', 'admin'];
+const ROLES = ['reader', 'journalist', 'editor', 'publisher', 'admin'];
 export default function AdminView({ session }) {
-    const { articles, resetDemoData } = useArticles();
-    const { reports, updateReport, resetActivity } = useActivity();
-    const [users, setUsers] = useState(INITIAL_USERS);
+    const [users, setUsers] = useState([]);
+    const [articleCounts, setArticleCounts] = useState({});
+    const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(true);
+    const [busyId, setBusyId] = useState('');
+    const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    const openReports = reports.filter((r) => r.status === 'open');
-    const closedReports = reports.filter((r) => r.status !== 'open');
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        setError('');
+        Promise.all([getAdminUsers(page), getReviewQueue()])
+            .then(([userResult, queue]) => {
+                if (cancelled) return;
+                setUsers(userResult.users);
+                setPagination(userResult.pagination);
+                setArticleCounts(queue.counts);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err.message);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [page]);
 
-    const changeRole = (id, role) =>
-        setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)));
+    const changeRole = async (id, role) => {
+        setBusyId(id);
+        setError('');
+        setMessage('');
+        try {
+            const updated = await updateAdminUserRole(id, role);
+            setUsers((current) => current.map((user) => user.id === id ? updated : user));
+            setMessage('User role updated.');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusyId('');
+        }
+    };
 
-    const toggleActive = (id) =>
-        setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u)));
-
-    const handleReset = () => {
-        resetDemoData();
-        resetActivity();
-        setUsers(INITIAL_USERS);
-        setMessage('Demo data has been reset.');
+    const toggleActive = async (user) => {
+        setBusyId(user.id);
+        setError('');
+        setMessage('');
+        try {
+            const updated = await updateAdminUserStatus(user.id, !user.active);
+            setUsers((current) => current.map((item) => item.id === user.id ? updated : item));
+            setMessage(updated.active ? 'User account restored.' : 'User account suspended.');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusyId('');
+        }
     };
 
     return (
         <>
             <RoleRequestsPanel />
             <div className="stats">
-                <StatCard label="Users" value={users.length} />
-                <StatCard label="Published stories" value={articles.filter((a) => a.status === 'published').length} />
-                <StatCard label="Waiting for review" value={articles.filter((a) => a.status === 'submitted').length} />
-                <StatCard label="Open reports" value={openReports.length} />
+                <StatCard label="Users" value={pagination.total} />
+                <StatCard label="Published stories" value={articleCounts.published || 0} />
+                <StatCard label="Waiting for review" value={articleCounts.submitted || 0} />
+                <StatCard label="Approved for publishing" value={articleCounts.approved || 0} />
             </div>
-        <FeedbackPanel />
-            <h2 className="dash__h2">Content reports</h2>
-            {openReports.length === 0 ? (
-                <p className="empty-note">No open content reports. Everything has been handled.</p>
-            ) : (
-                <div className="list">
-                    {openReports.map((r) => (
-                        <article key={r.id} className="item">
-                            <p className="item__cat">{r.reason}</p>
-                            <h3 className="item__title">{r.comment}</h3>
-                            <p className="item__meta">
-                                <span>On: {r.article}</span>
-                                <span>Reported by {r.reportedBy}</span>
-                            </p>
-                            <div className="btn-row">
-                                <button type="button" className="dbtn dbtn--danger" onClick={() => updateReport(r.id, 'removed')}>
-                                    Mark as removed
-                                </button>
-                                <button type="button" className="dbtn" onClick={() => updateReport(r.id, 'dismissed')}>
-                                    Dismiss report
-                                </button>
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            )}
-
-            {closedReports.length > 0 && (
-                <p className="muted muted--report-summary">
-                    Handled: {closedReports.map((r) => `"${r.comment.slice(0, 28)}..." (${r.status})`).join(', ')}
-                </p>
-            )}
+            {error && <p className="derr" role="alert">{error}</p>}
+            {message && <p className="dnote" role="status">{message}</p>}
 
             <h2 className="dash__h2">Users</h2>
-            <div className="table-wrap">
-                <table className="dtable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((u) => {
-                            const isYou = u.email === session.user.email;
-                            return (
-                                <tr key={u.id}>
-                                    <td>{u.name}{isYou && <span className="muted"> (you)</span>}</td>
-                                    <td>{u.email}</td>
-                                    <td>
-                                        <select
-                                            value={u.role}
-                                            disabled={isYou}
-                                            onChange={(e) => changeRole(u.id, e.target.value)}
-                                            aria-label={`Role for ${u.name}`}
-                                        >
-                                            {ROLES.map((r) => (
-                                                <option key={r} value={r}>{r}</option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <span className={`badge badge--${u.active ? 'active' : 'suspended'}`}>
-                                            {u.active ? 'Active' : 'Suspended'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {!isYou && (
-                                            <button type="button" className="dbtn" onClick={() => toggleActive(u.id)}>
-                                                {u.active ? 'Suspend' : 'Restore'}
-                                            </button>
-                                        )}
-                                    </td>
+            {loading ? (
+                <p className="empty-note">Loading database users...</p>
+            ) : users.length === 0 ? (
+                <p className="empty-note">No user accounts found.</p>
+            ) : (
+                <>
+                    <div className="table-wrap">
+                        <table className="dtable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-
-            <h2 className="dash__h2">Demo data</h2>
-            <section className="panel">
-                {message && <p className="dnote" role="status">{message}</p>}
-                <p className="muted muted--reset-summary">
-                    Put all stories, users and reports back to how they were at the start.
-                </p>
-                <button type="button" className="dbtn dbtn--danger" onClick={handleReset}>
-                    Reset demo data
-                </button>
-            </section>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => {
+                                    const isYou = user.email === session.user.email;
+                                    return (
+                                        <tr key={user.id}>
+                                            <td>{user.name}{isYou && <span className="muted"> (you)</span>}</td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                <select
+                                                    value={user.role}
+                                                    disabled={isYou || Boolean(busyId)}
+                                                    onChange={(event) => changeRole(user.id, event.target.value)}
+                                                    aria-label={`Role for ${user.name}`}
+                                                >
+                                                    {ROLES.map((role) => (
+                                                        <option key={role} value={role}>{role}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <span className={`badge badge--${user.active ? 'active' : 'suspended'}`}>
+                                                    {user.active ? 'Active' : 'Suspended'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {!isYou && (
+                                                    <button
+                                                        type="button"
+                                                        className="dbtn"
+                                                        onClick={() => toggleActive(user)}
+                                                        disabled={Boolean(busyId)}
+                                                    >
+                                                        {busyId === user.id ? 'Saving...' : user.active ? 'Suspend' : 'Restore'}
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    {pagination.totalPages > 1 && (
+                        <div className="btn-row" aria-label="User pages">
+                            <button type="button" className="dbtn" onClick={() => setPage((current) => current - 1)} disabled={page <= 1 || loading}>
+                                Previous
+                            </button>
+                            <span className="muted">Page {page} of {pagination.totalPages}</span>
+                            <button type="button" className="dbtn" onClick={() => setPage((current) => current + 1)} disabled={page >= pagination.totalPages || loading}>
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
         </>
     );
 }

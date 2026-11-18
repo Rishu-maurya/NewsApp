@@ -17,7 +17,29 @@ export default function Home({ session, onLogout }) {
     const date = params.get('date') || '';
     const day = params.get('day') || 'any';
 
-    const published = articles;
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all([getPublishedArticles(), getCategories()])
+            .then(([articleList, categoryList]) => {
+                if (cancelled) return;
+                setArticles(articleList);
+                setCategories(categoryList);
+            })
+            .catch((err) => {
+                if (!cancelled) setError(err.message);
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const headlines = useMemo(
+        () => [...articles].sort((a, b) => Number(!!b.important) - Number(!!a.important)).slice(0, 4),
+        [articles]
+    );
 
     const results = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -27,8 +49,8 @@ export default function Home({ session, onLogout }) {
             if (!matchesDate(a.date, when)) return false;
             if (!q) return true;
             return `${a.title} ${a.body} ${a.author}`.toLowerCase().includes(q);
-        });
-    }, [published, query, category, date, day]);
+        }).sort((a, b) => Number(!!b.important) - Number(!!a.important));
+    }, [articles, query, category, date, day]);
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
