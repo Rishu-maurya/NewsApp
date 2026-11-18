@@ -2,14 +2,11 @@ import { Link } from 'react-router-dom';
 import SiteLayout from '../../components/layout/SiteLayout';
 import ArticleCard from '../../components/news/ArticleCard';
 import LoginPrompt from '../../components/news/LoginPrompt';
-import { useArticles } from '../../context/ArticlesContext';
-import { useActivity } from '../../context/ActivityContext';
-import { isLive } from '../../utils/dateUtils';
+import { useBookmarks } from '../../context/BookmarksContext';
 import '../../style/Bookmarks.css';
 
 export default function Bookmarks({ session, onLogout }) {
-    const { articles } = useArticles();
-    const { saved } = useActivity();
+    const { items: serverItems, loading, error } = useBookmarks();
 
     if (!session) {
         return (
@@ -21,10 +18,7 @@ export default function Bookmarks({ session, onLogout }) {
         );
     }
 
-    const email = session.user.email;
-    const list = articles.filter(
-        (a) => isLive(a) && (saved[String(a.id)] || []).includes(email)
-    );
+    const list = serverItems;
 
     return (
         <SiteLayout session={session} onLogout={onLogout}>
@@ -36,7 +30,10 @@ export default function Bookmarks({ session, onLogout }) {
                         : `${list.length} saved ${list.length === 1 ? 'story' : 'stories'}`}
                 </p>
 
-                {list.length === 0 ? (
+                {error && <p className="s-err" role="alert">{error}</p>}
+                {loading && list.length === 0 ? (
+                    <p className="s-sub">Loading your saved stories...</p>
+                ) : list.length === 0 ? (
                     <div className="s-empty">
                         <p>You have not saved any stories yet. Press Save on a story to keep it here.</p>
                         <Link to="/" className="s-btn s-btn--solid">Browse news</Link>

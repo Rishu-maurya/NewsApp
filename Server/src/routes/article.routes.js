@@ -16,8 +16,6 @@ const {
 const authMiddleware = require("../middlewares/auth.middleware")
 const optionalAuth = require("../middlewares/optionalauth.middleware");
 const roleCheck = require("../middlewares/rolecheck.middleware");
-const { getReviews, createReview, publishArticle } = require("../controllers/review.controller");
-const { toggleLike, getLikeCount } = require("../controllers/like.controller");
 
 const authors = roleCheck("journalist", "editor", "publisher");
 const editors = roleCheck("editor", "admin");

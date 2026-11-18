@@ -76,6 +76,8 @@ export default function EditorView() {
         }
     };
 
+    if (loading) return <p className="empty-note">Loading the review queue...</p>;
+
     return (
         <>
             <div className="btn-row" role="group" aria-label="Editor workspace">
@@ -107,6 +109,8 @@ export default function EditorView() {
                 <StatCard label="Rejected" value={count('rejected')} />
             </div>
             {error && <p className="derr" role="alert">{error}</p>}
+
+            {error && openId === null && <p className="derr" role="alert">{error}</p>}
 
             <h2 className="dash__h2">Review queue</h2>
             {loading ? (
@@ -152,16 +156,6 @@ export default function EditorView() {
                                         placeholder="Explain what needs to change"
                                     />
 
-                                    <label className="dfield--check dfield--inline" htmlFor={`imp-${a.id}`}>
-                                        <input
-                                            id={`imp-${a.id}`}
-                                            type="checkbox"
-                                            checked={important}
-                                            onChange={(e) => setImportant(e.target.checked)}
-                                        />
-                                        Mark as an important story (shown in yellow)
-                                    </label>
-
                                     <div className="btn-row">
                                         <button type="button" className="dbtn dbtn--good" onClick={() => decide(a.id, 'approved')} disabled={Boolean(busyId)}>
                                             {busyId === a.id ? 'Approving...' : 'Approve for publisher'}
@@ -201,7 +195,7 @@ export default function EditorView() {
                             </tr>
                         </thead>
                         <tbody>
-                            {decided.map((a) => (
+                            {decided.slice(0, 10).map((a) => (
                                 <tr key={a.id}>
                                     <td>{a.title}</td>
                                     <td>{a.author}</td>

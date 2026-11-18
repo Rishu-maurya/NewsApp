@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { CATEGORIES } from '../../data/dummyData';
-import { useArticles } from '../../context/ArticlesContext';
-import { isLive } from '../../utils/dateUtils';
+import { useNews } from '../../context/NewsContext';
 import '../../style/Categories.css';
 
 const MENU_WIDTH = 300;
@@ -14,13 +12,13 @@ export default function CategoriesMenu() {
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
     const { pathname } = useLocation();
-    const { articles } = useArticles();
+    const { articles, categories } = useNews();
 
     const isActive = pathname.startsWith('/categories') || pathname.startsWith('/category/');
 
-    const items = CATEGORIES.map((name) => ({
+    const items = categories.map((name) => ({
         name,
-        count: articles.filter((a) => a.category === name && isLive(a)).length,
+        count: articles.filter((a) => a.category === name).length,
     }));
 
     const place = () => {
