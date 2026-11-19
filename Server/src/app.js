@@ -10,7 +10,8 @@ const userRoutes = require("./routes/user.routes");
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+const clientUrl = process.env.CLIENT_URL?.trim().replace(/\/+$/, "") || 'http://localhost:5173';
+app.use(cors({ origin: clientUrl }));
 app.use(express.json());
 
 

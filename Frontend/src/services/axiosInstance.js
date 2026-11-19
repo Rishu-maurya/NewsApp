@@ -1,7 +1,8 @@
 import axios from "axios";
 import { clearSession, getSession } from "./session";
 
-const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
+const apiUrl = configuredApiUrl || (import.meta.env.PROD ? "https://newsapp-zctz.onrender.com" : "");
 
 const api = axios.create({
   baseURL: apiUrl ? `${apiUrl}/api` : "/api",
